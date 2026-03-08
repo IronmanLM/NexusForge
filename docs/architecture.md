@@ -2,6 +2,8 @@
 
 Ce document décrit l’architecture globale de Nexus Forge : principes, composants, flux de données, gestion offline‑first et multi‑écrans.
 
+Référence API backend MVP (implémentation actuelle): [`docs/api/backend-mvp.md`](api/backend-mvp.md).
+
 ---
 
 ## 1. Principes d’architecture
