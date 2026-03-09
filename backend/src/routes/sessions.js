@@ -133,6 +133,9 @@ router.post('/', (req, res) => {
   }
 
   const created = createSession(req.body, req.auth.user.id);
+  if (created?.error === 'duplicate_session_id') {
+    return sendError(res, 409, 'SESSION_ID_CONFLICT', 'Session id already exists', { sessionId: req.body?.id });
+  }
   return res.status(201).json({ session: created });
 });
 
@@ -231,11 +234,27 @@ router.put('/:sessionId/me', (req, res) => {
   if (!session) return;
 
   const characterId = req.body?.characterId ?? null;
-  const updated = setMyCharacterInSession(session, req.auth.user.id, characterId);
-  if (!updated) {
+  const result = setMyCharacterInSession(session, req.auth.user.id, characterId);
+  if (result.error === 'not_member') {
     return sendError(res, 403, 'SESSION_ACCESS_FORBIDDEN', 'Forbidden: not a member');
   }
-  return res.json({ session: updated });
+  if (result.error === 'character_not_found') {
+    return sendError(res, 404, 'CHARACTER_NOT_FOUND', 'Character not found', { characterId });
+  }
+  if (result.error === 'forbidden_character') {
+    return sendError(res, 403, 'CHARACTER_ACCESS_FORBIDDEN', 'Forbidden character');
+  }
+  if (result.error === 'invalid_character_system') {
+    return sendError(res, 400, 'INVALID_CHARACTER_PAYLOAD', 'Character must use the same system as session', {
+      characterId
+    });
+  }
+  if (result.error === 'character_already_linked') {
+    return sendError(res, 409, 'CHARACTER_ALREADY_LINKED', 'Character is already linked to another participant', {
+      characterId
+    });
+  }
+  return res.json({ session: result.session });
 });
 
 router.post('/:sessionId/leave', (req, res) => {

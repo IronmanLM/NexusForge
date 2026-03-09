@@ -315,8 +315,13 @@ export function getSessionById(sessionId) {
 }
 
 export function createSession(input, creatorId) {
+  const sessionId = input.id ?? `session-${uuid()}`;
+  if (sessions.some((session) => session.id === sessionId)) {
+    return { error: 'duplicate_session_id' };
+  }
+
   const session = {
-    id: input.id ?? `session-${uuid()}`,
+    id: sessionId,
     name: input.name,
     systemId: input.systemId,
     ownerUserId: creatorId,
@@ -383,8 +388,13 @@ export function getCharacterById(characterId) {
 }
 
 export function createCharacter(input, userId) {
+  const characterId = input.id ?? `char_${uuid()}`;
+  if (characters.some((character) => character.id === characterId)) {
+    return { error: 'duplicate_character_id' };
+  }
+
   const character = {
-    id: input.id ?? `char_${uuid()}`,
+    id: characterId,
     userId,
     systemId: input.systemId,
     name: input.name,
@@ -588,10 +598,27 @@ export function joinSessionByCode(code, userId) {
 
 export function setMyCharacterInSession(session, userId, characterId) {
   const participant = session.players.find((p) => p.userId === userId);
-  if (!participant) return null;
-  participant.characterId = characterId ?? null;
+  if (!participant) return { error: 'not_member' };
+
+  if (characterId == null) {
+    participant.characterId = null;
+    session.updatedAt = now();
+    return { session };
+  }
+
+  const character = getCharacterById(characterId);
+  if (!character) return { error: 'character_not_found' };
+  if (character.userId !== userId) return { error: 'forbidden_character' };
+  if (character.systemId !== session.systemId) return { error: 'invalid_character_system' };
+
+  const linkedToAnotherPlayer = session.players.find(
+    (player) => player.characterId === characterId && player.userId !== userId
+  );
+  if (linkedToAnotherPlayer) return { error: 'character_already_linked' };
+
+  participant.characterId = characterId;
   session.updatedAt = now();
-  return session;
+  return { session };
 }
 
 export function leaveSession(session, userId) {

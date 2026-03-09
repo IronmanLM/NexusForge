@@ -28,6 +28,11 @@ router.post('/', (req, res) => {
   }
 
   const character = createCharacter(req.body ?? {}, req.auth.user.id);
+  if (character?.error === 'duplicate_character_id') {
+    return sendError(res, 409, 'CHARACTER_ID_CONFLICT', 'Character id already exists', {
+      characterId: req.body?.id
+    });
+  }
   return res.status(201).json({ character });
 });
 
