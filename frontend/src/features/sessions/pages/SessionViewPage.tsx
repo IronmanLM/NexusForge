@@ -407,6 +407,7 @@ export default function SessionViewPage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'general' | 'settings' | 'logs'>('general');
   const [runtimeSetId, setRuntimeSetId] = useState('');
+  const [pendingRuntimeLaunch, setPendingRuntimeLaunch] = useState<null | { markRunning: boolean }>(null);
 
   const detachedScreenId = searchParams.get('detachedScreen');
   const requestedSetId = searchParams.get('set');
@@ -1507,7 +1508,7 @@ export default function SessionViewPage() {
     return `/sessions/${session.id}?${params.toString()}`;
   };
 
-  const handleOpenRuntime = async (markRunning: boolean) => {
+  const openRuntimeNow = async (markRunning: boolean) => {
     if (!session || !activeTemplate) {
       setErrorMessage('Aucun template d écran actif n est encore disponible pour cette partie.');
       setActiveTab('settings');
@@ -1527,6 +1528,14 @@ export default function SessionViewPage() {
     if (url) {
       window.location.assign(url);
     }
+  };
+
+  const handleOpenRuntime = async (markRunning: boolean) => {
+    if (activeTemplate && activeTemplate.sets.length > 1) {
+      setPendingRuntimeLaunch({ markRunning });
+      return;
+    }
+    await openRuntimeNow(markRunning);
   };
 
   if (isLoading) {
@@ -2753,6 +2762,49 @@ export default function SessionViewPage() {
           onClose={() => setIsCharacterCreationWizardOpen(false)}
           onComplete={handleCompleteGuidedCharacterCreation}
         />
+      ) : null}
+      {pendingRuntimeLaunch && activeTemplate ? (
+        <div className="resource-preview-modal" role="dialog" aria-modal="true" onClick={() => setPendingRuntimeLaunch(null)}>
+          <div className="resource-preview-modal__dialog resource-action-modal resource-action-modal--compact" onClick={(event) => event.stopPropagation()}>
+            <div className="resource-preview-modal__header">
+              <div>
+                <strong>Choisir un set d'écran</strong>
+                <p style={{ margin: '0.35rem 0 0' }}>
+                  Sélectionne le set à ouvrir pour le runtime de cette partie.
+                </p>
+              </div>
+            </div>
+            <div className="resource-preview-modal__body" style={{ display: 'grid', gap: '1rem' }}>
+              <label className="session-launch-select">
+                <span>Set à lancer</span>
+                <select value={runtimeSetId} onChange={(event) => setRuntimeSetId(event.target.value)}>
+                  {activeTemplate.sets.map((set) => (
+                    <option key={set.id} value={set.id}>
+                      {set.name} · {devicePresetLabel(set.devicePreset)} · {set.screens.length} écran(s)
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="session-search-result-actions" style={{ justifyContent: 'flex-end' }}>
+                <Button type="button" variant="secondary" onClick={() => setPendingRuntimeLaunch(null)}>
+                  Annuler
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    const launch = pendingRuntimeLaunch;
+                    setPendingRuntimeLaunch(null);
+                    if (launch) {
+                      void openRuntimeNow(launch.markRunning);
+                    }
+                  }}
+                >
+                  Lancer ce set
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : null}
     </Layout>
   );
