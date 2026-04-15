@@ -1,5 +1,6 @@
 import { Navigate, useNavigate } from 'react-router-dom';
 import Layout from '../../../components/Layout';
+import BrandLogo from '../../../components/BrandLogo';
 import LoginForm from '../components/LoginForm';
 import { useAuth } from '../../../hooks/useAuth';
 import { mapAuthErrorMessage } from '../../../services/authService';
@@ -9,7 +10,7 @@ export default function LoginPage() {
   const { currentUser, login } = useAuth();
 
   if (currentUser) {
-    return <Navigate to="/sessions" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   const handleLogin = async (params: {
@@ -28,7 +29,7 @@ export default function LoginPage() {
         };
       }
 
-      navigate('/sessions');
+      navigate('/home');
       return { status: 'authenticated' };
     } catch (error) {
       return {
@@ -40,7 +41,8 @@ export default function LoginPage() {
 
   return (
     <Layout>
-      <section className="card">
+      <section className="card auth-card auth-card--brand">
+        <BrandLogo variant="auth" className="auth-card__logo" alt="Nexus Forge" />
         <h1>Connexion Nexus Forge</h1>
         <p>Connexion sécurisée avec validation email, approbation admin et 2FA TOTP optionnel.</p>
         <LoginForm onSubmit={handleLogin} />

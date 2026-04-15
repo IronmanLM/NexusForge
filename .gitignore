@@ -28,6 +28,12 @@ frontend/coverage/
 *.tsbuildinfo
 frontend/*.tsbuildinfo
 
+# Android local release material
+frontend/android/local.properties
+frontend/android/key.properties
+*.jks
+*.keystore
+
 # Misc
 .tmp/
 tmp/

@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import Button from '../../../components/Button';
+import BrandLogo from '../../../components/BrandLogo';
 import { registerService } from '../../../services/authService';
 
 export default function RegisterPage() {
@@ -32,9 +33,24 @@ export default function RegisterPage() {
 
   return (
     <Layout>
-      <section className="card">
+      <section className="card auth-card auth-card--brand">
+        <BrandLogo variant="auth" className="auth-card__logo" alt="Nexus Forge" />
         <h1>Créer un compte</h1>
-        <p>Le compte doit valider l'email puis être approuvé par un administrateur.</p>
+        <p className="auth-card__lead">Le compte doit valider l’email puis être approuvé par un administrateur.</p>
+        <div className="auth-benefits">
+          <article className="auth-benefit">
+            <strong>Validation email</strong>
+            <span>L’adresse doit être confirmée avant toute activation côté admin.</span>
+          </article>
+          <article className="auth-benefit">
+            <strong>Approbation manuelle</strong>
+            <span>Chaque compte est relu avant accès à l’application.</span>
+          </article>
+          <article className="auth-benefit">
+            <strong>Sécurité renforcée</strong>
+            <span>TOTP disponible ensuite dans le profil pour sécuriser le compte.</span>
+          </article>
+        </div>
         <form className="form" onSubmit={handleSubmit}>
           <label htmlFor="firstName">Prénom</label>
           <input id="firstName" value={firstName} onChange={(event) => setFirstName(event.target.value)} required />

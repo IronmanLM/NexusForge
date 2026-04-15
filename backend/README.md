@@ -21,6 +21,10 @@ npm start
 - `CORS_ORIGIN` (ex: `https://nexusforge.en-ligne.fr`)
 - `APP_BASE_URL` (URL frontend, utilisée dans les emails)
 - `API_BASE_URL` (URL API publique)
+- `DISCORD_BOT_SHARED_SECRET` (secret partagé pour le bot Discord)
+- `DISCORD_OAUTH_CLIENT_ID`
+- `DISCORD_OAUTH_CLIENT_SECRET`
+- `DISCORD_OAUTH_REDIRECT_URI`
 - `ENABLE_DEMO_SEED` (`false` recommandé en prod)
 - `DATA_DIR` / `DATA_FILE` (persistance JSON backend)
 - `JWT_SECRET`, `JWT_REFRESH_SECRET`
@@ -70,5 +74,10 @@ Règles minimales:
 - `POST /api/auth/totp/disable`
 - `GET /api/admin/users/pending`
 - `POST /api/admin/users/:userId/approve`
+- `POST /api/admin/integrations/discord/releases`
+- `GET /api/integrations/discord/events` (secret bot requis)
+- `POST /api/auth/discord/link/start`
+- `POST /api/auth/discord/link/callback`
+- `DELETE /api/auth/discord/link`
 
 Les endpoints sessions/systems/sync du MVP restent disponibles.

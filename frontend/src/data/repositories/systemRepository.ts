@@ -1,8 +1,8 @@
 import { db, ensureDatabaseIsInitialized } from '../db';
-import { GameSystem, GameSystemVisibility } from '../../types/system';
+import { CharacterCreationConfig, GameSystem, GameSystemVisibility } from '../../types/system';
 import { User } from '../../types/user';
 import { localActionRepository } from './localActionRepository';
-import { isBackendEnabled, requestJson } from '../../services/apiClient';
+import { ApiError, isBackendEnabled, requestJson } from '../../services/apiClient';
 
 function makeId(prefix: string): string {
   const random = Math.random().toString(36).slice(2, 10);
@@ -13,18 +13,37 @@ function isAdmin(user: User): boolean {
   return user.roles.includes('admin');
 }
 
+
+function cloneCharacterCreationConfig(config?: CharacterCreationConfig): CharacterCreationConfig | undefined {
+  return config ? (JSON.parse(JSON.stringify(config)) as CharacterCreationConfig) : undefined;
+}
+
+function canUserForkPublishedSystem(system: GameSystem, user: User): boolean {
+  const isGm = user.roles.includes('gm') || user.roles.includes('admin');
+  return isGm && system.status === 'published' && canUserViewSystem(system, user);
+}
+
 export function canUserEditSystem(system: GameSystem, user: User): boolean {
+  if (system.deletedAt) {
+    return false;
+  }
   return system.ownerUserId === user.id || isAdmin(user) || (system.editorUserIds ?? []).includes(user.id);
 }
 
 function canUserViewSystem(system: GameSystem, user: User): boolean {
-  return (
-    system.visibility === 'public' ||
-    system.ownerUserId === user.id ||
-    isAdmin(user) ||
-    (system.editorUserIds ?? []).includes(user.id) ||
-    (system.viewerUserIds ?? []).includes(user.id)
-  );
+  if (system.ownerUserId === user.id || isAdmin(user) || (system.editorUserIds ?? []).includes(user.id) || (system.viewerUserIds ?? []).includes(user.id)) {
+    return true;
+  }
+
+  if (system.status !== 'published') {
+    return false;
+  }
+
+  return system.visibility === 'public' || system.visibility === 'friends';
+}
+
+export function canUseSystemForSession(system: GameSystem, user: User): boolean {
+  return canUserViewSystem(system, user) && system.status === 'published' && Boolean(system.studioSchemaV2?.views?.some((view) => view.isCharacterSheet));
 }
 
 function cloneSystemForDuplicate(source: GameSystem, actor: User, name?: string): GameSystem {
@@ -34,6 +53,7 @@ function cloneSystemForDuplicate(source: GameSystem, actor: User, name?: string)
     id: makeId('sys'),
     name: name?.trim() || `${source.name} (copie)`,
     ownerUserId: actor.id,
+    status: 'draft',
     visibility: 'private',
     viewerUserIds: [],
     editorUserIds: [],
@@ -50,22 +70,45 @@ function cloneSystemForDuplicate(source: GameSystem, actor: User, name?: string)
     ],
     createdAt: now,
     updatedAt: now,
-    studioSchema: source.studioSchema
+    studioSchemaV2: source.studioSchemaV2
       ? {
-          views: source.studioSchema.views.map((view) => ({
+          version: 2,
+          views: source.studioSchemaV2.views.map((view) => ({
             ...view,
-            components: view.components.map((component) => ({ ...component }))
+            nodes: view.nodes.map((node) => ({
+              ...node,
+              layout: { ...node.layout },
+              tabs: node.tabs?.map((tab) => ({ ...tab })),
+              repeat: node.repeat ? { ...node.repeat } : undefined,
+              options: node.options ? [...node.options] : undefined
+            }))
           }))
         }
       : undefined,
+    catalogs: source.catalogs
+      ? source.catalogs.map((catalog) => ({
+          ...catalog,
+          columns: catalog.columns.map((column) => ({
+            ...column,
+            options: column.options ? [...column.options] : undefined
+          })),
+          entries: catalog.entries.map((entry) => ({
+            ...entry,
+            values: { ...entry.values }
+          }))
+        }))
+      : undefined,
+    discordConfig: source.discordConfig
+      ? {
+          version: 1,
+          outputs: source.discordConfig.outputs.map((output) => ({
+            ...output,
+            allowedVisibilities: [...output.allowedVisibilities]
+          }))
+        }
+      : undefined,
+    characterCreationConfig: cloneCharacterCreationConfig(source.characterCreationConfig),
     rulesProgram: source.rulesProgram?.map((block) => ({ ...block })) ?? [],
-    referenceSheets:
-      source.referenceSheets?.map((sheet) => ({
-        ...sheet,
-        fields: sheet.fields.map((field) => ({ ...field })),
-        groups: sheet.groups.map((group) => ({ ...group })),
-        actions: sheet.actions?.map((action) => ({ ...action }))
-      })) ?? []
   };
 }
 
@@ -77,7 +120,8 @@ function mapApiSystem(raw: Record<string, unknown>): GameSystem {
     version: String(raw.version ?? '0.1.0'),
     author: typeof raw.author === 'string' ? raw.author : undefined,
     ownerUserId: String(raw.ownerUserId ?? ''),
-    visibility: raw.visibility === 'private' ? 'private' : 'public',
+    status: raw.status === 'published' ? 'published' : 'draft',
+    visibility: raw.visibility === 'private' || raw.visibility === 'friends' ? raw.visibility : 'public',
     viewerUserIds: Array.isArray(raw.viewerUserIds)
       ? raw.viewerUserIds.filter((item): item is string => typeof item === 'string')
       : [],
@@ -93,9 +137,20 @@ function mapApiSystem(raw: Record<string, unknown>): GameSystem {
       raw.rulesPresentation && typeof raw.rulesPresentation === 'object'
         ? (raw.rulesPresentation as GameSystem['rulesPresentation'])
         : undefined,
-    studioSchema: raw.studioSchema && typeof raw.studioSchema === 'object' ? (raw.studioSchema as GameSystem['studioSchema']) : undefined,
+    studioTheme:
+      raw.studioTheme && typeof raw.studioTheme === 'object'
+        ? (raw.studioTheme as GameSystem['studioTheme'])
+        : undefined,
+    studioSchemaV2: raw.studioSchemaV2 && typeof raw.studioSchemaV2 === 'object' ? (raw.studioSchemaV2 as GameSystem['studioSchemaV2']) : undefined,
+    catalogs: Array.isArray(raw.catalogs) ? (raw.catalogs as GameSystem['catalogs']) : [],
+    discordConfig: raw.discordConfig && typeof raw.discordConfig === 'object' ? (raw.discordConfig as GameSystem['discordConfig']) : undefined,
+    characterCreationConfig:
+      raw.characterCreationConfig && typeof raw.characterCreationConfig === 'object'
+        ? (raw.characterCreationConfig as GameSystem['characterCreationConfig'])
+        : undefined,
     auditTrail: Array.isArray(raw.auditTrail) ? (raw.auditTrail as GameSystem['auditTrail']) : [],
-    referenceSheets: Array.isArray(raw.referenceSheets) ? (raw.referenceSheets as GameSystem['referenceSheets']) : [],
+    deletedAt: typeof raw.deletedAt === 'string' ? raw.deletedAt : undefined,
+    retainedForSessions: raw.retainedForSessions === true,
     createdAt: String(raw.createdAt ?? new Date().toISOString()),
     updatedAt: String(raw.updatedAt ?? new Date().toISOString())
   };
@@ -112,9 +167,12 @@ export const systemRepository = {
           withAuth: true
         });
         const systems = (payload.items ?? []).map(mapApiSystem);
-        if (systems.length > 0) {
-          await db.systems.bulkPut(systems);
-        }
+        await db.transaction('rw', db.systems, async () => {
+          await db.systems.clear();
+          if (systems.length > 0) {
+            await db.systems.bulkPut(systems);
+          }
+        });
       } catch {
         // fallback local cache
       }
@@ -132,9 +190,12 @@ export const systemRepository = {
           withAuth: true
         });
         const systems = (payload.items ?? []).map(mapApiSystem);
-        if (systems.length > 0) {
-          await db.systems.bulkPut(systems);
-        }
+        await db.transaction('rw', db.systems, async () => {
+          await db.systems.clear();
+          if (systems.length > 0) {
+            await db.systems.bulkPut(systems);
+          }
+        });
       } catch {
         // fallback local cache
       }
@@ -178,6 +239,7 @@ export const systemRepository = {
     description?: string;
     version?: string;
     visibility?: GameSystemVisibility;
+    editorUserIds?: string[];
     templateFromSystemId?: string;
   }): Promise<GameSystem> {
     await ensureDatabaseIsInitialized();
@@ -192,7 +254,9 @@ export const systemRepository = {
             name: params.name,
             description: params.description ?? '',
             version: params.version ?? '0.1.0',
-            visibility: params.visibility ?? 'private',
+            visibility: params.visibility ?? 'public',
+            editorUserIds: params.editorUserIds ?? [],
+            status: 'draft',
             templateFromSystemId: params.templateFromSystemId
           }
         });
@@ -205,31 +269,56 @@ export const systemRepository = {
     }
 
     const now = new Date().toISOString();
-    let referenceSheets: NonNullable<GameSystem['referenceSheets']> = [];
     let rulesProgram: NonNullable<GameSystem['rulesProgram']> = [];
-    let studioSchema: GameSystem['studioSchema'] = undefined;
+    let studioSchemaV2: GameSystem['studioSchemaV2'] = undefined;
+    let catalogs: GameSystem['catalogs'] = [];
+    let discordConfig: GameSystem['discordConfig'] = undefined;
+    let characterCreationConfig: GameSystem['characterCreationConfig'] = undefined;
     let forkedFromSystemId: string | undefined;
     let forkedFromSystemName: string | undefined;
 
     if (params.templateFromSystemId) {
       const source = await db.systems.get(params.templateFromSystemId);
       if (source && canUserViewSystem(source, params.owner)) {
-        referenceSheets =
-          source.referenceSheets?.map((sheet) => ({
-            ...sheet,
-            fields: sheet.fields.map((field) => ({ ...field })),
-            groups: sheet.groups.map((group) => ({ ...group })),
-            actions: sheet.actions?.map((action) => ({ ...action }))
-          })) ?? [];
         rulesProgram = source.rulesProgram?.map((block) => ({ ...block })) ?? [];
-        studioSchema = source.studioSchema
+        studioSchemaV2 = source.studioSchemaV2
           ? {
-              views: source.studioSchema.views.map((view) => ({
+              version: 2,
+              views: source.studioSchemaV2.views.map((view) => ({
                 ...view,
-                components: view.components.map((component) => ({ ...component }))
+                nodes: view.nodes.map((node) => ({
+                  ...node,
+                  layout: { ...node.layout },
+                  tabs: node.tabs?.map((tab) => ({ ...tab })),
+                  repeat: node.repeat ? { ...node.repeat } : undefined,
+                  options: node.options ? [...node.options] : undefined
+                }))
               }))
             }
           : undefined;
+        catalogs = source.catalogs
+          ? source.catalogs.map((catalog) => ({
+              ...catalog,
+              columns: catalog.columns.map((column) => ({
+                ...column,
+                options: column.options ? [...column.options] : undefined
+              })),
+              entries: catalog.entries.map((entry) => ({
+                ...entry,
+                values: { ...entry.values }
+              }))
+            }))
+          : [];
+        discordConfig = source.discordConfig
+          ? {
+              version: 1,
+              outputs: source.discordConfig.outputs.map((output) => ({
+                ...output,
+                allowedVisibilities: [...output.allowedVisibilities]
+              }))
+            }
+          : undefined;
+        characterCreationConfig = cloneCharacterCreationConfig(source.characterCreationConfig);
         forkedFromSystemId = source.id;
         forkedFromSystemName = source.name;
       }
@@ -242,13 +331,17 @@ export const systemRepository = {
       version: params.version ?? '0.1.0',
       author: params.owner.displayName,
       ownerUserId: params.owner.id,
-      visibility: params.visibility ?? 'private',
+      status: 'draft',
+      visibility: params.visibility ?? 'public',
       viewerUserIds: [],
-      editorUserIds: [],
+      editorUserIds: params.editorUserIds ?? [],
       ...(forkedFromSystemId ? { forkedFromSystemId } : {}),
       ...(forkedFromSystemName ? { forkedFromSystemName } : {}),
       tags: ['custom'],
-      ...(studioSchema ? { studioSchema } : {}),
+      catalogs,
+      ...(discordConfig ? { discordConfig } : {}),
+      ...(characterCreationConfig ? { characterCreationConfig } : {}),
+      ...(studioSchemaV2 ? { studioSchemaV2 } : {}),
       auditTrail: [
         {
           id: makeId('audit'),
@@ -259,7 +352,6 @@ export const systemRepository = {
         }
       ],
       rulesProgram,
-      referenceSheets,
       createdAt: now,
       updatedAt: now
     };
@@ -297,7 +389,7 @@ export const systemRepository = {
     }
 
     const source = await db.systems.get(params.sourceSystemId);
-    if (!source || !canUserViewSystem(source, params.actor)) {
+    if (!source || !canUserForkPublishedSystem(source, params.actor)) {
       throw new Error('Systeme source introuvable ou inaccessible.');
     }
 
@@ -329,18 +421,26 @@ export const systemRepository = {
             name: system.name,
             description: system.description,
             version: system.version,
+            status: system.status,
             visibility: system.visibility,
             viewerUserIds: system.viewerUserIds,
             editorUserIds: system.editorUserIds,
             tags: system.tags,
+            rollDefinitions: system.rollDefinitions,
             rulesProgram: system.rulesProgram,
             rulesPresentation: system.rulesPresentation,
-            studioSchema: system.studioSchema,
-            referenceSheets: system.referenceSheets
+            studioTheme: system.studioTheme,
+            studioSchemaV2: system.studioSchemaV2,
+            catalogs: system.catalogs,
+            discordConfig: system.discordConfig,
+            characterCreationConfig: system.characterCreationConfig
           }
         });
-      } catch {
-        // fallback local queue
+      } catch (error) {
+        if (error instanceof ApiError) {
+          throw error;
+        }
+        // fallback local queue on transport failures only
       }
     }
 
@@ -420,5 +520,54 @@ export const systemRepository = {
     return {
       migratedSessionsCount: Number(payload.migratedSessionsCount ?? 0)
     };
+  },
+
+  async deleteOwned(params: { systemId: string; actor: User }): Promise<{ retainedForSessions: boolean; relatedSessionsCount: number }> {
+    await ensureDatabaseIsInitialized();
+
+    if (isBackendEnabled()) {
+      const payload = await requestJson<{ retainedForSessions?: boolean; relatedSessionsCount?: number }>({
+        path: `/api/systems/${params.systemId}`,
+        method: 'DELETE',
+        withAuth: true
+      });
+      const existing = await db.systems.get(params.systemId);
+      if (payload.retainedForSessions) {
+        if (existing) {
+          await db.systems.put({
+            ...existing,
+            deletedAt: new Date().toISOString(),
+            retainedForSessions: true,
+            updatedAt: new Date().toISOString()
+          });
+        }
+      } else {
+        await db.systems.delete(params.systemId);
+      }
+      return {
+        retainedForSessions: Boolean(payload.retainedForSessions),
+        relatedSessionsCount: Number(payload.relatedSessionsCount ?? 0)
+      };
+    }
+
+    const existing = await db.systems.get(params.systemId);
+    if (!existing) {
+      throw new Error('Système introuvable.');
+    }
+    if (existing.ownerUserId !== params.actor.id && !isAdmin(params.actor)) {
+      throw new Error('Suppression interdite: seul le propriétaire ou un admin peut supprimer ce système.');
+    }
+    const relatedSessions = await db.sessions.where('systemId').equals(params.systemId).toArray();
+    if (relatedSessions.length > 0) {
+      await db.systems.put({
+        ...existing,
+        deletedAt: new Date().toISOString(),
+        retainedForSessions: true,
+        updatedAt: new Date().toISOString()
+      });
+      return { retainedForSessions: true, relatedSessionsCount: relatedSessions.length };
+    }
+    await db.systems.delete(params.systemId);
+    return { retainedForSessions: false, relatedSessionsCount: 0 };
   }
 };

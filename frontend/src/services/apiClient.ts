@@ -21,7 +21,10 @@ function normalizePath(path: string): string {
   return path;
 }
 
-function buildUrl(path: string): string {
+export function buildApiUrl(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:') || path.startsWith('data:')) {
+    return path;
+  }
   const normalizedPath = normalizePath(path);
   if (!API_BASE_URL) {
     return normalizedPath;
@@ -60,6 +63,37 @@ export function clearStoredTokens(): void {
   localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
 }
 
+export async function openProtectedUrlInNewTab(src: string): Promise<void> {
+  const target = buildApiUrl(src);
+  const token = getAccessToken();
+  const response = await fetch(target, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
+
+  if (!response.ok) {
+    let message = `HTTP ${response.status}`;
+    const contentType = response.headers.get('content-type') ?? '';
+    if (contentType.includes('application/json')) {
+      const payload = await response.json().catch(() => null);
+      const payloadMessage =
+        typeof payload === 'object' && payload !== null
+          ? ((payload as { error?: { message?: string } }).error?.message ?? null)
+          : null;
+      if (payloadMessage) {
+        message = payloadMessage;
+      }
+    }
+    throw new ApiError(message, response.status, null);
+  }
+
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  window.open(objectUrl, '_blank', 'noopener,noreferrer');
+  window.setTimeout(() => {
+    URL.revokeObjectURL(objectUrl);
+  }, 60_000);
+}
+
 export async function requestJson<T>(params: {
   path: string;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -83,7 +117,7 @@ export async function requestJson<T>(params: {
     }
   }
 
-  const response = await fetch(buildUrl(params.path), {
+  const response = await fetch(buildApiUrl(params.path), {
     method,
     headers,
     body: params.body !== undefined ? JSON.stringify(params.body) : undefined

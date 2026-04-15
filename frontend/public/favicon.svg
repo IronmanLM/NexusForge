@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <clipPath id="left-half">
+      <rect x="0" y="0" width="64" height="128" />
+    </clipPath>
+  </defs>
+  <image href="/brand/nexusforge.png" x="0" y="0" width="128" height="128" preserveAspectRatio="xMinYMid slice" clip-path="url(#left-half)" />
+</svg>

@@ -44,10 +44,9 @@ Pour les endpoints backend déjà implémentés côté MVP, voir aussi [`backend
 
 ### 1. Action acceptée
 
-Code recommandé:
+Code actuellement retourne par le backend MVP :
 
 - `200` avec body
-- ou `204` sans body
 
 Body possible:
 
@@ -59,9 +58,9 @@ Body possible:
 
 ### 2. Conflit détecté
 
-Code recommandé:
+Code actuellement retourne par le backend MVP :
 
-- `409`
+- `200`
 
 Body:
 
@@ -79,10 +78,9 @@ Body:
 
 ### 3. Action rejetée
 
-Code recommandé:
+Code actuellement retourne par le backend MVP :
 
-- `422` (validation)
-- ou `403` (permission)
+- `200`
 
 Body:
 
@@ -107,6 +105,7 @@ Le frontend traite les réponses comme suit:
 
 ## Notes d'implémentation backend
 
-- Le backend doit être idempotent sur `id` pour éviter les doubles traitements.
+- Le backend MVP actuel renvoie le resultat metier dans `status`, pas dans le code HTTP.
 - Les conflits doivent renvoyer des champs exploitables côté UI (`conflictFields`).
 - Les valeurs serveur peuvent être partielles (`conflictServerValues`) si toutes les valeurs ne sont pas disponibles.
+- L idempotence sur `id` reste une cible souhaitable pour la suite mobile/offline, mais n est pas encore pleinement implémentee dans ce MVP.
