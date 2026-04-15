@@ -14,6 +14,27 @@ Ce document sert de procedure de reinstallation complete de la production Nexus 
 
 Ce document est fait pour pouvoir etre redonne tel quel a Codex.
 
+## Philosophie de restauration
+
+La reference du code est le depot git.
+
+Le backup distant ne doit donc conserver que ce qui n est pas reconstruit depuis git ou regenerable automatiquement :
+
+- `backend/.env`
+- `backend/data/state.json`
+- `backend/data/persist-log.jsonl`
+- `backend/data/history/`
+- les ressources source des utilisateurs dans `backend/data/resources/`
+- les `.htaccess` de prod si ils ne sont pas dans git
+
+Le backup ne doit pas embarquer :
+
+- le frontend deploye complet ;
+- le code backend complet ;
+- `node_modules` ;
+- les derives images regenerables (`*-thumb.webp`, `*-preview.webp`) ;
+- les fichiers statiques qui viennent deja du depot git.
+
 ## Topologie de production actuelle
 
 ### Frontend public
@@ -53,6 +74,13 @@ Ce document est fait pour pouvoir etre redonne tel quel a Codex.
 
 - declenchement via URL interne backend : `GET /api/internal/ops/backup`
 - protection par secret : `BACKUP_TRIGGER_SECRET`
+- contenu voulu de l archive :
+  - `backend/.env`
+  - `backend/data/state.json`
+  - `backend/data/persist-log.jsonl`
+  - `backend/data/history/`
+  - `backend/data/resources/` sans les derives regenerables
+  - `~/api.nexusforge.en-ligne.fr/.htaccess`
 - cible distante voulue :
   - hote : `fremaux.biz`
   - utilisateur : `root`
@@ -150,7 +178,7 @@ npm install
 npm run build
 ```
 
-### 4. Redeployer completement le frontend public
+### 4. Redeployer completement le frontend public depuis git
 
 ```bash
 cd /mnt/c/Users/mikael/.codex/worktrees/e534/NexusForge
@@ -164,7 +192,7 @@ Verification serveur :
 ssh nexusforge-prod 'ls -la ~/nexusforge.en-ligne.fr && stat -c "%y %n" ~/nexusforge.en-ligne.fr/index.html'
 ```
 
-### 5. Redeployer completement le backend applicatif
+### 5. Redeployer completement le backend applicatif depuis git
 
 Important :
 
@@ -221,7 +249,49 @@ ssh nexusforge-prod '
 '
 ```
 
-### 8. Verifications applicatives minimales
+### 8. Restaurer les donnees sauvegardees
+
+Une fois le code redeploye et les dossiers recrees, restaurer seulement les donnees de prod et les secrets.
+
+Contenu attendu du backup :
+
+- `api-root/.htaccess`
+- `backend/.env`
+- `backend/data/state.json`
+- `backend/data/persist-log.jsonl`
+- `backend/data/history/`
+- `backend/data/resources/` sans les derives `webp`
+
+Exemple de restauration depuis une archive distante recuperee localement :
+
+```bash
+tar -xzf 202604151800-nexusforge-production-data.tar.gz -C /tmp/nexusforge-restore
+
+rsync -az /tmp/nexusforge-restore/api-root/.htaccess \
+  nexusforge-prod:~/api.nexusforge.en-ligne.fr/.htaccess
+
+rsync -az /tmp/nexusforge-restore/backend/.env \
+  nexusforge-prod:~/api.nexusforge.en-ligne.fr/backend/.env
+
+rsync -az /tmp/nexusforge-restore/backend/data/ \
+  nexusforge-prod:~/api.nexusforge.en-ligne.fr/backend/data/
+```
+
+### 9. Regeneration des fichiers backend derives
+
+Les miniatures et apercus derives ne sont pas restaures depuis le backup.
+
+Ils sont regeneres automatiquement par le backend au demarrage via le backfill des ressources image.
+
+Il suffit donc de redemarrer Passenger apres restauration des donnees :
+
+```bash
+ssh nexusforge-prod 'touch ~/api.nexusforge.en-ligne.fr/tmp/restart.txt'
+```
+
+Puis verifier que le healthcheck revient et que le backend persiste ensuite une passe `resource-derivative-backfill` si des derives manquaient.
+
+### 10. Verifications applicatives minimales
 
 Healthcheck :
 
@@ -246,7 +316,7 @@ Verifications fonctionnelles :
 
 ## Cas de restauration donnees
 
-Si le code est redeploye mais que les donnees sont corrompues ou perdues, restaurer `state.json`.
+Si le code est redeploye mais que les donnees sont corrompues ou perdues, restaurer `state.json` puis relancer le backend pour qu il recharge cet etat et regenere les derives manquants.
 
 ### Restaurer le dernier backup connu
 
@@ -274,9 +344,9 @@ Si `~/api.nexusforge.en-ligne.fr/backend` a ete supprime ou fortement endommage 
 2. resynchroniser `backend/` avec `rsync` ;
 3. remettre manuellement `.env` si absent ;
 4. recreer `data/` si absent ;
-5. restaurer `state.json` et `resources/` depuis backup si necessaire ;
+5. restaurer `.env`, `state.json`, `history/` et `resources/` depuis backup si necessaire ;
 6. lancer l install npm du `nodevenv` ;
-7. toucher `restart.txt`.
+7. toucher `restart.txt` pour recharger l application et relancer la regeneration des derives.
 
 ## Fichiers critiques a verifier apres reconstruction
 

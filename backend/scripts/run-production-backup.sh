@@ -4,14 +4,14 @@ set -euo pipefail
 
 STAMP="$(date +%Y%m%d%H%M)"
 APP_HOME="${APP_HOME:-$HOME}"
-FRONTEND_DIR="${BACKUP_FRONTEND_DIR:-$APP_HOME/nexusforge.en-ligne.fr}"
 API_ROOT_DIR="${BACKUP_API_ROOT_DIR:-$APP_HOME/api.nexusforge.en-ligne.fr}"
 BACKEND_DIR="${BACKUP_BACKEND_DIR:-$API_ROOT_DIR/backend}"
+BACKEND_DATA_DIR="${BACKUP_BACKEND_DATA_DIR:-$BACKEND_DIR/data}"
 REMOTE_HOST="${BACKUP_REMOTE_HOST:-fremaux.biz}"
 REMOTE_USER="${BACKUP_REMOTE_USER:-root}"
 REMOTE_DIR="${BACKUP_REMOTE_DIR:-/mnt/kraken/Backups/nexusforge_backups}"
 SSH_KEY="${BACKUP_SSH_KEY:-$APP_HOME/.ssh/id_rsa_codex}"
-ARCHIVE_NAME="${STAMP}-nexusforge-production.tar.gz"
+ARCHIVE_NAME="${STAMP}-nexusforge-production-data.tar.gz"
 TMP_DIR="$(mktemp -d)"
 ARCHIVE_PATH="$TMP_DIR/$ARCHIVE_NAME"
 STAGE_DIR="$TMP_DIR/stage"
@@ -21,11 +21,6 @@ cleanup() {
 }
 
 trap cleanup EXIT
-
-if [[ ! -d "$FRONTEND_DIR" ]]; then
-  echo "Frontend directory not found: $FRONTEND_DIR" >&2
-  exit 1
-fi
 
 if [[ ! -d "$BACKEND_DIR" ]]; then
   echo "Backend directory not found: $BACKEND_DIR" >&2
@@ -38,19 +33,40 @@ if [[ ! -f "$SSH_KEY" ]]; then
 fi
 
 mkdir -p "$STAGE_DIR"
-mkdir -p "$STAGE_DIR/frontend" "$STAGE_DIR/api-root" "$STAGE_DIR/backend"
-
-cp -a "$FRONTEND_DIR/." "$STAGE_DIR/frontend/"
+mkdir -p "$STAGE_DIR/api-root" "$STAGE_DIR/backend" "$STAGE_DIR/backend/data"
 
 if [[ -f "$API_ROOT_DIR/.htaccess" ]]; then
   cp -a "$API_ROOT_DIR/.htaccess" "$STAGE_DIR/api-root/.htaccess"
 fi
 
-for item in package.json package-lock.json README.md .env .env.example src data; do
-  if [[ -e "$BACKEND_DIR/$item" ]]; then
-    cp -a "$BACKEND_DIR/$item" "$STAGE_DIR/backend/"
-  fi
-done
+if [[ -f "$BACKEND_DIR/.env" ]]; then
+  cp -a "$BACKEND_DIR/.env" "$STAGE_DIR/backend/.env"
+fi
+
+if [[ -f "$BACKEND_DIR/.env.example" ]]; then
+  cp -a "$BACKEND_DIR/.env.example" "$STAGE_DIR/backend/.env.example"
+fi
+
+if [[ -f "$BACKEND_DATA_DIR/state.json" ]]; then
+  cp -a "$BACKEND_DATA_DIR/state.json" "$STAGE_DIR/backend/data/state.json"
+fi
+
+if [[ -f "$BACKEND_DATA_DIR/persist-log.jsonl" ]]; then
+  cp -a "$BACKEND_DATA_DIR/persist-log.jsonl" "$STAGE_DIR/backend/data/persist-log.jsonl"
+fi
+
+if [[ -d "$BACKEND_DATA_DIR/history" ]]; then
+  mkdir -p "$STAGE_DIR/backend/data/history"
+  cp -a "$BACKEND_DATA_DIR/history/." "$STAGE_DIR/backend/data/history/"
+fi
+
+if [[ -d "$BACKEND_DATA_DIR/resources" ]]; then
+  mkdir -p "$STAGE_DIR/backend/data/resources"
+  find "$BACKEND_DATA_DIR/resources" -maxdepth 1 -type f \
+    ! -name '*-thumb.webp' \
+    ! -name '*-preview.webp' \
+    -exec cp -a {} "$STAGE_DIR/backend/data/resources/" \;
+fi
 
 tar -C "$STAGE_DIR" -czf "$ARCHIVE_PATH" .
 

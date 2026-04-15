@@ -58,6 +58,8 @@ Règles minimales:
 
 - backup de `backend/data/state.json` avant chaque déploiement,
 - récupération du backup en local hors git,
+- le code doit être restauré depuis git, pas depuis l archive de backup,
+- les fichiers dérivés régénérables ne doivent pas alourdir le backup,
 - déploiement backend sans écraser `data/` et `.env`,
 - redémarrage contrôlé de l'app Node.
 
