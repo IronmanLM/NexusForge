@@ -22,6 +22,11 @@ npm start
 - `APP_BASE_URL` (URL frontend, utilisée dans les emails)
 - `API_BASE_URL` (URL API publique)
 - `DISCORD_BOT_SHARED_SECRET` (secret partagé pour le bot Discord)
+- `BACKUP_TRIGGER_SECRET` (secret partagé pour déclencher un backup via URL)
+- `BACKUP_REMOTE_HOST`
+- `BACKUP_REMOTE_USER`
+- `BACKUP_REMOTE_DIR`
+- `BACKUP_SSH_KEY`
 - `DISCORD_OAUTH_CLIENT_ID`
 - `DISCORD_OAUTH_CLIENT_SECRET`
 - `DISCORD_OAUTH_REDIRECT_URI`
@@ -76,6 +81,7 @@ Règles minimales:
 - `POST /api/admin/users/:userId/approve`
 - `POST /api/admin/integrations/discord/releases`
 - `GET /api/integrations/discord/events` (secret bot requis)
+- `GET /api/internal/ops/backup` (secret backup requis)
 - `POST /api/auth/discord/link/start`
 - `POST /api/auth/discord/link/callback`
 - `DELETE /api/auth/discord/link`

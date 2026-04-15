@@ -27,6 +27,11 @@ const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
 const APP_BASE_URL = process.env.APP_BASE_URL || 'https://nexusforge.en-ligne.fr';
 const API_BASE_URL = process.env.API_BASE_URL || 'https://api.nexusforge.en-ligne.fr';
 const DISCORD_BOT_SHARED_SECRET = String(process.env.DISCORD_BOT_SHARED_SECRET || '').trim();
+const BACKUP_TRIGGER_SECRET = String(process.env.BACKUP_TRIGGER_SECRET || '').trim();
+const BACKUP_REMOTE_HOST = String(process.env.BACKUP_REMOTE_HOST || 'fremaux.biz').trim();
+const BACKUP_REMOTE_USER = String(process.env.BACKUP_REMOTE_USER || 'root').trim();
+const BACKUP_REMOTE_DIR = String(process.env.BACKUP_REMOTE_DIR || '/mnt/kraken/Backups/nexusforge_backups').trim();
+const BACKUP_SSH_KEY = String(process.env.BACKUP_SSH_KEY || path.join(process.env.HOME || '', '.ssh', 'id_rsa_codex')).trim();
 const DISCORD_OAUTH_CLIENT_ID = String(process.env.DISCORD_OAUTH_CLIENT_ID || '').trim();
 const DISCORD_OAUTH_CLIENT_SECRET = String(process.env.DISCORD_OAUTH_CLIENT_SECRET || '').trim();
 const DISCORD_OAUTH_REDIRECT_URI = String(process.env.DISCORD_OAUTH_REDIRECT_URI || `${APP_BASE_URL.replace(/\/$/, '')}/auth/discord/callback`).trim();
@@ -1719,6 +1724,23 @@ function requireDiscordBotSecret(req, res, next) {
 
   if (!provided || provided !== DISCORD_BOT_SHARED_SECRET) {
     return error(res, 403, 'DISCORD_BOT_FORBIDDEN', 'Discord bot secret is invalid');
+  }
+
+  return next();
+}
+
+function requireBackupTriggerSecret(req, res, next) {
+  if (!BACKUP_TRIGGER_SECRET) {
+    return error(res, 503, 'BACKUP_NOT_CONFIGURED', 'Backup trigger is not configured');
+  }
+
+  const provided =
+    String(req.headers['x-backup-secret'] || '').trim() ||
+    String(req.query?.secret || '').trim() ||
+    String(req.query?.token || '').trim();
+
+  if (!provided || provided !== BACKUP_TRIGGER_SECRET) {
+    return error(res, 403, 'BACKUP_FORBIDDEN', 'Backup secret is invalid');
   }
 
   return next();
@@ -3979,6 +4001,46 @@ app.get('/health', (req, res) => {
     },
     startupIntegrity: startupIntegrityReport
   });
+});
+
+app.get('/api/internal/ops/backup', requireBackupTriggerSecret, (req, res) => {
+  const scriptPath = path.join(process.cwd(), 'scripts', 'run-production-backup.sh');
+  if (!existsSync(scriptPath)) {
+    return error(res, 500, 'BACKUP_SCRIPT_MISSING', 'Backup script is missing');
+  }
+
+  try {
+    const stdout = execFileSync('/bin/bash', [scriptPath], {
+      cwd: process.cwd(),
+      env: {
+        ...process.env,
+        BACKUP_REMOTE_HOST,
+        BACKUP_REMOTE_USER,
+        BACKUP_REMOTE_DIR,
+        BACKUP_SSH_KEY
+      },
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 15 * 60 * 1000
+    }).trim();
+
+    let payload = { ok: true, raw: stdout };
+    if (stdout) {
+      try {
+        payload = JSON.parse(stdout);
+      } catch {
+        payload = { ok: true, raw: stdout };
+      }
+    }
+    return res.status(200).json(payload);
+  } catch (cause) {
+    const stderr = cause?.stderr ? String(cause.stderr).trim() : '';
+    const stdout = cause?.stdout ? String(cause.stdout).trim() : '';
+    return error(res, 500, 'BACKUP_FAILED', 'Backup execution failed', {
+      stdout,
+      stderr
+    });
+  }
 });
 
 app.post('/api/auth/register', async (req, res) => {

@@ -49,6 +49,16 @@ Ce document est fait pour pouvoir etre redonne tel quel a Codex.
 - binaire node : `~/nodevenv/api.nexusforge.en-ligne.fr/backend/20/bin/node`
 - binaire npm : `~/nodevenv/api.nexusforge.en-ligne.fr/backend/20/bin/npm`
 
+### Backup distant automatise
+
+- declenchement via URL interne backend : `GET /api/internal/ops/backup`
+- protection par secret : `BACKUP_TRIGGER_SECRET`
+- cible distante voulue :
+  - hote : `fremaux.biz`
+  - utilisateur : `root`
+  - dossier : `/mnt/kraken/Backups/nexusforge_backups`
+  - cle SSH : `~/.ssh/id_rsa_codex`
+
 ### Sauvegardes connues
 
 - backups backend : `~/nexusforge-prod-backups/backend-data`
