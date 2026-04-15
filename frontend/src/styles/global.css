@@ -5089,7 +5089,8 @@ body.theme-dark .screen-studio-widget-section {
   display: grid;
   gap: 0.55rem;
   align-content: start;
-  padding: 0.85rem;
+  justify-items: center;
+  padding: 0.85rem 0.55rem;
   border: 1px solid rgba(59, 130, 246, 0.18);
   border-radius: 18px;
   background: rgba(9, 16, 30, 0.78);
@@ -5097,11 +5098,15 @@ body.theme-dark .screen-studio-widget-section {
 }
 
 .screen-runtime-tab--side {
-  width: 100%;
-  justify-content: flex-start;
-  text-align: left;
+  min-height: 6.5rem;
+  min-width: 2.75rem;
+  width: auto;
+  justify-content: center;
+  text-align: center;
   border-radius: 14px;
-  padding: 0.7rem 0.9rem;
+  padding: 0.55rem 0.35rem;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
 }
 
 .screen-runtime-surface {
