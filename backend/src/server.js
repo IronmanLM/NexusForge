@@ -3494,7 +3494,12 @@ function validateBufferSignature(buffer, mimeType) {
 }
 
 function validateResourceUpload({ originalName, mimeType, buffer }) {
-  const inferredMimeType = typeof mimeType === 'string' && mimeType.trim() ? mimeType.trim().toLowerCase() : inferMimeTypeFromName(originalName);
+  const mimeTypeFromName = inferMimeTypeFromName(originalName);
+  const declaredMimeType = typeof mimeType === 'string' && mimeType.trim() ? mimeType.trim().toLowerCase() : '';
+  const inferredMimeType =
+    (declaredMimeType && RESOURCE_ALLOWED_TYPES[declaredMimeType] ? declaredMimeType : '') ||
+    mimeTypeFromName ||
+    declaredMimeType;
   const rule = RESOURCE_ALLOWED_TYPES[inferredMimeType];
   if (!rule) {
     return { ok: false, errorCode: 'RESOURCE_TYPE_FORBIDDEN', message: 'Type de fichier non autorisé.' };
