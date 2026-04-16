@@ -31,6 +31,19 @@ function targetLocationLabel(target: RuntimeTargetDescriptor | null): string {
   return [target.screenName, target.tabName].filter(Boolean).join(' · ');
 }
 
+function nextPlaybackState(
+  targetState: RuntimeTargetState | null,
+  nextStatus?: 'playing' | 'paused' | 'stopped',
+  nextLoop?: boolean
+) {
+  const current = targetState?.playback;
+  return {
+    status: nextStatus ?? current?.status ?? 'stopped',
+    loop: typeof nextLoop === 'boolean' ? nextLoop : Boolean(current?.loop),
+    commandToken: new Date().toISOString()
+  } as const;
+}
+
 export default function SessionOpenTargetControlWidget({
   sessionId,
   templateId,
@@ -40,7 +53,7 @@ export default function SessionOpenTargetControlWidget({
   availableTargets
 }: SessionOpenTargetControlWidgetProps) {
   const targetDescriptor = useMemo(
-    () => availableTargets.find((target) => target.id === targetWidgetId && target.widgetType === 'open_target_overlay') ?? null,
+    () => availableTargets.find((target) => target.id === targetWidgetId && (target.widgetType === 'open_target_overlay' || target.widgetType === 'screen_viewer')) ?? null,
     [availableTargets, targetWidgetId]
   );
   const [targetState, setTargetState] = useState<RuntimeTargetState | null>(
@@ -131,6 +144,7 @@ export default function SessionOpenTargetControlWidget({
   const targetContent = targetState?.content ?? null;
   const resourceContent = targetContent?.kind === 'resource' ? targetContent.resource : null;
   const isImageContent = resourceContent?.kind === 'image' && Boolean(resourceContent.thumbnailUrl || resourceContent.contentUrl);
+  const isPlayableContent = resourceContent?.kind === 'video' || resourceContent?.kind === 'audio';
   const localTargetPosition = targetLocationLabel(targetDescriptor);
 
   return (
@@ -139,7 +153,7 @@ export default function SessionOpenTargetControlWidget({
         <>
           <div className="overlay-control-widget__header">
             <strong>{targetDescriptor.title}</strong>
-            <small>Overlay cible -&gt; {localTargetPosition}</small>
+            <small>Cible -&gt; {localTargetPosition}</small>
           </div>
           <div className="overlay-control-card">
             <div className="overlay-control-card__preview">
@@ -165,8 +179,8 @@ export default function SessionOpenTargetControlWidget({
               <Button
                 type="button"
                 variant="secondary"
-                aria-label={targetState?.visible ? 'Masquer overlay' : 'Afficher overlay'}
-                title={targetState?.visible ? 'Masquer overlay' : 'Afficher overlay'}
+                aria-label={targetState?.visible ? 'Masquer cible' : 'Afficher cible'}
+                title={targetState?.visible ? 'Masquer cible' : 'Afficher cible'}
                 disabled={!targetContent}
                 onClick={() =>
                   writeRuntimeTargetState({
@@ -176,12 +190,73 @@ export default function SessionOpenTargetControlWidget({
                     state: {
                       visible: !(targetState?.visible ?? false),
                       content: targetContent,
+                      playback: targetState?.playback ?? nextPlaybackState(targetState),
+                      updatedAt: new Date().toISOString()
+                    }
+                  })
+                }
+                >
+                Prévisualiser
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={!targetContent || !isPlayableContent}
+                onClick={() =>
+                  writeRuntimeTargetState({
+                    sessionId,
+                    templateId,
+                    targetId: targetDescriptor.id,
+                    state: {
+                      visible: true,
+                      content: targetContent,
+                      playback: nextPlaybackState(targetState, 'playing'),
                       updatedAt: new Date().toISOString()
                     }
                   })
                 }
               >
-                Prévisualiser
+                Play
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={!targetContent || !isPlayableContent}
+                onClick={() =>
+                  writeRuntimeTargetState({
+                    sessionId,
+                    templateId,
+                    targetId: targetDescriptor.id,
+                    state: {
+                      visible: true,
+                      content: targetContent,
+                      playback: nextPlaybackState(targetState, 'stopped'),
+                      updatedAt: new Date().toISOString()
+                    }
+                  })
+                }
+              >
+                Pause / stop
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={!targetContent || !isPlayableContent}
+                onClick={() =>
+                  writeRuntimeTargetState({
+                    sessionId,
+                    templateId,
+                    targetId: targetDescriptor.id,
+                    state: {
+                      visible: true,
+                      content: targetContent,
+                      playback: nextPlaybackState(targetState, undefined, !targetState?.playback?.loop),
+                      updatedAt: new Date().toISOString()
+                    }
+                  })
+                }
+              >
+                {targetState?.playback?.loop ? 'Boucle on' : 'Boucle off'}
               </Button>
               <Button
                 type="button"
@@ -197,6 +272,7 @@ export default function SessionOpenTargetControlWidget({
                     state: {
                       visible: false,
                       content: null,
+                      playback: nextPlaybackState(targetState, 'stopped', false),
                       updatedAt: new Date().toISOString()
                     }
                   })
@@ -246,6 +322,7 @@ export default function SessionOpenTargetControlWidget({
                       pushStateToRemoteTargets({
                         visible: true,
                         content: targetContent,
+                        playback: targetState?.playback ?? nextPlaybackState(targetState),
                         updatedAt: new Date().toISOString()
                       })
                     }
@@ -262,11 +339,57 @@ export default function SessionOpenTargetControlWidget({
                       pushStateToRemoteTargets({
                         visible: false,
                         content: targetContent,
+                        playback: targetState?.playback ?? nextPlaybackState(targetState),
                         updatedAt: new Date().toISOString()
                       })
                     }
                   >
                     Masquer
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={!targetContent || !selectedRemoteTargets.length || !isPlayableContent}
+                    onClick={() =>
+                      pushStateToRemoteTargets({
+                        visible: true,
+                        content: targetContent,
+                        playback: nextPlaybackState(targetState, 'playing'),
+                        updatedAt: new Date().toISOString()
+                      })
+                    }
+                  >
+                    Play
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={!targetContent || !selectedRemoteTargets.length || !isPlayableContent}
+                    onClick={() =>
+                      pushStateToRemoteTargets({
+                        visible: true,
+                        content: targetContent,
+                        playback: nextPlaybackState(targetState, 'stopped'),
+                        updatedAt: new Date().toISOString()
+                      })
+                    }
+                  >
+                    Pause / stop
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={!targetContent || !selectedRemoteTargets.length || !isPlayableContent}
+                    onClick={() =>
+                      pushStateToRemoteTargets({
+                        visible: true,
+                        content: targetContent,
+                        playback: nextPlaybackState(targetState, undefined, !targetState?.playback?.loop),
+                        updatedAt: new Date().toISOString()
+                      })
+                    }
+                  >
+                    {targetState?.playback?.loop ? 'Boucle on' : 'Boucle off'}
                   </Button>
                   <Button
                     type="button"
@@ -278,6 +401,7 @@ export default function SessionOpenTargetControlWidget({
                       pushStateToRemoteTargets({
                         visible: false,
                         content: null,
+                        playback: nextPlaybackState(targetState, 'stopped', false),
                         updatedAt: new Date().toISOString()
                       })
                     }

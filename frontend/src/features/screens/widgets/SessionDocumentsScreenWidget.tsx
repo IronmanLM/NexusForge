@@ -238,7 +238,7 @@ export default function SessionDocumentsScreenWidget({
   );
 
   const overlayTargets = useMemo(
-    () => runtimeTargets.filter((target) => target.widgetType === 'open_target_overlay'),
+    () => runtimeTargets.filter((target) => target.widgetType === 'open_target_overlay' || target.widgetType === 'screen_viewer'),
     [runtimeTargets]
   );
 
@@ -387,6 +387,11 @@ export default function SessionDocumentsScreenWidget({
             kind: 'resource',
             title: resource.name,
             resource
+          },
+          playback: {
+            status: resource.kind === 'video' || resource.kind === 'audio' ? 'playing' : 'stopped',
+            loop: false,
+            commandToken: new Date().toISOString()
           },
           updatedAt: new Date().toISOString()
         }
@@ -600,6 +605,11 @@ export default function SessionDocumentsScreenWidget({
                                     kind: 'resource',
                                     title: selectedResource.name,
                                     resource: selectedResource
+                                  },
+                                  playback: {
+                                    status: selectedResource.kind === 'video' || selectedResource.kind === 'audio' ? 'playing' : 'stopped',
+                                    loop: false,
+                                    commandToken: new Date().toISOString()
                                   },
                                   updatedAt: new Date().toISOString()
                                 }

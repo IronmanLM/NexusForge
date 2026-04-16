@@ -13,16 +13,23 @@ export type RuntimeTargetContent =
       characterId: string;
     };
 
+export type RuntimeTargetPlaybackState = {
+  status: 'playing' | 'paused' | 'stopped';
+  loop: boolean;
+  commandToken: string;
+};
+
 export type RuntimeTargetState = {
   visible: boolean;
   content: RuntimeTargetContent | null;
+  playback?: RuntimeTargetPlaybackState | null;
   updatedAt: string;
 };
 
 export type RuntimeTargetDescriptor = {
   id: string;
   title: string;
-  widgetType: 'character_sheet' | 'open_target_overlay';
+  widgetType: 'character_sheet' | 'open_target_overlay' | 'screen_viewer';
   screenName: string;
   tabName: string;
   channelKey?: string | null;
@@ -63,6 +70,20 @@ export function readRuntimeTargetState(params: { sessionId: string; templateId: 
     return {
       visible: Boolean(parsed?.visible),
       content: parsed?.content ?? null,
+      playback:
+        parsed?.playback && typeof parsed.playback === 'object'
+          ? {
+              status:
+                parsed.playback.status === 'playing' || parsed.playback.status === 'paused' || parsed.playback.status === 'stopped'
+                  ? parsed.playback.status
+                  : 'stopped',
+              loop: Boolean(parsed.playback.loop),
+              commandToken:
+                typeof parsed.playback.commandToken === 'string' && parsed.playback.commandToken
+                  ? parsed.playback.commandToken
+                  : new Date(0).toISOString()
+            }
+          : null,
       updatedAt: typeof parsed?.updatedAt === 'string' ? parsed.updatedAt : new Date().toISOString()
     };
   } catch {

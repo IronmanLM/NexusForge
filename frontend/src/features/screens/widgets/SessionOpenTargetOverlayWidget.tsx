@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import Button from '../../../components/Button';
-import ResourcePreview from '../../../components/ResourcePreview';
 import { preloadResourceItem } from '../../../services/resourcePreloadService';
 import {
   readRuntimeTargetState,
@@ -8,14 +7,18 @@ import {
   subscribeRuntimeTargetState,
   writeRuntimeTargetState
 } from '../runtimeTargets';
+import { Session } from '../../../types/session';
+import SessionScreenViewerWidget from './SessionScreenViewerWidget';
 
 type SessionOpenTargetOverlayWidgetProps = {
+  currentSession: Session;
   sessionId: string;
   templateId: string;
   widgetId: string;
 };
 
 export default function SessionOpenTargetOverlayWidget({
+  currentSession,
   sessionId,
   templateId,
   widgetId
@@ -65,11 +68,13 @@ export default function SessionOpenTargetOverlayWidget({
       </div>
       <div className="screen-runtime-open-target-overlay__body">
         {targetState.content.kind === 'resource' ? (
-          <ResourcePreview
-            resource={targetState.content.resource}
-            alt={targetState.content.title}
-            minHeight="100%"
-            maxTextLength={6000}
+          <SessionScreenViewerWidget
+            currentSession={currentSession}
+            templateId={templateId}
+            widgetId={widgetId}
+            mode="auto"
+            fit="contain"
+            showToolbar
           />
         ) : (
           <p style={{ margin: 0 }}>Ce type de contenu n est pas supporte par cet overlay.</p>

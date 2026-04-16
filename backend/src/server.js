@@ -2509,10 +2509,11 @@ function buildRuntimeConnectionEntries(session) {
       const availableOverlayTargets = activeScreens.flatMap((screen) =>
         (screen.tabGroups || []).flatMap((group) =>
           (group.widgets || [])
-            .filter((widget) => widget.type === 'open_target_overlay')
+            .filter((widget) => widget.type === 'open_target_overlay' || widget.type === 'screen_viewer')
             .map((widget) => ({
               targetId: widget.id,
               title: widget.title,
+              widgetType: widget.type,
               screenName: screen.name,
               tabName: group.name,
               channelKey: typeof widget.config?.channelKey === 'string' ? widget.config.channelKey : 'primary'

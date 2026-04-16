@@ -13,6 +13,7 @@ export type ScreenWidgetType =
   | 'participant_presence'
   | 'open_target_overlay'
   | 'open_target_control'
+  | 'screen_viewer'
   | 'pdf_viewer'
   | 'documents'
   | 'media_viewer'

@@ -60,9 +60,8 @@ const WIDGET_PALETTE: WidgetPaletteItem[] = [
   { type: 'participant_presence', title: 'Joueurs présents', minW: 3, minH: 3, defaultW: 4, defaultH: 5, description: 'Indique quels participants ont lancé la séance et sont encore présents.' },
   { type: 'open_target_overlay', title: 'Overlay cible d ouverture', minW: 2, minH: 2, defaultW: 3, defaultH: 2, description: 'Affiche au-dessus de l ecran un contenu ouvert depuis un autre widget.' },
   { type: 'open_target_control', title: 'Controle overlay cible', minW: 3, minH: 2, defaultW: 4, defaultH: 3, description: 'Pilote un overlay cible et indique le contenu actuellement ouvert.' },
-  { type: 'pdf_viewer', title: 'Lecteur PDF', minW: 5, minH: 6, defaultW: 8, defaultH: 10, description: 'Lecture de PDF dans la partie.' },
+  { type: 'screen_viewer', title: 'Écran', minW: 5, minH: 5, defaultW: 8, defaultH: 8, description: 'Zone pilotable pour images, vidéos, audio et PDF.' },
   { type: 'documents', title: 'Gestionnaire de documents', minW: 4, minH: 5, defaultW: 6, defaultH: 8, description: 'Acces aux documents partages et personnels.' },
-  { type: 'media_viewer', title: 'Lecteur image / video', minW: 5, minH: 5, defaultW: 8, defaultH: 8, description: 'Images, videos et support battlemap.' },
   { type: 'notes', title: 'Prise de notes', minW: 4, minH: 4, defaultW: 6, defaultH: 7, description: 'Bloc de notes personnelles ou partagees.' },
   { type: 'character_list', title: 'Liste des personnages', minW: 3, minH: 4, defaultW: 5, defaultH: 7, description: 'Acces rapide aux personnages de la partie.' },
   { type: 'dice_history', title: 'Historique des jets', minW: 3, minH: 4, defaultW: 5, defaultH: 6, description: 'Derniers jets visibles dans la partie.' },
@@ -345,9 +344,9 @@ function getWidgetDefaults(type: ScreenWidgetType): Pick<ScreenWidgetDefinition,
         dataSource: {},
         permissions: {}
       };
-    case 'pdf_viewer':
+    case 'screen_viewer':
       return {
-        config: { page: 1, showToolbar: true },
+        config: { mode: 'auto', fit: 'contain', autoplay: false, loop: false, showToolbar: true, channelKey: 'primary' },
         dataSource: { resourceId: '', url: '' },
         permissions: {}
       };
@@ -357,9 +356,10 @@ function getWidgetDefaults(type: ScreenWidgetType): Pick<ScreenWidgetDefinition,
         dataSource: {},
         permissions: {}
       };
+    case 'pdf_viewer':
     case 'media_viewer':
       return {
-        config: { mode: 'image', fit: 'contain', autoplay: false },
+        config: { mode: 'auto', fit: 'contain', autoplay: false, loop: false, showToolbar: true, channelKey: 'primary' },
         dataSource: { resourceId: '', url: '' },
         permissions: {}
       };
@@ -466,20 +466,21 @@ function widgetPreviewContent(widget: ScreenWidgetDefinition): { headline: strin
         headline: 'Controle overlay',
         details: [asString(config.targetWidgetId) ? `Cible: ${asString(config.targetWidgetId)}` : 'Aucune cible associee']
       };
-    case 'pdf_viewer':
+    case 'screen_viewer':
       return {
-        headline: asString(dataSource.url) || asString(dataSource.resourceId, 'PDF non selectionne'),
-        details: [`Page ${asNumber(config.page, 1)}`, asBoolean(config.showToolbar, true) ? 'Barre visible' : 'Barre masquee']
+        headline: asString(dataSource.url) || asString(dataSource.resourceId, 'Écran non alimenté'),
+        details: [`Mode: ${asString(config.mode, 'auto')}`, `Fit: ${asString(config.fit, 'contain')}`, `Canal: ${asString(config.channelKey, 'primary')}`]
       };
     case 'documents':
       return {
         headline: 'Documents',
         details: [`Scope: ${asString(config.scope, 'all')}`, asBoolean(config.allowUpload, true) ? 'Upload autorise' : 'Upload bloque']
       };
+    case 'pdf_viewer':
     case 'media_viewer':
       return {
         headline: asString(dataSource.url) || asString(dataSource.resourceId, 'Media non selectionne'),
-        details: [`Mode: ${asString(config.mode, 'image')}`, `Fit: ${asString(config.fit, 'contain')}`]
+        details: [`Mode: ${asString(config.mode, 'auto')}`, `Fit: ${asString(config.fit, 'contain')}`]
       };
     case 'notes':
       return {
@@ -719,7 +720,7 @@ export default function ScreenStudioPage() {
         set.screens.flatMap((screen) =>
           screen.tabGroups.flatMap((group) =>
             group.widgets
-              .filter((widget) => widget.type === 'open_target_overlay')
+              .filter((widget) => widget.type === 'open_target_overlay' || widget.type === 'screen_viewer')
               .map((widget) => ({
                 id: widget.id,
                 name: `${widget.title} · ${screen.name} · ${group.name}`
@@ -2275,12 +2276,12 @@ function WidgetConfigEditor({
           </label>
         </FieldBlock>
       );
-    case 'pdf_viewer':
+    case 'screen_viewer':
       return (
         <>
-          <FieldBlock title="Source PDF">
+          <FieldBlock title="Source écran">
             <ResourcePickerField
-              label="Ressource PDF"
+              label="Ressource"
               value={{ resourceId: asString(dataSource.resourceId) || undefined, url: asString(dataSource.url) }}
               onChange={(next) =>
                 onChange((current) => ({
@@ -2292,26 +2293,58 @@ function WidgetConfigEditor({
                   }
                 }))
               }
-              kinds={['pdf']}
-              resources={pdfResources}
+              kinds={['image', 'video', 'audio', 'pdf']}
+              resources={mediaResources}
               disabled={!canEdit}
               allowManualUrl
               allowUpload={false}
-              previewAlt="PDF"
-              urlPlaceholder="https://.../document.pdf"
+              previewAlt="Écran"
+              urlPlaceholder="https://.../media-ou-pdf"
               emptyOptionLabel="Aucune ressource"
             />
           </FieldBlock>
-          <FieldBlock title="Affichage PDF">
+          <FieldBlock title="Affichage écran">
             <label style={{ display: 'grid', gap: '0.35rem' }}>
-              <span>Page</span>
-              <input type="number" value={asNumber(config.page, 1)} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'page', Number(event.target.value) || 1))} disabled={!canEdit} />
+              <span>Mode</span>
+              <select value={asString(config.mode, 'auto')} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'mode', event.target.value))} disabled={!canEdit}>
+                <option value="auto">Auto</option>
+                <option value="image">Image</option>
+                <option value="video">Vidéo</option>
+                <option value="audio">Audio</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </label>
+            <label style={{ display: 'grid', gap: '0.35rem' }}>
+              <span>Ajustement</span>
+              <select value={asString(config.fit, 'contain')} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'fit', event.target.value))} disabled={!canEdit}>
+                <option value="contain">Contenir</option>
+                <option value="cover">Couvrir</option>
+                <option value="fill">Étirer</option>
+              </select>
+            </label>
+            <label style={{ display: 'grid', gap: '0.35rem' }}>
+              <span>Canal pilotable</span>
+              <input value={asString(config.channelKey, 'primary')} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'channelKey', event.target.value || 'primary'))} disabled={!canEdit} />
             </label>
             <label style={{ display: 'grid', gap: '0.35rem' }}>
               <span>Barre d outils</span>
               <select value={String(asBoolean(config.showToolbar, true))} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'showToolbar', event.target.value === 'true'))} disabled={!canEdit}>
                 <option value="true">Visible</option>
                 <option value="false">Masquee</option>
+              </select>
+            </label>
+            <label style={{ display: 'grid', gap: '0.35rem' }}>
+              <span>Autoplay</span>
+              <select value={String(asBoolean(config.autoplay, false))} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'autoplay', event.target.value === 'true'))} disabled={!canEdit}>
+                <option value="false">Non</option>
+                <option value="true">Oui</option>
+              </select>
+            </label>
+            <label style={{ display: 'grid', gap: '0.35rem' }}>
+              <span>Boucle</span>
+              <select value={String(asBoolean(config.loop, false))} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'loop', event.target.value === 'true'))} disabled={!canEdit}>
+                <option value="false">Non</option>
+                <option value="true">Oui</option>
               </select>
             </label>
           </FieldBlock>
@@ -2337,6 +2370,7 @@ function WidgetConfigEditor({
           </label>
         </FieldBlock>
       );
+    case 'pdf_viewer':
     case 'media_viewer':
       return (
         <>

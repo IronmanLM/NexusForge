@@ -15,12 +15,11 @@ import SessionAlertOverlayWidget from '../widgets/SessionAlertOverlayWidget';
 import SessionDocumentsScreenWidget from '../widgets/SessionDocumentsScreenWidget';
 import SessionInitiativeScreenWidget from '../widgets/SessionInitiativeScreenWidget';
 import SessionJournalWidget from '../widgets/SessionJournalWidget';
-import SessionMediaViewerWidget from '../widgets/SessionMediaViewerWidget';
 import SessionNotesScreenWidget from '../widgets/SessionNotesScreenWidget';
 import SessionOpenTargetControlWidget from '../widgets/SessionOpenTargetControlWidget';
 import SessionOpenTargetOverlayWidget from '../widgets/SessionOpenTargetOverlayWidget';
 import SessionParticipantPresenceWidget from '../widgets/SessionParticipantPresenceWidget';
-import SessionPdfViewerWidget from '../widgets/SessionPdfViewerWidget';
+import SessionScreenViewerWidget from '../widgets/SessionScreenViewerWidget';
 import { RuntimeTargetDescriptor } from '../runtimeTargets';
 import { ensureScreenFormatForScreen, ensureScreenSetFormat, screenFormatSummary } from '../screenSetPresets';
 import { buildApiUrl, getAccessToken } from '../../../services/apiClient';
@@ -494,11 +493,11 @@ export function buildRuntimeTargets(selectedSet: ScreenSetDefinition | null): Ru
   for (const screen of selectedSet?.screens ?? []) {
     for (const group of screen.tabGroups) {
       for (const widget of group.widgets) {
-        if (widget.type === 'open_target_overlay') {
+        if (widget.type === 'open_target_overlay' || widget.type === 'screen_viewer') {
           descriptors.push({
             id: widget.id,
             title: widget.title,
-            widgetType: 'open_target_overlay',
+            widgetType: widget.type,
             screenName: screen.name,
             tabName: group.name,
             channelKey: typeof widget.config?.channelKey === 'string' ? widget.config.channelKey : 'primary'
@@ -614,7 +613,7 @@ export function RuntimeWidgetContent({
   }
 
   if (widget.type === 'open_target_overlay') {
-    return <SessionOpenTargetOverlayWidget sessionId={session.id} templateId={templateId} widgetId={widget.id} />;
+    return <SessionOpenTargetOverlayWidget currentSession={session} sessionId={session.id} templateId={templateId} widgetId={widget.id} />;
   }
 
   if (widget.type === 'open_target_control') {
@@ -626,6 +625,24 @@ export function RuntimeWidgetContent({
         targetWidgetId={typeof widget.config?.targetWidgetId === 'string' ? widget.config.targetWidgetId : ''}
         targetChannelKey={typeof widget.config?.targetChannelKey === 'string' ? widget.config.targetChannelKey : 'primary'}
         availableTargets={runtimeTargets}
+      />
+    );
+  }
+
+  if (widget.type === 'screen_viewer') {
+    return (
+      <SessionScreenViewerWidget
+        currentSession={session}
+        templateId={templateId}
+        widgetId={widget.id}
+        resourceId={typeof widget.dataSource?.resourceId === 'string' ? widget.dataSource.resourceId : ''}
+        url={typeof widget.dataSource?.url === 'string' ? widget.dataSource.url : ''}
+        mode={typeof widget.config?.mode === 'string' ? widget.config.mode : 'auto'}
+        fit={typeof widget.config?.fit === 'string' ? widget.config.fit : 'contain'}
+        autoplay={asBoolean(widget.config?.autoplay, false)}
+        loop={asBoolean(widget.config?.loop, false)}
+        showToolbar={asBoolean(widget.config?.showToolbar, true)}
+        page={typeof widget.config?.page === 'number' ? widget.config.page : 1}
       />
     );
   }
@@ -671,10 +688,16 @@ export function RuntimeWidgetContent({
 
   if (widget.type === 'pdf_viewer') {
     return (
-      <SessionPdfViewerWidget
+      <SessionScreenViewerWidget
         currentSession={session}
+        templateId={templateId}
+        widgetId={widget.id}
         resourceId={typeof widget.dataSource?.resourceId === 'string' ? widget.dataSource.resourceId : ''}
         url={typeof widget.dataSource?.url === 'string' ? widget.dataSource.url : ''}
+        mode="pdf"
+        fit="contain"
+        autoplay={false}
+        loop={false}
         page={typeof widget.config?.page === 'number' ? widget.config.page : 1}
         showToolbar={asBoolean(widget.config?.showToolbar, true)}
       />
@@ -683,13 +706,17 @@ export function RuntimeWidgetContent({
 
   if (widget.type === 'media_viewer') {
     return (
-      <SessionMediaViewerWidget
+      <SessionScreenViewerWidget
         currentSession={session}
+        templateId={templateId}
+        widgetId={widget.id}
         resourceId={typeof widget.dataSource?.resourceId === 'string' ? widget.dataSource.resourceId : ''}
         url={typeof widget.dataSource?.url === 'string' ? widget.dataSource.url : ''}
-        mode={typeof widget.config?.mode === 'string' ? widget.config.mode : 'image'}
+        mode={typeof widget.config?.mode === 'string' ? widget.config.mode : 'auto'}
         fit={typeof widget.config?.fit === 'string' ? widget.config.fit : 'contain'}
         autoplay={asBoolean(widget.config?.autoplay, false)}
+        loop={asBoolean(widget.config?.loop, false)}
+        showToolbar={asBoolean(widget.config?.showToolbar, true)}
       />
     );
   }

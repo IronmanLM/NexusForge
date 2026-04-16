@@ -23,6 +23,7 @@ export interface SessionParticipant {
 export interface SessionRuntimeOverlayTarget {
   targetId: string;
   title: string;
+  widgetType?: 'open_target_overlay' | 'screen_viewer';
   screenName: string;
   tabName: string;
   channelKey?: string | null;

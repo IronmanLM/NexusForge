@@ -18,9 +18,8 @@ export const WIDGET_PALETTE: WidgetPaletteItem[] = [
   { type: 'participant_presence', title: 'Joueurs présents', minW: 3, minH: 3, defaultW: 4, defaultH: 5, description: 'Indique quels participants ont lancé la séance et sont encore présents.' },
   { type: 'open_target_overlay', title: 'Overlay cible d ouverture', minW: 2, minH: 2, defaultW: 3, defaultH: 2, description: 'Affiche au-dessus de l ecran un contenu ouvert depuis un autre widget.' },
   { type: 'open_target_control', title: 'Controle overlay cible', minW: 3, minH: 2, defaultW: 4, defaultH: 3, description: 'Pilote un overlay cible et indique le contenu actuellement ouvert.' },
-  { type: 'pdf_viewer', title: 'Lecteur PDF', minW: 5, minH: 6, defaultW: 8, defaultH: 10, description: 'Lecture de PDF dans la partie.' },
+  { type: 'screen_viewer', title: 'Écran', minW: 5, minH: 5, defaultW: 8, defaultH: 8, description: 'Zone pilotable pour images, vidéos, audio et PDF.' },
   { type: 'documents', title: 'Gestionnaire de documents', minW: 4, minH: 5, defaultW: 6, defaultH: 8, description: 'Acces aux documents partages et personnels.' },
-  { type: 'media_viewer', title: 'Lecteur media', minW: 5, minH: 5, defaultW: 8, defaultH: 8, description: 'Images, videos, audio et support battlemap.' },
   { type: 'notes', title: 'Prise de notes', minW: 4, minH: 4, defaultW: 6, defaultH: 7, description: 'Bloc de notes personnelles ou partagees.' },
   { type: 'character_list', title: 'Liste des personnages', minW: 3, minH: 4, defaultW: 5, defaultH: 7, description: 'Acces rapide aux personnages de la partie.' },
   { type: 'dice_history', title: 'Historique des jets', minW: 3, minH: 4, defaultW: 5, defaultH: 6, description: 'Derniers jets visibles dans la partie.' },
@@ -72,9 +71,9 @@ export function getWidgetDefaults(type: ScreenWidgetType): Pick<ScreenWidgetDefi
         dataSource: {},
         permissions: {}
       };
-    case 'pdf_viewer':
+    case 'screen_viewer':
       return {
-        config: { page: 1, showToolbar: true },
+        config: { mode: 'auto', fit: 'contain', autoplay: false, loop: false, showToolbar: true, channelKey: 'primary' },
         dataSource: { resourceId: '', url: '' },
         permissions: {}
       };
@@ -84,9 +83,10 @@ export function getWidgetDefaults(type: ScreenWidgetType): Pick<ScreenWidgetDefi
         dataSource: {},
         permissions: {}
       };
+    case 'pdf_viewer':
     case 'media_viewer':
       return {
-        config: { mode: 'auto', fit: 'contain', autoplay: false },
+        config: { mode: 'auto', fit: 'contain', autoplay: false, loop: false, showToolbar: true, channelKey: 'primary' },
         dataSource: { resourceId: '', url: '' },
         permissions: {}
       };
@@ -200,16 +200,21 @@ export function widgetPreviewContent(widget: ScreenWidgetDefinition): { headline
           `Canal: ${asString(config.targetChannelKey, 'primary')}`
         ]
       };
-    case 'pdf_viewer':
+    case 'screen_viewer':
       return {
-        headline: asString(dataSource.url) || asString(dataSource.resourceId, 'PDF non selectionne'),
-        details: [`Page ${asNumber(config.page, 1)}`, asBoolean(config.showToolbar, true) ? 'Barre visible' : 'Barre masquee']
+        headline: asString(dataSource.url) || asString(dataSource.resourceId, 'Écran non alimenté'),
+        details: [
+          `Mode: ${asString(config.mode, 'auto')}`,
+          `Fit: ${asString(config.fit, 'contain')}`,
+          `Canal: ${asString(config.channelKey, 'primary')}`
+        ]
       };
     case 'documents':
       return {
         headline: 'Documents',
         details: [`Scope: ${asString(config.scope, 'all')}`, asBoolean(config.allowUpload, true) ? 'Upload autorise' : 'Upload bloque']
       };
+    case 'pdf_viewer':
     case 'media_viewer':
       return {
         headline: asString(dataSource.url) || asString(dataSource.resourceId, 'Media non selectionne'),
