@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import AuthenticatedImage from '../../../components/AuthenticatedImage';
 import Button from '../../../components/Button';
 import ResourcePreview from '../../../components/ResourcePreview';
@@ -104,6 +104,7 @@ export default function SessionDocumentsScreenWidget({
   allowUpload = true,
   runtimeTargets = []
 }: SessionDocumentsScreenWidgetProps) {
+  const openInMenuRef = useRef<HTMLDetailsElement | null>(null);
   const [resources, setResources] = useState<ResourceItem[]>([]);
   const [folders, setFolders] = useState<ResourceFolder[]>([]);
   const [selectedResourceId, setSelectedResourceId] = useState('');
@@ -586,7 +587,7 @@ export default function SessionDocumentsScreenWidget({
                     Ouvrir
                   </Button>
                   {overlayTargets.length ? (
-                    <details className="screen-runtime-open-in-details">
+                    <details ref={openInMenuRef} className="screen-runtime-open-in-details">
                       <summary className="button secondary">Ouvrir dans</summary>
                       <div className="screen-runtime-open-in-menu">
                         {overlayTargets.map((target) => (
@@ -595,25 +596,30 @@ export default function SessionDocumentsScreenWidget({
                             type="button"
                             className="screen-runtime-open-in-menu__item"
                             onClick={() =>
-                              writeRuntimeTargetState({
-                                sessionId: currentSession.id,
-                                templateId,
-                                targetId: target.id,
-                                state: {
-                                  visible: true,
-                                  content: {
-                                    kind: 'resource',
-                                    title: selectedResource.name,
-                                    resource: selectedResource
-                                  },
-                                  playback: {
-                                    status: selectedResource.kind === 'video' || selectedResource.kind === 'audio' ? 'playing' : 'stopped',
-                                    loop: false,
-                                    commandToken: new Date().toISOString()
-                                  },
-                                  updatedAt: new Date().toISOString()
+                              (() => {
+                                writeRuntimeTargetState({
+                                  sessionId: currentSession.id,
+                                  templateId,
+                                  targetId: target.id,
+                                  state: {
+                                    visible: true,
+                                    content: {
+                                      kind: 'resource',
+                                      title: selectedResource.name,
+                                      resource: selectedResource
+                                    },
+                                    playback: {
+                                      status: selectedResource.kind === 'video' || selectedResource.kind === 'audio' ? 'playing' : 'stopped',
+                                      loop: false,
+                                      commandToken: new Date().toISOString()
+                                    },
+                                    updatedAt: new Date().toISOString()
+                                  }
+                                });
+                                if (openInMenuRef.current) {
+                                  openInMenuRef.current.open = false;
                                 }
-                              })
+                              })()
                             }
                           >
                             {target.title} · {target.screenName}
