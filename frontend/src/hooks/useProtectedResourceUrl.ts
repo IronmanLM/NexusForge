@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { resolveProtectedResourceUrl } from '../services/resourcePreloadService';
 
 export function useProtectedResourceUrl(src: string | null | undefined, resourceId?: string | null) {
-  const [resolvedSrc, setResolvedSrc] = useState(src ?? '');
+  const [resolvedSrc, setResolvedSrc] = useState('');
 
   useEffect(() => {
     if (!src) {

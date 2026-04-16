@@ -128,7 +128,7 @@ export default function SessionScreenViewerWidget({
   const sourceResource = controlledResource || resource;
   const protectedSrc = useProtectedResourceUrl(source, sourceResource?.id);
   const effectiveMode = inferDisplayMode(mode, sourceResource, source);
-  const mediaIdentity = `${effectiveMode}:${sourceResource?.id || protectedSrc || source}`;
+  const mediaIdentity = `${effectiveMode}:${sourceResource?.id || source}`;
   const rotatedStyle = {
     width: '100%',
     height: '100%',
@@ -275,7 +275,6 @@ export default function SessionScreenViewerWidget({
           ref={mediaRef as React.MutableRefObject<HTMLVideoElement | null>}
           src={protectedSrc}
           controls={showToolbar}
-          autoPlay={playbackState.status === 'playing'}
           loop={playbackState.loop}
           style={{ ...rotatedStyle, objectFit: fit as 'contain' | 'cover' | 'fill', background: '#020617' }}
         />
@@ -293,7 +292,6 @@ export default function SessionScreenViewerWidget({
           ref={mediaRef as React.MutableRefObject<HTMLAudioElement | null>}
           src={protectedSrc}
           controls={showToolbar}
-          autoPlay={playbackState.status === 'playing'}
           loop={playbackState.loop}
           style={{ width: '100%' }}
         />
