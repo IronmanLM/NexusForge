@@ -50,9 +50,6 @@ type ResourceSortMode = 'updated_desc' | 'name_asc' | 'size_desc';
 type ResourceViewMode = 'thumbnail_s' | 'thumbnail_m' | 'thumbnail_l' | 'names';
 
 function inferUploadMimeType(file: File): string {
-  if (file.type) {
-    return file.type;
-  }
   const name = file.name.toLowerCase();
   if (name.endsWith('.md')) {
     return 'text/markdown';
@@ -98,6 +95,9 @@ function inferUploadMimeType(file: File): string {
   }
   if (name.endsWith('.m4a')) {
     return 'audio/mp4';
+  }
+  if (file.type) {
+    return file.type;
   }
   return 'application/octet-stream';
 }

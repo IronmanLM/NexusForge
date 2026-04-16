@@ -30,9 +30,6 @@ type SessionDocumentsScreenWidgetProps = {
 };
 
 function inferMimeType(file: File): string {
-  if (file.type) {
-    return file.type;
-  }
   const name = file.name.toLowerCase();
   if (name.endsWith('.md')) {
     return 'text/markdown';
@@ -78,6 +75,9 @@ function inferMimeType(file: File): string {
   }
   if (name.endsWith('.m4a')) {
     return 'audio/mp4';
+  }
+  if (file.type) {
+    return file.type;
   }
   return 'application/octet-stream';
 }

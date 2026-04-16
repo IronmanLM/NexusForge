@@ -32,9 +32,6 @@ type ResourcePickerFieldProps = {
 };
 
 function inferMimeType(file: File): string {
-  if (file.type) {
-    return file.type;
-  }
   const name = file.name.toLowerCase();
   if (name.endsWith('.md')) return 'text/markdown';
   if (name.endsWith('.txt')) return 'text/plain';
@@ -51,6 +48,9 @@ function inferMimeType(file: File): string {
   if (name.endsWith('.wav')) return 'audio/wav';
   if (name.endsWith('.ogg') || name.endsWith('.oga')) return 'audio/ogg';
   if (name.endsWith('.m4a')) return 'audio/mp4';
+  if (file.type) {
+    return file.type;
+  }
   return 'application/octet-stream';
 }
 
