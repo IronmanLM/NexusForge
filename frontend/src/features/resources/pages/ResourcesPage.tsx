@@ -649,8 +649,8 @@ export default function ResourcesPage() {
         </div>
       </section>
 
-      <section className="resource-library-shell">
-        <aside className="resource-library-sidebar card">
+      <section className="resource-library-shell session-documents-widget session-documents-widget--explorer">
+        <aside className="resource-library-sidebar card session-documents-widget__sidebar">
           <h2 style={{ marginTop: 0 }}>Navigation</h2>
           <div className="resource-space-list">
             <button type="button" className={currentSpace === 'personal' ? 'is-active' : ''} onClick={() => setCurrentSpace('personal')}>
@@ -705,175 +705,172 @@ export default function ResourcesPage() {
           </div>
         </aside>
 
-        <div className="resource-library-main">
+        <section className="resource-library-main card session-documents-widget__content">
           {statusMessage ? <p style={{ color: '#22c55e', marginTop: 0 }}>{statusMessage}</p> : null}
           {errorMessage ? <p style={{ color: '#f87171', marginTop: 0 }}>{errorMessage}</p> : null}
-
-          <section className="resource-library-grid">
-            <div className="card">
-              <div className="resource-content-header">
-                <div>
-                  <h3 style={{ marginTop: 0, marginBottom: '0.25rem' }}>Contenu</h3>
-                  <small>{selectedFolderPath.length > 0 ? `Dossier : ${selectedFolderPath.join(' / ')}` : `Dossier : ${rootFolderLabel}`}</small>
-                </div>
-                <div className="resource-toolbar">
-                  <label className="resource-toolbar__checkbox">
-                    <input
-                      type="checkbox"
-                      checked={displayedResources.length > 0 && displayedResources.every((item) => selectedResourceIds.includes(item.id))}
-                      onChange={(event) => handleSelectAllVisible(event.target.checked)}
-                    />
-                    <span>Tout</span>
-                  </label>
-                  <label>
-                    <span>Affichage</span>
-                    <select value={viewMode} onChange={(event) => setViewMode(event.target.value as ResourceViewMode)}>
-                      <option value="thumbnail_s">Miniature</option>
-                      <option value="thumbnail_m">Moyenne</option>
-                      <option value="thumbnail_l">Grande</option>
-                      <option value="names">Noms</option>
-                    </select>
-                  </label>
-                  <label>
-                    <span>Recherche</span>
-                    <input type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Nom, dossier, portée, auteur..." />
-                  </label>
-                  <label>
-                    <span>Trier par</span>
-                    <select value={sortMode} onChange={(event) => setSortMode(event.target.value as ResourceSortMode)}>
-                      <option value="updated_desc">Plus récents</option>
-                      <option value="name_asc">Nom</option>
-                      <option value="size_desc">Taille</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-              <div className="resource-breadcrumbs" aria-label="Chemin courant">
-                <span className="resource-breadcrumb">Bibliothèque</span>
-                <span className="resource-breadcrumb">{currentSpaceLabel}</span>
-                {(selectedFolderPath.length > 0 ? selectedFolderPath : [rootFolderLabel]).map((label) => (
-                  <span key={label} className="resource-breadcrumb">
-                    {label}
-                  </span>
-                ))}
-              </div>
-              {selectedResourceIds.length > 0 ? (
-                <div className="resource-bulk-actions">
-                  <strong>{selectedResourceIds.length} sélectionné(s)</strong>
-                  <div className="resource-bulk-actions__controls">
-                    <select
-                      value=""
-                      onChange={(event) => {
-                        const nextValue = event.target.value;
-                        if (nextValue) {
-                          void handleBatchMove(nextValue === '__root__' ? '' : nextValue);
-                        }
-                        event.currentTarget.value = '';
-                      }}
-                      disabled={!canBatchManageSelection || isSaving}
-                    >
-                      <option value="">Déplacer vers…</option>
-                      <option value="__root__">Racine</option>
-                      {batchTargetFolders.map((folder) => (
-                        <option key={folder.id} value={folder.id}>
-                          {folder.name}
-                        </option>
-                      ))}
-                    </select>
-                    <Button type="button" variant="secondary" onClick={() => setSelectedResourceIds([])} disabled={isSaving}>
-                      Désélectionner
-                    </Button>
-                    <Button type="button" variant="secondary" onClick={() => void handleBatchDelete()} disabled={!canBatchManageSelection || isSaving}>
-                      Supprimer
-                    </Button>
-                  </div>
-                </div>
-              ) : null}
-              {isLoading ? <p>Chargement...</p> : null}
-              {!isLoading && displayedResources.length === 0 ? <p>Aucun fichier dans cette vue.</p> : null}
-              {!isLoading && displayedResources.length > 0 ? (
-                <div className="resource-list-surface">
-                  <div className={`resource-list resource-list--${viewMode}`.trim()}>
-                  {viewMode === 'names' ? (
-                    <div className="resource-list-head" aria-hidden="true">
-                      <span />
-                      <span>Nom</span>
-                      <span>Infos</span>
-                      <span>État</span>
-                      <span>Action</span>
-                    </div>
-                  ) : null}
-                  {displayedResources.map((item) => {
-                    const folderPath = buildResourceFolderPath(item.folderId ?? null, currentSpace === 'session' ? sessionFolders : personalFolders);
-                    return (
-                      <article
-                        key={item.id}
-                        className={`resource-list-item${selectedResourceId === item.id ? ' is-selected' : ''}`}
-                        onClick={() => setSelectedResourceId(item.id)}
-                        onDoubleClick={() => void handleOpenResource(item)}
-                      >
-                        <label className="resource-list-item__selector" onClick={(event) => event.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={selectedResourceIds.includes(item.id)}
-                            onChange={(event) => toggleResourceSelection(item.id, event.target.checked)}
-                          />
-                        </label>
-                        <div className="resource-list-item__preview">
-                          {item.kind === 'image' && (item.thumbnailUrl || item.contentUrl) ? (
-                            <AuthenticatedImage src={item.thumbnailUrl || item.contentUrl || ''} resourceId={item.id} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          ) : (
-                            <span>{getResourceKindLabel(item.kind)}</span>
-                          )}
-                        </div>
-                        <div className="resource-list-item__main" data-label="Nom">
-                          <strong>{item.name}</strong>
-                          <div className="resource-list-item__secondary">
-                            <small>{getResourceScopeLabel(item)}</small>
-                            {folderPath.length > 0 ? <small>{folderPath.join(' / ')}</small> : <small>{rootFolderLabel}</small>}
-                          </div>
-                        </div>
-                        <div className="resource-list-item__meta" data-label="Infos">
-                          <small>{formatResourceUpdatedAt(item.updatedAt)}</small>
-                          <small>{formatResourceBytes(item.sizeBytes)}</small>
-                          <small>{item.ownerNickname ? `@${item.ownerNickname}` : item.ownerUserId}</small>
-                          {getResourceSessionAudienceLabel(item) ? <small>{getResourceSessionAudienceLabel(item)}</small> : null}
-                        </div>
-                        <div className="resource-list-item__badges" data-label="État">
-                          <SyncStatusBadge
-                            state={resolveEntitySyncBadgeState([latestResourceActionById.get(item.id)].filter(Boolean) as LocalAction[])}
-                            title="État de synchronisation du fichier"
-                          />
-                          {offlineCachedResourceIdSet.has(item.id) ? <span className="offline-cache-badge">Cache local</span> : null}
-                        </div>
-                        <div className="resource-list-item__actions" data-label="Action">
-                          {item.contentUrl ? (
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                void handleOpenResource(item);
-                              }}
-                              aria-label={`Ouvrir ${item.name}`}
-                            >
-                              Ouvrir
-                            </Button>
-                          ) : null}
-                        </div>
-                      </article>
-                    );
-                  })}
-                  </div>
-                </div>
-              ) : null}
+          <div className="resource-content-header">
+            <div>
+              <h3 style={{ marginTop: 0, marginBottom: '0.25rem' }}>Contenu</h3>
+              <small>{selectedFolderPath.length > 0 ? `Dossier : ${selectedFolderPath.join(' / ')}` : `Dossier : ${rootFolderLabel}`}</small>
             </div>
+            <div className="resource-toolbar">
+              <label className="resource-toolbar__checkbox">
+                <input
+                  type="checkbox"
+                  checked={displayedResources.length > 0 && displayedResources.every((item) => selectedResourceIds.includes(item.id))}
+                  onChange={(event) => handleSelectAllVisible(event.target.checked)}
+                />
+                <span>Tout</span>
+              </label>
+              <label>
+                <span>Affichage</span>
+                <select value={viewMode} onChange={(event) => setViewMode(event.target.value as ResourceViewMode)}>
+                  <option value="thumbnail_s">Miniature</option>
+                  <option value="thumbnail_m">Moyenne</option>
+                  <option value="thumbnail_l">Grande</option>
+                  <option value="names">Noms</option>
+                </select>
+              </label>
+              <label>
+                <span>Recherche</span>
+                <input type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Nom, dossier, portée, auteur..." />
+              </label>
+              <label>
+                <span>Trier par</span>
+                <select value={sortMode} onChange={(event) => setSortMode(event.target.value as ResourceSortMode)}>
+                  <option value="updated_desc">Plus récents</option>
+                  <option value="name_asc">Nom</option>
+                  <option value="size_desc">Taille</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div className="resource-breadcrumbs" aria-label="Chemin courant">
+            <span className="resource-breadcrumb">Bibliothèque</span>
+            <span className="resource-breadcrumb">{currentSpaceLabel}</span>
+            {(selectedFolderPath.length > 0 ? selectedFolderPath : [rootFolderLabel]).map((label) => (
+              <span key={label} className="resource-breadcrumb">
+                {label}
+              </span>
+            ))}
+          </div>
+          {selectedResourceIds.length > 0 ? (
+            <div className="resource-bulk-actions">
+              <strong>{selectedResourceIds.length} sélectionné(s)</strong>
+              <div className="resource-bulk-actions__controls">
+                <select
+                  value=""
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    if (nextValue) {
+                      void handleBatchMove(nextValue === '__root__' ? '' : nextValue);
+                    }
+                    event.currentTarget.value = '';
+                  }}
+                  disabled={!canBatchManageSelection || isSaving}
+                >
+                  <option value="">Déplacer vers…</option>
+                  <option value="__root__">Racine</option>
+                  {batchTargetFolders.map((folder) => (
+                    <option key={folder.id} value={folder.id}>
+                      {folder.name}
+                    </option>
+                  ))}
+                </select>
+                <Button type="button" variant="secondary" onClick={() => setSelectedResourceIds([])} disabled={isSaving}>
+                  Désélectionner
+                </Button>
+                <Button type="button" variant="secondary" onClick={() => void handleBatchDelete()} disabled={!canBatchManageSelection || isSaving}>
+                  Supprimer
+                </Button>
+              </div>
+            </div>
+          ) : null}
+          {isLoading ? <p>Chargement...</p> : null}
+          {!isLoading && displayedResources.length === 0 ? <p>Aucun fichier dans cette vue.</p> : null}
+          {!isLoading && displayedResources.length > 0 ? (
+            <div className="resource-list-surface session-documents-widget__list">
+              <div className={`resource-list resource-list--${viewMode}`.trim()}>
+              {viewMode === 'names' ? (
+                <div className="resource-list-head" aria-hidden="true">
+                  <span />
+                  <span>Nom</span>
+                  <span>Infos</span>
+                  <span>État</span>
+                  <span>Action</span>
+                </div>
+              ) : null}
+              {displayedResources.map((item) => {
+                const folderPath = buildResourceFolderPath(item.folderId ?? null, currentSpace === 'session' ? sessionFolders : personalFolders);
+                return (
+                  <article
+                    key={item.id}
+                    className={`resource-list-item${selectedResourceId === item.id ? ' is-selected' : ''}`}
+                    onClick={() => setSelectedResourceId(item.id)}
+                    onDoubleClick={() => void handleOpenResource(item)}
+                  >
+                    <label className="resource-list-item__selector" onClick={(event) => event.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedResourceIds.includes(item.id)}
+                        onChange={(event) => toggleResourceSelection(item.id, event.target.checked)}
+                      />
+                    </label>
+                    <div className="resource-list-item__preview">
+                      {item.kind === 'image' && (item.thumbnailUrl || item.contentUrl) ? (
+                        <AuthenticatedImage src={item.thumbnailUrl || item.contentUrl || ''} resourceId={item.id} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span>{getResourceKindLabel(item.kind)}</span>
+                      )}
+                    </div>
+                    <div className="resource-list-item__main" data-label="Nom">
+                      <strong>{item.name}</strong>
+                      <div className="resource-list-item__secondary">
+                        <small>{getResourceScopeLabel(item)}</small>
+                        {folderPath.length > 0 ? <small>{folderPath.join(' / ')}</small> : <small>{rootFolderLabel}</small>}
+                      </div>
+                    </div>
+                    <div className="resource-list-item__meta" data-label="Infos">
+                      <small>{formatResourceUpdatedAt(item.updatedAt)}</small>
+                      <small>{formatResourceBytes(item.sizeBytes)}</small>
+                      <small>{item.ownerNickname ? `@${item.ownerNickname}` : item.ownerUserId}</small>
+                      {getResourceSessionAudienceLabel(item) ? <small>{getResourceSessionAudienceLabel(item)}</small> : null}
+                    </div>
+                    <div className="resource-list-item__badges" data-label="État">
+                      <SyncStatusBadge
+                        state={resolveEntitySyncBadgeState([latestResourceActionById.get(item.id)].filter(Boolean) as LocalAction[])}
+                        title="État de synchronisation du fichier"
+                      />
+                      {offlineCachedResourceIdSet.has(item.id) ? <span className="offline-cache-badge">Cache local</span> : null}
+                    </div>
+                    <div className="resource-list-item__actions" data-label="Action">
+                      {item.contentUrl ? (
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void handleOpenResource(item);
+                          }}
+                          aria-label={`Ouvrir ${item.name}`}
+                        >
+                          Ouvrir
+                        </Button>
+                      ) : null}
+                    </div>
+                  </article>
+                );
+              })}
+              </div>
+            </div>
+          ) : null}
+        </section>
 
-            <aside className="card">
-              <h3 style={{ marginTop: 0 }}>Détails / partage</h3>
-              {!selectedResource ? <p>Sélectionne un fichier pour le renommer, le déplacer ou ajuster son partage.</p> : null}
-              {selectedResource ? (
-                <div className="resource-detail-panel">
+        <aside className="card session-documents-widget__detail" style={{ margin: 0, padding: '0.85rem' }}>
+          <h3 style={{ marginTop: 0 }}>Détails / partage</h3>
+          {!selectedResource ? <p>Sélectionne un fichier pour le renommer, le déplacer ou ajuster son partage.</p> : null}
+          {selectedResource ? (
+            <div className="resource-detail-panel">
                   <div className="sync-status-stack">
                     <SyncStatusBadge
                       state={resolveEntitySyncBadgeState([latestResourceActionById.get(selectedResource.id)].filter(Boolean) as LocalAction[])}
@@ -1006,11 +1003,9 @@ export default function ResourcesPage() {
                       </Button>
                     ) : null}
                   </div>
-                </div>
-              ) : null}
-            </aside>
-          </section>
-        </div>
+            </div>
+          ) : null}
+        </aside>
       </section>
       {isUploadModalOpen ? (
         <div className="resource-preview-modal" role="dialog" aria-modal="true" onClick={() => setIsUploadModalOpen(false)}>

@@ -5681,7 +5681,7 @@ body.theme-dark .screen-studio-widget {
 
 .resource-library-shell {
   display: grid;
-  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1.8fr) minmax(280px, 0.95fr);
   gap: 1rem;
   align-items: start;
 }
@@ -5704,6 +5704,20 @@ body.theme-dark .screen-studio-widget {
 .resource-library-sidebar,
 .resource-library-main {
   min-width: 0;
+}
+
+.resource-library-sidebar {
+  margin: 0;
+}
+
+.resource-library-main {
+  margin: 0;
+  padding: 0.85rem;
+  min-height: 0;
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+  background: #ffffff;
 }
 
 .resource-space-list,
@@ -5799,13 +5813,6 @@ body.theme-dark .screen-studio-widget {
   align-items: center;
   grid-auto-flow: column;
   justify-content: start;
-}
-
-.resource-library-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 420px);
-  gap: 1rem;
-  align-items: start;
 }
 
 .resource-content-header {
