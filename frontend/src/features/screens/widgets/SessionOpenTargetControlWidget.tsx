@@ -57,6 +57,13 @@ function normalizeRuntimeTargetState(value: unknown): RuntimeTargetState | null 
   };
 }
 
+function isPlayableRuntimeState(state: RuntimeTargetState | null) {
+  if (!state?.content || state.content.kind !== 'resource') {
+    return false;
+  }
+  return state.content.resource.kind === 'video' || state.content.resource.kind === 'audio';
+}
+
 export default function SessionOpenTargetControlWidget({
   sessionId,
   templateId,
@@ -192,6 +199,33 @@ export default function SessionOpenTargetControlWidget({
     );
   };
 
+  const pushPlaybackCommandToLocalTarget = async (command: {
+    nextStatus?: 'playing' | 'paused' | 'stopped';
+    nextLoop?: boolean;
+  }) => {
+    if (!targetDescriptor) {
+      return;
+    }
+    const currentLocalState = normalizeRuntimeTargetState(
+      await Promise.resolve(readRuntimeTargetState({ sessionId, templateId, targetId: targetDescriptor.id })).catch(() => null)
+    );
+    if (!isPlayableRuntimeState(currentLocalState)) {
+      return;
+    }
+    const playableLocalState = currentLocalState as RuntimeTargetState;
+    writeRuntimeTargetState({
+      sessionId,
+      templateId,
+      targetId: targetDescriptor.id,
+      state: {
+        visible: true,
+        content: playableLocalState.content,
+        playback: nextPlaybackState(playableLocalState, command.nextStatus, command.nextLoop),
+        updatedAt: new Date().toISOString()
+      }
+    });
+  };
+
   const targetContent = targetState?.content ?? null;
   const resourceContent = targetContent?.kind === 'resource' ? targetContent.resource : null;
   const isImageContent = resourceContent?.kind === 'image' && Boolean(resourceContent.thumbnailUrl || resourceContent.contentUrl);
@@ -247,68 +281,42 @@ export default function SessionOpenTargetControlWidget({
                     }
                   })
                 }
-                >
-                Prévisualiser
+                className="overlay-control-icon-button"
+              >
+                {targetState?.visible ? '◪' : '◫'}
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 disabled={!targetContent || !isPlayableContent}
-                onClick={() =>
-                  writeRuntimeTargetState({
-                    sessionId,
-                    templateId,
-                    targetId: targetDescriptor.id,
-                    state: {
-                      visible: true,
-                      content: targetContent,
-                      playback: nextPlaybackState(targetState, 'playing'),
-                      updatedAt: new Date().toISOString()
-                    }
-                  })
-                }
+                onClick={() => void pushPlaybackCommandToLocalTarget({ nextStatus: 'playing' })}
+                aria-label="Lire"
+                title="Lire"
+                className="overlay-control-icon-button"
               >
-                Play
+                ▶
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 disabled={!targetContent || !isPlayableContent}
-                onClick={() =>
-                  writeRuntimeTargetState({
-                    sessionId,
-                    templateId,
-                    targetId: targetDescriptor.id,
-                    state: {
-                      visible: true,
-                      content: targetContent,
-                      playback: nextPlaybackState(targetState, 'stopped'),
-                      updatedAt: new Date().toISOString()
-                    }
-                  })
-                }
+                onClick={() => void pushPlaybackCommandToLocalTarget({ nextStatus: 'stopped' })}
+                aria-label="Pause / stop"
+                title="Pause / stop"
+                className="overlay-control-icon-button"
               >
-                Pause / stop
+                ■
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 disabled={!targetContent || !isPlayableContent}
-                onClick={() =>
-                  writeRuntimeTargetState({
-                    sessionId,
-                    templateId,
-                    targetId: targetDescriptor.id,
-                    state: {
-                      visible: true,
-                      content: targetContent,
-                      playback: nextPlaybackState(targetState, undefined, !loopEnabled),
-                      updatedAt: new Date().toISOString()
-                    }
-                  })
-                }
+                onClick={() => void pushPlaybackCommandToLocalTarget({ nextLoop: !loopEnabled })}
+                aria-label={loopEnabled ? 'Désactiver la boucle' : 'Activer la boucle'}
+                title={loopEnabled ? 'Désactiver la boucle' : 'Activer la boucle'}
+                className={`overlay-control-icon-button${loopEnabled ? ' is-active' : ''}`.trim()}
               >
-                {loopEnabled ? 'Boucle on' : 'Boucle off'}
+                ↻
               </Button>
               <Button
                 type="button"
@@ -329,8 +337,9 @@ export default function SessionOpenTargetControlWidget({
                     }
                   })
                 }
+                className="overlay-control-icon-button"
               >
-                Fermer
+                ✕
               </Button>
             </div>
           </div>
