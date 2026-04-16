@@ -101,15 +101,17 @@ export default function SessionAlertOverlayWidget({
       ? { alignItems: 'end', justifyItems: 'end' }
       : { alignItems: 'start', justifyItems: 'end' };
 
+  if (alerts.length === 0) {
+    return null;
+  }
+
   return (
-    <div style={{ display: 'grid', height: '100%', ...alignment }}>
-      <div style={{ display: 'grid', gap: '0.5rem', width: 'min(100%, 420px)' }}>
-        {alerts.length === 0 ? <p style={{ margin: 0 }}>Aucune alerte active.</p> : null}
+    <div className="screen-runtime-alert-overlay" style={{ ...alignment }}>
+      <div className="screen-runtime-alert-overlay__stack">
         {alerts.map((message) => (
           <article
             key={message.id}
-            className="card"
-            style={{ margin: 0, borderColor: '#38bdf8', display: 'grid', gap: '0.35rem', cursor: 'pointer' }}
+            className="card screen-runtime-alert-overlay__card"
             onClick={() => openMessageInChat(message.id)}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', alignItems: 'center' }}>

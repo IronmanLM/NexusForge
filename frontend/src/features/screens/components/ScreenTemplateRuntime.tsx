@@ -378,8 +378,8 @@ function ScreenCanvas({
   runtimeTargets: RuntimeTargetDescriptor[];
 }) {
   const runtimeWidgets = activeGroup?.widgets ?? [];
-  const overlayWidgets = runtimeWidgets.filter((widget) => widget.type === 'open_target_overlay');
-  const canvasWidgets = runtimeWidgets.filter((widget) => widget.type !== 'open_target_overlay');
+  const overlayWidgets = runtimeWidgets.filter((widget) => widget.type === 'open_target_overlay' || widget.type === 'alert_overlay');
+  const canvasWidgets = runtimeWidgets.filter((widget) => widget.type !== 'open_target_overlay' && widget.type !== 'alert_overlay');
   const canvasRows = Math.max(12, canvasWidgets.reduce((max, widget) => Math.max(max, widget.layout.y + widget.layout.h), 0));
   const requiresCanvasScroll = canvasRows > 12;
   const hasTabs = screen.tabGroups.length > 1;

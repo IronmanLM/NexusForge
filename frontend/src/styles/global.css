@@ -252,6 +252,30 @@ a:hover {
   padding: 0.75rem;
 }
 
+.screen-runtime-alert-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 18;
+  display: grid;
+  padding: 0.85rem;
+  pointer-events: none;
+}
+
+.screen-runtime-alert-overlay__stack {
+  display: grid;
+  gap: 0.5rem;
+  width: min(100%, 420px);
+}
+
+.screen-runtime-alert-overlay__card {
+  margin: 0;
+  border-color: #38bdf8;
+  display: grid;
+  gap: 0.35rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 .screen-runtime-target-control__status {
   display: grid;
   gap: 0.25rem;
