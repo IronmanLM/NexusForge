@@ -1,3 +1,5 @@
+import { SystemMessageType } from './message';
+
 export type SessionState = 'planned' | 'running' | 'paused' | 'finished';
 
 export interface SessionSettings {
@@ -5,6 +7,7 @@ export interface SessionSettings {
   allowPlayerToPlayerChat?: boolean;
   allowPlayerToPlayerDocuments?: boolean;
   silenceMode?: 'off' | 'noGlobal' | 'playersToPlayersBlocked' | 'full';
+  alertBannerSystemMessageTypes?: SystemMessageType[];
 }
 
 export interface SessionParticipant {

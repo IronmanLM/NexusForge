@@ -34,7 +34,8 @@ const DEFAULT_SETTINGS: SessionSettings = {
   allowPlayerToEditCharacterOffline: true,
   allowPlayerToPlayerChat: true,
   allowPlayerToPlayerDocuments: true,
-  silenceMode: 'off'
+  silenceMode: 'off',
+  alertBannerSystemMessageTypes: ['combat_start', 'turn', 'combat_end', 'roll']
 };
 
 function roleSupportsTemplate(role: 'gm' | 'player', template: ScreenTemplate): boolean {
@@ -92,6 +93,17 @@ function computeRole(session: Session, user: { id: string; roles: string[] }): '
   }
   return canManageSession(session, user.id, user.roles) ? 'gm' : 'player';
 }
+
+const ALERT_BANNER_SYSTEM_TYPE_OPTIONS: Array<{
+  value: NonNullable<SessionSettings['alertBannerSystemMessageTypes']>[number];
+  label: string;
+}> = [
+  { value: 'combat_start', label: 'Début de combat' },
+  { value: 'turn', label: 'Changement de tour' },
+  { value: 'combat_end', label: 'Fin de combat' },
+  { value: 'roll', label: 'Jets de dés' },
+  { value: 'round', label: 'Nouveau round' }
+];
 
 function normalizeParticipants(participants: SessionParticipant[], fallbackOwnerUserId: string): SessionParticipant[] {
   const seen = new Set<string>();
@@ -2352,6 +2364,34 @@ export default function SessionViewPage() {
                     <option value="full">Silence complet</option>
                   </select>
                 </label>
+                <fieldset style={{ margin: 0 }}>
+                  <legend>Messages système affichés dans le bandeau d alerte</legend>
+                  <div style={{ display: 'grid', gap: '0.35rem', marginTop: '0.4rem' }}>
+                    {ALERT_BANNER_SYSTEM_TYPE_OPTIONS.map((option) => {
+                      const selectedTypes = settingsDraft.alertBannerSystemMessageTypes ?? DEFAULT_SETTINGS.alertBannerSystemMessageTypes ?? [];
+                      const checked = selectedTypes.includes(option.value);
+                      return (
+                        <label key={option.value}>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={(event) =>
+                              setSettingsDraft((current) => {
+                                const currentTypes = current.alertBannerSystemMessageTypes ?? DEFAULT_SETTINGS.alertBannerSystemMessageTypes ?? [];
+                                const nextTypes = event.target.checked
+                                  ? Array.from(new Set([...currentTypes, option.value]))
+                                  : currentTypes.filter((item) => item !== option.value);
+                                return { ...current, alertBannerSystemMessageTypes: nextTypes };
+                              })
+                            }
+                            disabled={!canManage}
+                          />{' '}
+                          {option.label}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </fieldset>
                 <label>
                   <span>Initiative</span>
                   <select

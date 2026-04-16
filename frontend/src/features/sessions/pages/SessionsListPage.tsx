@@ -13,7 +13,8 @@ const DEFAULT_TEMPLATE: NonNullable<Session['settings']> = {
   allowPlayerToEditCharacterOffline: true,
   allowPlayerToPlayerChat: true,
   allowPlayerToPlayerDocuments: true,
-  silenceMode: 'off'
+  silenceMode: 'off',
+  alertBannerSystemMessageTypes: ['combat_start', 'turn', 'combat_end', 'roll']
 };
 
 function canDeleteSession(session: Session, userId: string | undefined, isAdmin: boolean): boolean {
@@ -48,6 +49,17 @@ function participantLabel(session: Session, userId: string | undefined | null): 
 function gmLabels(session: Session): string {
   return (session.gmUserIds || [session.gmUserId]).map((userId) => participantLabel(session, userId)).join(', ');
 }
+
+const ALERT_BANNER_SYSTEM_TYPE_OPTIONS: Array<{
+  value: NonNullable<NonNullable<Session['settings']>['alertBannerSystemMessageTypes']>[number];
+  label: string;
+}> = [
+  { value: 'combat_start', label: 'Début de combat' },
+  { value: 'turn', label: 'Changement de tour' },
+  { value: 'combat_end', label: 'Fin de combat' },
+  { value: 'roll', label: 'Jets de dés' },
+  { value: 'round', label: 'Nouveau round' }
+];
 
 export default function SessionsListPage() {
   const { currentUser } = useAuth();
@@ -513,6 +525,31 @@ export default function SessionsListPage() {
               <option value="playersToPlayersBlocked">Players ↔ Players bloqué</option>
               <option value="full">Full</option>
             </select>
+            <strong>Messages système dans le bandeau d alerte</strong>
+            {ALERT_BANNER_SYSTEM_TYPE_OPTIONS.map((option) => {
+              const selectedTypes = settingsDraft.alertBannerSystemMessageTypes ?? DEFAULT_TEMPLATE.alertBannerSystemMessageTypes ?? [];
+              return (
+                <label key={option.value}>
+                  <input
+                    type="checkbox"
+                    checked={selectedTypes.includes(option.value)}
+                    onChange={(event) =>
+                      setSettingsDraft((previous) => {
+                        const currentTypes = previous.alertBannerSystemMessageTypes ?? DEFAULT_TEMPLATE.alertBannerSystemMessageTypes ?? [];
+                        const nextTypes = event.target.checked
+                          ? Array.from(new Set([...currentTypes, option.value]))
+                          : currentTypes.filter((item) => item !== option.value);
+                        return {
+                          ...previous,
+                          alertBannerSystemMessageTypes: nextTypes
+                        };
+                      })
+                    }
+                  />{' '}
+                  {option.label}
+                </label>
+              );
+            })}
 
             <Button type="submit" disabled={isCreating || !systemIdDraft}>
               {isCreating ? '...' : t('parties.create.cta')}

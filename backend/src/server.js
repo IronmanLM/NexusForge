@@ -60,7 +60,8 @@ const GENERIC_SESSION_SETTINGS = {
   allowPlayerToEditCharacterOffline: true,
   allowPlayerToPlayerChat: true,
   allowPlayerToPlayerDocuments: true,
-  silenceMode: 'off'
+  silenceMode: 'off',
+  alertBannerSystemMessageTypes: ['combat_start', 'turn', 'combat_end', 'roll']
 };
 
 function parseCorsOrigins(rawValue) {
