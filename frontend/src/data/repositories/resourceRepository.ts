@@ -1,7 +1,7 @@
 import { db, ensureDatabaseIsInitialized } from '../db';
 import { ResourceFolder, ResourceItem } from '../../types/resource';
 import { localActionRepository } from './localActionRepository';
-import { buildApiUrl, isBackendEnabled, requestJson } from '../../services/apiClient';
+import { ApiError, buildApiUrl, isBackendEnabled, requestJson } from '../../services/apiClient';
 import { offlineResourceFileRepository } from './offlineResourceFileRepository';
 import { getCachedCurrentUser } from '../../services/authService';
 
@@ -238,8 +238,11 @@ export const resourceRepository = {
         const resource = mapApiResource(payload.resource);
         await db.resources.put(resource);
         return resource;
-      } catch {
-        // fallback local
+      } catch (error) {
+        if (error instanceof ApiError) {
+          throw error;
+        }
+        // fallback local uniquement en cas de souci reseau/local
       }
     }
 
