@@ -44,6 +44,19 @@ function nextPlaybackState(
   } as const;
 }
 
+function normalizeRuntimeTargetState(value: unknown): RuntimeTargetState | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+  const raw = value as Partial<RuntimeTargetState>;
+  return {
+    visible: Boolean(raw.visible),
+    content: raw.content ?? null,
+    playback: raw.playback ?? null,
+    updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : new Date().toISOString()
+  };
+}
+
 export default function SessionOpenTargetControlWidget({
   sessionId,
   templateId,
@@ -139,6 +152,44 @@ export default function SessionOpenTargetControlWidget({
         state: nextState
       });
     });
+  };
+
+  const pushPlaybackCommandToRemoteTargets = async (command: {
+    nextStatus?: 'playing' | 'paused' | 'stopped';
+    nextLoop?: boolean;
+  }) => {
+    await Promise.all(
+      selectedRemoteTargets.map(async (entry) => {
+        if (!entry.overlayTarget || !entry.templateId) {
+          return;
+        }
+        const currentRemoteState = normalizeRuntimeTargetState(
+          await sessionRepository.readRuntimeTargetState({
+            sessionId,
+            templateId: entry.templateId,
+            targetId: entry.overlayTarget.targetId
+          }).catch(() => null)
+        );
+        if (!currentRemoteState?.content || currentRemoteState.content.kind !== 'resource') {
+          return;
+        }
+        const resource = currentRemoteState.content.resource;
+        if (resource.kind !== 'video' && resource.kind !== 'audio') {
+          return;
+        }
+        writeRuntimeTargetState({
+          sessionId,
+          templateId: entry.templateId,
+          targetId: entry.overlayTarget.targetId,
+          state: {
+            visible: true,
+            content: currentRemoteState.content,
+            playback: nextPlaybackState(currentRemoteState, command.nextStatus, command.nextLoop),
+            updatedAt: new Date().toISOString()
+          }
+        });
+      })
+    );
   };
 
   const targetContent = targetState?.content ?? null;
@@ -349,45 +400,24 @@ export default function SessionOpenTargetControlWidget({
                   <Button
                     type="button"
                     variant="secondary"
-                    disabled={!targetContent || !selectedRemoteTargets.length || !isPlayableContent}
-                    onClick={() =>
-                      pushStateToRemoteTargets({
-                        visible: true,
-                        content: targetContent,
-                        playback: nextPlaybackState(targetState, 'playing'),
-                        updatedAt: new Date().toISOString()
-                      })
-                    }
+                    disabled={!selectedRemoteTargets.length}
+                    onClick={() => void pushPlaybackCommandToRemoteTargets({ nextStatus: 'playing' })}
                   >
                     Play
                   </Button>
                   <Button
                     type="button"
                     variant="secondary"
-                    disabled={!targetContent || !selectedRemoteTargets.length || !isPlayableContent}
-                    onClick={() =>
-                      pushStateToRemoteTargets({
-                        visible: true,
-                        content: targetContent,
-                        playback: nextPlaybackState(targetState, 'stopped'),
-                        updatedAt: new Date().toISOString()
-                      })
-                    }
+                    disabled={!selectedRemoteTargets.length}
+                    onClick={() => void pushPlaybackCommandToRemoteTargets({ nextStatus: 'stopped' })}
                   >
                     Pause / stop
                   </Button>
                   <Button
                     type="button"
                     variant="secondary"
-                    disabled={!targetContent || !selectedRemoteTargets.length || !isPlayableContent}
-                    onClick={() =>
-                      pushStateToRemoteTargets({
-                        visible: true,
-                        content: targetContent,
-                        playback: nextPlaybackState(targetState, undefined, !targetState?.playback?.loop),
-                        updatedAt: new Date().toISOString()
-                      })
-                    }
+                    disabled={!selectedRemoteTargets.length}
+                    onClick={() => void pushPlaybackCommandToRemoteTargets({ nextLoop: !targetState?.playback?.loop })}
                   >
                     {targetState?.playback?.loop ? 'Boucle on' : 'Boucle off'}
                   </Button>
