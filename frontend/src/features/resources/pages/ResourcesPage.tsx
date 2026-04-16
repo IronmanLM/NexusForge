@@ -402,37 +402,62 @@ export default function ResourcesPage() {
     setIsSaving(true);
     setErrorMessage(null);
     setStatusMessage(null);
+    const uploadedFiles: File[] = [];
+    const failedUploads: Array<{ file: File; reason: string }> = [];
     try {
       for (const file of selectedFiles) {
-        const contentBase64 = await readFileAsBase64(file);
-        if (!contentBase64) {
-          throw new Error(`Le fichier ${file.name} n'a pas pu être encodé pour l'envoi.`);
+        try {
+          const contentBase64 = await readFileAsBase64(file);
+          if (!contentBase64) {
+            throw new Error(`Le fichier ${file.name} n'a pas pu être encodé pour l'envoi.`);
+          }
+          await resourceRepository.create({
+            name: file.name.replace(/\.[^.]+$/, '') || file.name,
+            originalName: file.name,
+            mimeType: inferUploadMimeType(file),
+            scopeType: uploadConfig.scopeType,
+            scopeRefId: uploadConfig.scopeType === 'account' ? null : uploadConfig.scopeRefId || null,
+            visibility: uploadConfig.visibility,
+            sharedWithUserIds: selectedResource?.sharedWithUserIds ?? [],
+            folderId: uploadConfig.folderId || null,
+            sessionAudience: uploadConfig.scopeType === 'session' ? uploadConfig.sessionAudience : undefined,
+            sessionMemberUserIds: uploadConfig.scopeType === 'session' ? uploadConfig.sessionMemberUserIds : undefined,
+            canReshareInSession: uploadConfig.scopeType === 'session' ? uploadConfig.canReshareInSession : undefined,
+            contentBase64
+          });
+          uploadedFiles.push(file);
+        } catch (error) {
+          failedUploads.push({
+            file,
+            reason: error instanceof Error ? error.message : 'Upload impossible.'
+          });
         }
-        await resourceRepository.create({
-          name: file.name.replace(/\.[^.]+$/, '') || file.name,
-          originalName: file.name,
-          mimeType: inferUploadMimeType(file),
-          scopeType: uploadConfig.scopeType,
-          scopeRefId: uploadConfig.scopeType === 'account' ? null : uploadConfig.scopeRefId || null,
-          visibility: uploadConfig.visibility,
-          sharedWithUserIds: selectedResource?.sharedWithUserIds ?? [],
-          folderId: uploadConfig.folderId || null,
-          sessionAudience: uploadConfig.scopeType === 'session' ? uploadConfig.sessionAudience : undefined,
-          sessionMemberUserIds: uploadConfig.scopeType === 'session' ? uploadConfig.sessionMemberUserIds : undefined,
-          canReshareInSession: uploadConfig.scopeType === 'session' ? uploadConfig.canReshareInSession : undefined,
-          contentBase64
-        });
       }
-      setStatusMessage(
-        navigator.onLine
-          ? `${selectedFiles.length} fichier(s) ajouté(s).`
-          : `${selectedFiles.length} fichier(s) ajouté(s) localement. Ils partiront à la reconnexion.`
-      );
-      setSelectedFiles([]);
-      setIsUploadModalOpen(false);
-      await loadAll();
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Upload impossible.');
+
+      if (uploadedFiles.length > 0) {
+        setStatusMessage(
+          navigator.onLine
+            ? `${uploadedFiles.length} fichier(s) ajouté(s).`
+            : `${uploadedFiles.length} fichier(s) ajouté(s) localement. Ils partiront à la reconnexion.`
+        );
+        await loadAll();
+      }
+
+      if (failedUploads.length > 0) {
+        const details = failedUploads
+          .slice(0, 3)
+          .map(({ file, reason }) => `${file.name}: ${reason}`)
+          .join(' | ');
+        const suffix = failedUploads.length > 3 ? ` | +${failedUploads.length - 3} autre(s)` : '';
+        setErrorMessage(`${failedUploads.length} fichier(s) refusé(s). ${details}${suffix}`);
+      }
+
+      if (failedUploads.length === 0) {
+        setSelectedFiles([]);
+        setIsUploadModalOpen(false);
+      } else {
+        setSelectedFiles(failedUploads.map(({ file }) => file));
+      }
     } finally {
       setIsSaving(false);
     }
