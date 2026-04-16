@@ -23,7 +23,6 @@ Le backup distant ne doit donc conserver que ce qui n est pas reconstruit depuis
 - `backend/.env`
 - `backend/data/state.json`
 - `backend/data/persist-log.jsonl`
-- `backend/data/history/`
 - les ressources source des utilisateurs dans `backend/data/resources/`
 - les `.htaccess` de prod si ils ne sont pas dans git
 
@@ -34,6 +33,16 @@ Le backup ne doit pas embarquer :
 - `node_modules` ;
 - les derives images regenerables (`*-thumb.webp`, `*-preview.webp`) ;
 - les fichiers statiques qui viennent deja du depot git.
+
+## Regle de maintenance backup
+
+A chaque evolution du projet qui ajoute un nouveau fichier ou dossier persistant en production, il faut verifier immediatement si :
+
+- ce nouveau chemin doit etre ajoute au script de backup ;
+- il doit etre restaure depuis backup ou regenere automatiquement ;
+- la procedure de restauration doit etre mise a jour pour refléter ce nouveau comportement.
+
+Un chantier n est pas considere comme complet tant que cette verification backup/restauration n a pas ete faite.
 
 ## Topologie de production actuelle
 
@@ -78,13 +87,15 @@ Le backup ne doit pas embarquer :
   - `backend/.env`
   - `backend/data/state.json`
   - `backend/data/persist-log.jsonl`
-  - `backend/data/history/`
   - `backend/data/resources/` sans les derives regenerables
   - `~/api.nexusforge.en-ligne.fr/.htaccess`
+- synchronisation `rsync` separee :
+  - `backend/data/history/` vers un miroir distant
 - cible distante voulue :
   - hote : `fremaux.biz`
   - utilisateur : `root`
   - dossier : `/mnt/kraken/Backups/nexusforge_backups`
+  - historique rsync : `/mnt/kraken/Backups/nexusforge_backups/history`
   - cle SSH : `~/.ssh/id_rsa_codex`
 
 ### Sauvegardes connues
@@ -98,7 +109,6 @@ En cas de reinstallation, ces elements sont prioritaires :
 
 - `~/api.nexusforge.en-ligne.fr/backend/.env`
 - `~/api.nexusforge.en-ligne.fr/backend/data/state.json`
-- `~/api.nexusforge.en-ligne.fr/backend/data/history/`
 - `~/api.nexusforge.en-ligne.fr/backend/data/resources/`
 - `~/api.nexusforge.en-ligne.fr/.htaccess`
 - `~/nexusforge.en-ligne.fr/.htaccess`
@@ -259,7 +269,6 @@ Contenu attendu du backup :
 - `backend/.env`
 - `backend/data/state.json`
 - `backend/data/persist-log.jsonl`
-- `backend/data/history/`
 - `backend/data/resources/` sans les derives `webp`
 
 Exemple de restauration depuis une archive distante recuperee localement :
@@ -344,7 +353,7 @@ Si `~/api.nexusforge.en-ligne.fr/backend` a ete supprime ou fortement endommage 
 2. resynchroniser `backend/` avec `rsync` ;
 3. remettre manuellement `.env` si absent ;
 4. recreer `data/` si absent ;
-5. restaurer `.env`, `state.json`, `history/` et `resources/` depuis backup si necessaire ;
+5. restaurer `.env`, `state.json`, `persist-log.jsonl` et `resources/` depuis backup si necessaire ;
 6. lancer l install npm du `nodevenv` ;
 7. toucher `restart.txt` pour recharger l application et relancer la regeneration des derives.
 
