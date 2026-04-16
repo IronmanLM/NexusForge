@@ -46,6 +46,9 @@ function inferKind(kind?: ResourceKind | null, mimeType?: string | null): Resour
   if (mimeType.startsWith('video/')) {
     return 'video';
   }
+  if (mimeType.startsWith('audio/')) {
+    return 'audio';
+  }
   return 'text';
 }
 
@@ -67,7 +70,7 @@ export default function ResourcePreview({
     return target ? resolveSrc(target) : '';
   }, [resource?.contentUrl, resource?.previewUrl, src, effectiveKind]);
   const protectedMediaUrl = useProtectedResourceUrl(
-    effectiveKind === 'pdf' || effectiveKind === 'video' ? effectiveSrc : '',
+    effectiveKind === 'pdf' || effectiveKind === 'video' || effectiveKind === 'audio' ? effectiveSrc : '',
     resource?.id
   );
   const [textContent, setTextContent] = useState('');
@@ -168,6 +171,21 @@ export default function ResourcePreview({
       );
     }
     return <video src={protectedMediaUrl} controls className={className} style={{ width: '100%', minHeight, maxHeight: minHeight, borderRadius: '14px', background: '#020617', objectFit: 'contain' }} />;
+  }
+
+  if (effectiveKind === 'audio') {
+    if (!protectedMediaUrl) {
+      return (
+        <div className={className} style={{ minHeight, display: 'grid', placeItems: 'center' }}>
+          <small>Chargement de l audio…</small>
+        </div>
+      );
+    }
+    return (
+      <div className={className} style={{ minHeight, display: 'grid', placeItems: 'center', padding: '1rem', borderRadius: '14px', background: '#020617' }}>
+        <audio src={protectedMediaUrl} controls style={{ width: '100%' }} />
+      </div>
+    );
   }
 
   return (

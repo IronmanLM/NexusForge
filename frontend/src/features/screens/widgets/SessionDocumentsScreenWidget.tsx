@@ -61,6 +61,24 @@ function inferMimeType(file: File): string {
   if (name.endsWith('.mp4')) {
     return 'video/mp4';
   }
+  if (name.endsWith('.webm')) {
+    return 'video/webm';
+  }
+  if (name.endsWith('.ogv')) {
+    return 'video/ogg';
+  }
+  if (name.endsWith('.mp3')) {
+    return 'audio/mpeg';
+  }
+  if (name.endsWith('.wav')) {
+    return 'audio/wav';
+  }
+  if (name.endsWith('.ogg') || name.endsWith('.oga')) {
+    return 'audio/ogg';
+  }
+  if (name.endsWith('.m4a')) {
+    return 'audio/mp4';
+  }
   return 'application/octet-stream';
 }
 

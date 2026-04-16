@@ -2111,7 +2111,7 @@ function WidgetConfigEditor({
   const config = widget.config ?? {};
   const dataSource = widget.dataSource ?? {};
   const pdfResources = resources.filter((resource) => resource.kind === 'pdf');
-  const mediaResources = resources.filter((resource) => resource.kind === 'image' || resource.kind === 'video');
+  const mediaResources = resources.filter((resource) => resource.kind === 'image' || resource.kind === 'video' || resource.kind === 'audio');
 
   switch (widget.type) {
     case 'character_sheet':
@@ -2354,7 +2354,7 @@ function WidgetConfigEditor({
                   }
                 }))
               }
-              kinds={['image', 'video']}
+              kinds={['image', 'video', 'audio']}
               resources={mediaResources}
               disabled={!canEdit}
               allowManualUrl
@@ -2367,9 +2367,11 @@ function WidgetConfigEditor({
           <FieldBlock title="Affichage media">
             <label style={{ display: 'grid', gap: '0.35rem' }}>
               <span>Mode</span>
-              <select value={asString(config.mode, 'image')} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'mode', event.target.value))} disabled={!canEdit}>
+              <select value={asString(config.mode, 'auto')} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'mode', event.target.value))} disabled={!canEdit}>
+                <option value="auto">Auto</option>
                 <option value="image">Image</option>
-                <option value="video">Video</option>
+                <option value="video">Vidéo</option>
+                <option value="audio">Audio</option>
                 <option value="battlemap">Battlemap</option>
               </select>
             </label>

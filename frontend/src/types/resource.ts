@@ -1,4 +1,4 @@
-export type ResourceKind = 'image' | 'pdf' | 'text' | 'video';
+export type ResourceKind = 'image' | 'pdf' | 'text' | 'video' | 'audio';
 export type ResourceScopeType = 'account' | 'system' | 'session';
 export type ResourceVisibility = 'private' | 'shared' | 'public';
 export type SessionResourceAudience = 'private' | 'session_all' | 'session_gm' | 'session_member';

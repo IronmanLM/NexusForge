@@ -15,7 +15,7 @@ export interface OfflineResourceFile {
 export interface OfflineSessionResourceEntry {
   resourceId: string;
   name: string;
-  kind?: 'image' | 'pdf' | 'text' | 'video';
+  kind?: 'image' | 'pdf' | 'text' | 'video' | 'audio';
   mimeType?: string;
   contentUrl?: string | null;
   sizeBytes?: number;

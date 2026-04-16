@@ -1162,7 +1162,14 @@ const RESOURCE_ALLOWED_TYPES = {
   'text/plain': { kind: 'text', extensions: ['.txt'], defaultExtension: '.txt', maxSizeBytes: 5 * 1024 * 1024 },
   'text/markdown': { kind: 'text', extensions: ['.md'], defaultExtension: '.md', maxSizeBytes: 5 * 1024 * 1024 },
   'application/json': { kind: 'text', extensions: ['.json'], defaultExtension: '.json', maxSizeBytes: 5 * 1024 * 1024 },
-  'video/mp4': { kind: 'video', extensions: ['.mp4'], defaultExtension: '.mp4', maxSizeBytes: 250 * 1024 * 1024 }
+  'video/mp4': { kind: 'video', extensions: ['.mp4'], defaultExtension: '.mp4', maxSizeBytes: 250 * 1024 * 1024 },
+  'video/webm': { kind: 'video', extensions: ['.webm'], defaultExtension: '.webm', maxSizeBytes: 250 * 1024 * 1024 },
+  'video/ogg': { kind: 'video', extensions: ['.ogv'], defaultExtension: '.ogv', maxSizeBytes: 250 * 1024 * 1024 },
+  'audio/mpeg': { kind: 'audio', extensions: ['.mp3'], defaultExtension: '.mp3', maxSizeBytes: 80 * 1024 * 1024 },
+  'audio/wav': { kind: 'audio', extensions: ['.wav'], defaultExtension: '.wav', maxSizeBytes: 120 * 1024 * 1024 },
+  'audio/ogg': { kind: 'audio', extensions: ['.ogg', '.oga'], defaultExtension: '.ogg', maxSizeBytes: 80 * 1024 * 1024 },
+  'audio/webm': { kind: 'audio', extensions: ['.webm'], defaultExtension: '.webm', maxSizeBytes: 120 * 1024 * 1024 },
+  'audio/mp4': { kind: 'audio', extensions: ['.m4a'], defaultExtension: '.m4a', maxSizeBytes: 120 * 1024 * 1024 }
 };
 
 const RESOURCE_EXT_TO_MIME = {
@@ -1175,7 +1182,14 @@ const RESOURCE_EXT_TO_MIME = {
   '.txt': 'text/plain',
   '.md': 'text/markdown',
   '.json': 'application/json',
-  '.mp4': 'video/mp4'
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.ogv': 'video/ogg',
+  '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
+  '.oga': 'audio/ogg',
+  '.m4a': 'audio/mp4'
 };
 
 const RESOURCE_FOLDER_VISIBILITIES = ['all', 'gm', 'participant'];
@@ -3459,6 +3473,21 @@ function validateBufferSignature(buffer, mimeType) {
       }
     case 'video/mp4':
       return buffer.length >= 12 && buffer.subarray(4, 8).equals(Buffer.from('ftyp'));
+    case 'video/webm':
+    case 'audio/webm':
+      return buffer.length >= 4 && buffer.subarray(0, 4).equals(Buffer.from([0x1a, 0x45, 0xdf, 0xa3]));
+    case 'video/ogg':
+    case 'audio/ogg':
+      return buffer.length >= 4 && buffer.subarray(0, 4).equals(Buffer.from('OggS'));
+    case 'audio/mpeg':
+      return (
+        (buffer.length >= 3 && buffer.subarray(0, 3).equals(Buffer.from('ID3'))) ||
+        (buffer.length >= 2 && buffer[0] === 0xff && (buffer[1] & 0xe0) === 0xe0)
+      );
+    case 'audio/wav':
+      return buffer.length >= 12 && buffer.subarray(0, 4).equals(Buffer.from('RIFF')) && buffer.subarray(8, 12).equals(Buffer.from('WAVE'));
+    case 'audio/mp4':
+      return buffer.length >= 12 && buffer.subarray(4, 8).equals(Buffer.from('ftyp'));
     default:
       return false;
   }
@@ -3505,7 +3534,14 @@ function normalizeResourceRecord(resource) {
   resource.sharedWithUserIds = Array.isArray(resource.sharedWithUserIds)
     ? Array.from(new Set(resource.sharedWithUserIds.filter((item) => typeof item === 'string' && item)))
     : [];
-  resource.kind = resource.kind === 'image' || resource.kind === 'pdf' || resource.kind === 'text' || resource.kind === 'video' ? resource.kind : 'text';
+  resource.kind =
+    resource.kind === 'image' ||
+    resource.kind === 'pdf' ||
+    resource.kind === 'text' ||
+    resource.kind === 'video' ||
+    resource.kind === 'audio'
+      ? resource.kind
+      : 'text';
   resource.folderId = typeof resource.folderId === 'string' && resource.folderId.trim() ? resource.folderId.trim() : null;
   resource.thumbnailPath = typeof resource.thumbnailPath === 'string' && resource.thumbnailPath.trim() ? resource.thumbnailPath.trim() : null;
   resource.previewPath = typeof resource.previewPath === 'string' && resource.previewPath.trim() ? resource.previewPath.trim() : null;

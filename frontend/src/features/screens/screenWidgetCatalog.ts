@@ -20,7 +20,7 @@ export const WIDGET_PALETTE: WidgetPaletteItem[] = [
   { type: 'open_target_control', title: 'Controle overlay cible', minW: 3, minH: 2, defaultW: 4, defaultH: 3, description: 'Pilote un overlay cible et indique le contenu actuellement ouvert.' },
   { type: 'pdf_viewer', title: 'Lecteur PDF', minW: 5, minH: 6, defaultW: 8, defaultH: 10, description: 'Lecture de PDF dans la partie.' },
   { type: 'documents', title: 'Gestionnaire de documents', minW: 4, minH: 5, defaultW: 6, defaultH: 8, description: 'Acces aux documents partages et personnels.' },
-  { type: 'media_viewer', title: 'Lecteur image / video', minW: 5, minH: 5, defaultW: 8, defaultH: 8, description: 'Images, videos et support battlemap.' },
+  { type: 'media_viewer', title: 'Lecteur media', minW: 5, minH: 5, defaultW: 8, defaultH: 8, description: 'Images, videos, audio et support battlemap.' },
   { type: 'notes', title: 'Prise de notes', minW: 4, minH: 4, defaultW: 6, defaultH: 7, description: 'Bloc de notes personnelles ou partagees.' },
   { type: 'character_list', title: 'Liste des personnages', minW: 3, minH: 4, defaultW: 5, defaultH: 7, description: 'Acces rapide aux personnages de la partie.' },
   { type: 'dice_history', title: 'Historique des jets', minW: 3, minH: 4, defaultW: 5, defaultH: 6, description: 'Derniers jets visibles dans la partie.' },
@@ -86,7 +86,7 @@ export function getWidgetDefaults(type: ScreenWidgetType): Pick<ScreenWidgetDefi
       };
     case 'media_viewer':
       return {
-        config: { mode: 'image', fit: 'contain', autoplay: false },
+        config: { mode: 'auto', fit: 'contain', autoplay: false },
         dataSource: { resourceId: '', url: '' },
         permissions: {}
       };
@@ -213,7 +213,7 @@ export function widgetPreviewContent(widget: ScreenWidgetDefinition): { headline
     case 'media_viewer':
       return {
         headline: asString(dataSource.url) || asString(dataSource.resourceId, 'Media non selectionne'),
-        details: [`Mode: ${asString(config.mode, 'image')}`, `Fit: ${asString(config.fit, 'contain')}`]
+        details: [`Mode: ${asString(config.mode, 'auto')}`, `Fit: ${asString(config.fit, 'contain')}`]
       };
     case 'notes':
       return {

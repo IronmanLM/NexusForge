@@ -22,6 +22,7 @@ export function getResourceKindLabel(kind: ResourceKind): string {
   if (kind === 'image') return 'Image';
   if (kind === 'pdf') return 'PDF';
   if (kind === 'video') return 'Vidéo';
+  if (kind === 'audio') return 'Audio';
   return 'Texte';
 }
 

@@ -20,6 +20,9 @@ function inferKindFromMimeType(mimeType: string): ResourceItem['kind'] {
   if (normalized.startsWith('video/')) {
     return 'video';
   }
+  if (normalized.startsWith('audio/')) {
+    return 'audio';
+  }
   return 'text';
 }
 

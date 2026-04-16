@@ -25,6 +25,9 @@ function isPreloadableResource(resource: ResourceItem): boolean {
   if (resource.kind === 'video') {
     return false;
   }
+  if (resource.kind === 'audio') {
+    return false;
+  }
   if (resource.kind === 'text') {
     return resource.sizeBytes <= 4 * 1024 * 1024;
   }
