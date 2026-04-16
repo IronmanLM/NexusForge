@@ -6027,11 +6027,34 @@ app.put('/api/sessions/:sessionId/runtime-targets/:targetId', requireAuth, (req,
 
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const templateId = typeof body.templateId === 'string' ? body.templateId : 'default';
+  const playback =
+    body.state &&
+    typeof body.state === 'object' &&
+    body.state.playback &&
+    typeof body.state.playback === 'object'
+      ? {
+          status:
+            body.state.playback.status === 'playing' || body.state.playback.status === 'paused' || body.state.playback.status === 'stopped'
+              ? body.state.playback.status
+              : 'stopped',
+          loop: body.state.playback.loop === true,
+          commandToken:
+            typeof body.state.playback.commandToken === 'string' && body.state.playback.commandToken
+              ? body.state.playback.commandToken
+              : nowIso()
+        }
+      : null;
+  const rotationQuarterTurns =
+    body.state && typeof body.state === 'object' && Number.isFinite(body.state.rotationQuarterTurns)
+      ? ((Math.trunc(body.state.rotationQuarterTurns) % 4) + 4) % 4
+      : 0;
   const nextState =
     body.state && typeof body.state === 'object'
       ? {
           visible: body.state.visible === true,
           content: body.state.content || null,
+          playback,
+          rotationQuarterTurns,
           updatedAt: typeof body.state.updatedAt === 'string' ? body.state.updatedAt : nowIso()
         }
       : null;
