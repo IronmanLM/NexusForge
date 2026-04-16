@@ -118,6 +118,99 @@ const socialReports = new Map();
 const adminAuditEvents = [];
 const discordBotEvents = [];
 
+function migrateLegacyScreenWidget(widget) {
+  if (!widget || typeof widget !== 'object') {
+    return widget;
+  }
+  if (widget.type !== 'pdf_viewer' && widget.type !== 'media_viewer') {
+    return widget;
+  }
+  const nextConfig = { ...(widget.config && typeof widget.config === 'object' ? widget.config : {}) };
+  if (widget.type === 'pdf_viewer') {
+    nextConfig.mode = 'pdf';
+    nextConfig.fit = typeof nextConfig.fit === 'string' ? nextConfig.fit : 'contain';
+    nextConfig.autoplay = false;
+    nextConfig.loop = false;
+    nextConfig.showToolbar = typeof nextConfig.showToolbar === 'boolean' ? nextConfig.showToolbar : true;
+    nextConfig.channelKey = typeof nextConfig.channelKey === 'string' && nextConfig.channelKey.trim() ? nextConfig.channelKey.trim() : 'primary';
+  } else {
+    nextConfig.mode = typeof nextConfig.mode === 'string' && nextConfig.mode.trim() ? nextConfig.mode : 'auto';
+    nextConfig.fit = typeof nextConfig.fit === 'string' ? nextConfig.fit : 'contain';
+    nextConfig.autoplay = typeof nextConfig.autoplay === 'boolean' ? nextConfig.autoplay : false;
+    nextConfig.loop = typeof nextConfig.loop === 'boolean' ? nextConfig.loop : false;
+    nextConfig.showToolbar = typeof nextConfig.showToolbar === 'boolean' ? nextConfig.showToolbar : true;
+    nextConfig.channelKey = typeof nextConfig.channelKey === 'string' && nextConfig.channelKey.trim() ? nextConfig.channelKey.trim() : 'primary';
+  }
+  return {
+    ...widget,
+    type: 'screen_viewer',
+    config: nextConfig
+  };
+}
+
+function migrateLegacyScreenTemplate(template) {
+  if (!template || typeof template !== 'object' || !Array.isArray(template.sets)) {
+    return template;
+  }
+  let changed = false;
+  const nextSets = template.sets.map((set) => {
+    if (!set || typeof set !== 'object' || !Array.isArray(set.screens)) {
+      return set;
+    }
+    let setChanged = false;
+    const nextScreens = set.screens.map((screen) => {
+      if (!screen || typeof screen !== 'object' || !Array.isArray(screen.tabGroups)) {
+        return screen;
+      }
+      let screenChanged = false;
+      const nextTabGroups = screen.tabGroups.map((group) => {
+        if (!group || typeof group !== 'object' || !Array.isArray(group.widgets)) {
+          return group;
+        }
+        let groupChanged = false;
+        const nextWidgets = group.widgets.map((widget) => {
+          const nextWidget = migrateLegacyScreenWidget(widget);
+          if (nextWidget !== widget) {
+            groupChanged = true;
+          }
+          return nextWidget;
+        });
+        if (!groupChanged) {
+          return group;
+        }
+        screenChanged = true;
+        return {
+          ...group,
+          widgets: nextWidgets
+        };
+      });
+      if (!screenChanged) {
+        return screen;
+      }
+      setChanged = true;
+      return {
+        ...screen,
+        tabGroups: nextTabGroups
+      };
+    });
+    if (!setChanged) {
+      return set;
+    }
+    changed = true;
+    return {
+      ...set,
+      screens: nextScreens
+    };
+  });
+  if (!changed) {
+    return template;
+  }
+  return {
+    ...template,
+    sets: nextSets
+  };
+}
+
 let smtpTransport = null;
 let persistTimeout = null;
 let hasPendingPersist = false;
@@ -1380,6 +1473,14 @@ function loadPersistedState() {
       ensureSessionDefaultResourceFolders(session);
     }
     restoreMapFromArray(screenTemplates, parsed.screenTemplates, (item) => item?.id);
+    let normalizedScreenTemplates = false;
+    for (const [templateId, template] of screenTemplates.entries()) {
+      const migratedTemplate = migrateLegacyScreenTemplate(template);
+      if (migratedTemplate !== template) {
+        screenTemplates.set(templateId, migratedTemplate);
+        normalizedScreenTemplates = true;
+      }
+    }
     restoreMapFromArray(homeNews, parsed.homeNews, (item) => item?.id);
     restoreMapFromArray(announcements, parsed.announcements, (item) => item?.id);
     let normalizedAnnouncements = false;
@@ -1475,6 +1576,9 @@ function loadPersistedState() {
 
     if (normalizedAnnouncements) {
       persistStateNow('announcement-normalize');
+    }
+    if (normalizedScreenTemplates) {
+      persistStateNow('screen-template-widget-migrate');
     }
 
     // eslint-disable-next-line no-console
@@ -8031,7 +8135,7 @@ app.post('/api/screen-templates', requireAuth, (req, res) => {
     sourceTemplateId: typeof body.sourceTemplateId === 'string' && body.sourceTemplateId.trim() ? body.sourceTemplateId.trim() : null,
     createdBy: req.currentUser.id,
     updatedBy: req.currentUser.id,
-    sets,
+    sets: migrateLegacyScreenTemplate({ sets }).sets,
     createdAt: now,
     updatedAt: now
   };
@@ -8067,7 +8171,7 @@ app.patch('/api/screen-templates/:templateId', requireAuth, (req, res) => {
   template.roleTarget = nextRoleTarget;
   template.visibility = nextVisibility;
   template.isFavorite = nextFavorite;
-  template.sets = nextSets;
+  template.sets = migrateLegacyScreenTemplate({ sets: nextSets }).sets;
   template.updatedBy = req.currentUser.id;
   template.updatedAt = nowIso();
 

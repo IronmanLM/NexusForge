@@ -83,13 +83,6 @@ export function getWidgetDefaults(type: ScreenWidgetType): Pick<ScreenWidgetDefi
         dataSource: {},
         permissions: {}
       };
-    case 'pdf_viewer':
-    case 'media_viewer':
-      return {
-        config: { mode: 'auto', fit: 'contain', autoplay: false, loop: false, showToolbar: true, channelKey: 'primary' },
-        dataSource: { resourceId: '', url: '' },
-        permissions: {}
-      };
     case 'notes':
       return {
         config: { scope: 'private', autosave: true, placeholder: 'Prendre des notes...' },
@@ -213,12 +206,6 @@ export function widgetPreviewContent(widget: ScreenWidgetDefinition): { headline
       return {
         headline: 'Documents',
         details: [`Scope: ${asString(config.scope, 'all')}`, asBoolean(config.allowUpload, true) ? 'Upload autorise' : 'Upload bloque']
-      };
-    case 'pdf_viewer':
-    case 'media_viewer':
-      return {
-        headline: asString(dataSource.url) || asString(dataSource.resourceId, 'Media non selectionne'),
-        details: [`Mode: ${asString(config.mode, 'auto')}`, `Fit: ${asString(config.fit, 'contain')}`]
       };
     case 'notes':
       return {

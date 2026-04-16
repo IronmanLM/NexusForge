@@ -2,8 +2,58 @@ import { db, ensureDatabaseIsInitialized } from '../db';
 import { ScreenTemplate } from '../../types/screenTemplate';
 import { isBackendEnabled, requestJson } from '../../services/apiClient';
 
+function migrateLegacyScreenWidgets(template: ScreenTemplate): ScreenTemplate {
+  let changed = false;
+  const sets = template.sets.map((set) => {
+    let setChanged = false;
+    const screens = set.screens.map((screen) => {
+      let screenChanged = false;
+      const tabGroups = screen.tabGroups.map((group) => {
+        let groupChanged = false;
+        const widgets = group.widgets.map((widget) => {
+          const rawType = String((widget as { type?: unknown }).type ?? '');
+          if (rawType !== 'pdf_viewer' && rawType !== 'media_viewer') {
+            return widget;
+          }
+          groupChanged = true;
+          const config = { ...(widget.config ?? {}) };
+          return {
+            ...widget,
+            type: 'screen_viewer' as const,
+            config: {
+              ...config,
+              mode: rawType === 'pdf_viewer' ? 'pdf' : typeof config.mode === 'string' ? config.mode : 'auto',
+              fit: typeof config.fit === 'string' ? config.fit : 'contain',
+              autoplay: typeof config.autoplay === 'boolean' ? config.autoplay : false,
+              loop: typeof config.loop === 'boolean' ? config.loop : false,
+              showToolbar: typeof config.showToolbar === 'boolean' ? config.showToolbar : true,
+              channelKey: typeof config.channelKey === 'string' && config.channelKey ? config.channelKey : 'primary'
+            }
+          };
+        });
+        if (!groupChanged) {
+          return group;
+        }
+        screenChanged = true;
+        return { ...group, widgets };
+      });
+      if (!screenChanged) {
+        return screen;
+      }
+      setChanged = true;
+      return { ...screen, tabGroups };
+    });
+    if (!setChanged) {
+      return set;
+    }
+    changed = true;
+    return { ...set, screens };
+  });
+  return changed ? { ...template, sets } : template;
+}
+
 function mapApiScreenTemplate(raw: Record<string, unknown>): ScreenTemplate {
-  return {
+  const template = {
     id: String(raw.id ?? ''),
     name: String(raw.name ?? 'Template ecran'),
     description: typeof raw.description === 'string' ? raw.description : '',
@@ -18,7 +68,8 @@ function mapApiScreenTemplate(raw: Record<string, unknown>): ScreenTemplate {
     sets: Array.isArray(raw.sets) ? (raw.sets as ScreenTemplate['sets']) : [],
     createdAt: String(raw.createdAt ?? new Date().toISOString()),
     updatedAt: String(raw.updatedAt ?? new Date().toISOString())
-  };
+  } satisfies ScreenTemplate;
+  return migrateLegacyScreenWidgets(template);
 }
 
 export const screenTemplateRepository = {

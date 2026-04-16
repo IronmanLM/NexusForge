@@ -686,41 +686,6 @@ export function RuntimeWidgetContent({
     );
   }
 
-  if (widget.type === 'pdf_viewer') {
-    return (
-      <SessionScreenViewerWidget
-        currentSession={session}
-        templateId={templateId}
-        widgetId={widget.id}
-        resourceId={typeof widget.dataSource?.resourceId === 'string' ? widget.dataSource.resourceId : ''}
-        url={typeof widget.dataSource?.url === 'string' ? widget.dataSource.url : ''}
-        mode="pdf"
-        fit="contain"
-        autoplay={false}
-        loop={false}
-        page={typeof widget.config?.page === 'number' ? widget.config.page : 1}
-        showToolbar={asBoolean(widget.config?.showToolbar, true)}
-      />
-    );
-  }
-
-  if (widget.type === 'media_viewer') {
-    return (
-      <SessionScreenViewerWidget
-        currentSession={session}
-        templateId={templateId}
-        widgetId={widget.id}
-        resourceId={typeof widget.dataSource?.resourceId === 'string' ? widget.dataSource.resourceId : ''}
-        url={typeof widget.dataSource?.url === 'string' ? widget.dataSource.url : ''}
-        mode={typeof widget.config?.mode === 'string' ? widget.config.mode : 'auto'}
-        fit={typeof widget.config?.fit === 'string' ? widget.config.fit : 'contain'}
-        autoplay={asBoolean(widget.config?.autoplay, false)}
-        loop={asBoolean(widget.config?.loop, false)}
-        showToolbar={asBoolean(widget.config?.showToolbar, true)}
-      />
-    );
-  }
-
   if (widget.type === 'character_list') {
     return (
       <SessionCharacterListWidget

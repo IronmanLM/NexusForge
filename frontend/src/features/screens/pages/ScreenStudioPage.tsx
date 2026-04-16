@@ -356,13 +356,6 @@ function getWidgetDefaults(type: ScreenWidgetType): Pick<ScreenWidgetDefinition,
         dataSource: {},
         permissions: {}
       };
-    case 'pdf_viewer':
-    case 'media_viewer':
-      return {
-        config: { mode: 'auto', fit: 'contain', autoplay: false, loop: false, showToolbar: true, channelKey: 'primary' },
-        dataSource: { resourceId: '', url: '' },
-        permissions: {}
-      };
     case 'notes':
       return {
         config: { scope: 'private', autosave: true, placeholder: 'Prendre des notes...' },
@@ -475,12 +468,6 @@ function widgetPreviewContent(widget: ScreenWidgetDefinition): { headline: strin
       return {
         headline: 'Documents',
         details: [`Scope: ${asString(config.scope, 'all')}`, asBoolean(config.allowUpload, true) ? 'Upload autorise' : 'Upload bloque']
-      };
-    case 'pdf_viewer':
-    case 'media_viewer':
-      return {
-        headline: asString(dataSource.url) || asString(dataSource.resourceId, 'Media non selectionne'),
-        details: [`Mode: ${asString(config.mode, 'auto')}`, `Fit: ${asString(config.fit, 'contain')}`]
       };
     case 'notes':
       return {
@@ -2369,63 +2356,6 @@ function WidgetConfigEditor({
             </select>
           </label>
         </FieldBlock>
-      );
-    case 'pdf_viewer':
-    case 'media_viewer':
-      return (
-        <>
-          <FieldBlock title="Source media">
-            <ResourcePickerField
-              label="Ressource média"
-              value={{ resourceId: asString(dataSource.resourceId) || undefined, url: asString(dataSource.url) }}
-              onChange={(next) =>
-                onChange((current) => ({
-                  ...current,
-                  dataSource: {
-                    ...(current.dataSource ?? {}),
-                    resourceId: next.resourceId ?? '',
-                    url: next.url ?? ''
-                  }
-                }))
-              }
-              kinds={['image', 'video', 'audio']}
-              resources={mediaResources}
-              disabled={!canEdit}
-              allowManualUrl
-              allowUpload={false}
-              previewAlt="Media"
-              urlPlaceholder="https://.../media"
-              emptyOptionLabel="Aucune ressource"
-            />
-          </FieldBlock>
-          <FieldBlock title="Affichage media">
-            <label style={{ display: 'grid', gap: '0.35rem' }}>
-              <span>Mode</span>
-              <select value={asString(config.mode, 'auto')} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'mode', event.target.value))} disabled={!canEdit}>
-                <option value="auto">Auto</option>
-                <option value="image">Image</option>
-                <option value="video">Vidéo</option>
-                <option value="audio">Audio</option>
-                <option value="battlemap">Battlemap</option>
-              </select>
-            </label>
-            <label style={{ display: 'grid', gap: '0.35rem' }}>
-              <span>Fit</span>
-              <select value={asString(config.fit, 'contain')} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'fit', event.target.value))} disabled={!canEdit}>
-                <option value="contain">Contain</option>
-                <option value="cover">Cover</option>
-                <option value="fill">Fill</option>
-              </select>
-            </label>
-            <label style={{ display: 'grid', gap: '0.35rem' }}>
-              <span>Lecture auto</span>
-              <select value={String(asBoolean(config.autoplay, false))} onChange={(event) => onChange((current) => updateNestedRecord(current, 'config', 'autoplay', event.target.value === 'true'))} disabled={!canEdit}>
-                <option value="true">Oui</option>
-                <option value="false">Non</option>
-              </select>
-            </label>
-          </FieldBlock>
-        </>
       );
     case 'notes':
       return (
