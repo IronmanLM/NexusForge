@@ -63,6 +63,47 @@ export function clearStoredTokens(): void {
   localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
 }
 
+async function parseResponsePayload(response: Response): Promise<unknown> {
+  if (response.status === 204) {
+    return null;
+  }
+  const contentType = response.headers.get('content-type') ?? '';
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+  const text = await response.text();
+  return text || null;
+}
+
+async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    clearStoredTokens();
+    return false;
+  }
+
+  const response = await fetch(buildApiUrl('/api/auth/refresh'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ refreshToken })
+  });
+
+  const payload = await parseResponsePayload(response);
+  if (!response.ok || typeof payload !== 'object' || payload === null || !('token' in payload) || typeof (payload as { token?: unknown }).token !== 'string') {
+    clearStoredTokens();
+    return false;
+  }
+
+  const nextToken = (payload as { token: string; refreshToken?: string }).token;
+  const nextRefreshToken = typeof (payload as { refreshToken?: unknown }).refreshToken === 'string'
+    ? ((payload as { refreshToken?: string }).refreshToken ?? null)
+    : refreshToken;
+  persistTokens({ accessToken: nextToken, refreshToken: nextRefreshToken });
+  return true;
+}
+
 export async function openProtectedUrlInNewTab(src: string): Promise<void> {
   const target = buildApiUrl(src);
   const token = getAccessToken();
@@ -102,39 +143,42 @@ export async function requestJson<T>(params: {
   headers?: Record<string, string>;
 }): Promise<T> {
   const method = params.method ?? 'GET';
-  const headers: Record<string, string> = {
-    ...(params.headers ?? {})
+  const execute = async (): Promise<Response> => {
+    const headers: Record<string, string> = {
+      ...(params.headers ?? {})
+    };
+
+    if (params.body !== undefined) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    if (params.withAuth !== false) {
+      const token = getAccessToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+    }
+
+    return fetch(buildApiUrl(params.path), {
+      method,
+      headers,
+      body: params.body !== undefined ? JSON.stringify(params.body) : undefined
+    });
   };
 
-  if (params.body !== undefined) {
-    headers['Content-Type'] = 'application/json';
-  }
-
-  if (params.withAuth !== false) {
-    const token = getAccessToken();
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+  let response = await execute();
+  if ((response.status === 401 || response.status === 403) && params.withAuth !== false) {
+    const refreshed = await refreshAccessToken().catch(() => false);
+    if (refreshed) {
+      response = await execute();
     }
   }
-
-  const response = await fetch(buildApiUrl(params.path), {
-    method,
-    headers,
-    body: params.body !== undefined ? JSON.stringify(params.body) : undefined
-  });
 
   if (response.status === 204) {
     return undefined as T;
   }
 
-  let payload: unknown = null;
-  const contentType = response.headers.get('content-type') ?? '';
-  if (contentType.includes('application/json')) {
-    payload = await response.json();
-  } else {
-    const text = await response.text();
-    payload = text || null;
-  }
+  const payload = await parseResponsePayload(response);
 
   if (!response.ok) {
     const messageFromPayload =
