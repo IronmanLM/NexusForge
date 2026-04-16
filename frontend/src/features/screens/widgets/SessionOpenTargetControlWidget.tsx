@@ -196,6 +196,7 @@ export default function SessionOpenTargetControlWidget({
   const resourceContent = targetContent?.kind === 'resource' ? targetContent.resource : null;
   const isImageContent = resourceContent?.kind === 'image' && Boolean(resourceContent.thumbnailUrl || resourceContent.contentUrl);
   const isPlayableContent = resourceContent?.kind === 'video' || resourceContent?.kind === 'audio';
+  const loopEnabled = Boolean(targetState?.playback?.loop);
   const localTargetPosition = targetLocationLabel(targetDescriptor);
 
   return (
@@ -301,13 +302,13 @@ export default function SessionOpenTargetControlWidget({
                     state: {
                       visible: true,
                       content: targetContent,
-                      playback: nextPlaybackState(targetState, undefined, !targetState?.playback?.loop),
+                      playback: nextPlaybackState(targetState, undefined, !loopEnabled),
                       updatedAt: new Date().toISOString()
                     }
                   })
                 }
               >
-                {targetState?.playback?.loop ? 'Boucle on' : 'Boucle off'}
+                {loopEnabled ? 'Boucle on' : 'Boucle off'}
               </Button>
               <Button
                 type="button"
@@ -417,9 +418,9 @@ export default function SessionOpenTargetControlWidget({
                     type="button"
                     variant="secondary"
                     disabled={!selectedRemoteTargets.length}
-                    onClick={() => void pushPlaybackCommandToRemoteTargets({ nextLoop: !targetState?.playback?.loop })}
+                    onClick={() => void pushPlaybackCommandToRemoteTargets({ nextLoop: !loopEnabled })}
                   >
-                    {targetState?.playback?.loop ? 'Boucle on' : 'Boucle off'}
+                    {loopEnabled ? 'Boucle on' : 'Boucle off'}
                   </Button>
                   <Button
                     type="button"

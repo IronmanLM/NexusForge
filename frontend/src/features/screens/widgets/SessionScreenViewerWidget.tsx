@@ -77,6 +77,7 @@ export default function SessionScreenViewerWidget({
   );
   const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement | null>(null);
   const lastCommandTokenRef = useRef<string>('');
+  const lastMediaIdentityRef = useRef<string>('');
 
   useEffect(() => {
     let active = true;
@@ -125,6 +126,17 @@ export default function SessionScreenViewerWidget({
   const sourceResource = controlledResource || resource;
   const protectedSrc = useProtectedResourceUrl(source, sourceResource?.id);
   const effectiveMode = inferDisplayMode(mode, sourceResource, source);
+  const mediaIdentity = `${effectiveMode}:${sourceResource?.id || protectedSrc || source}`;
+
+  useEffect(() => {
+    if (!mediaIdentity) {
+      return;
+    }
+    if (lastMediaIdentityRef.current !== mediaIdentity) {
+      lastMediaIdentityRef.current = mediaIdentity;
+      lastCommandTokenRef.current = '';
+    }
+  }, [mediaIdentity]);
 
   useEffect(() => {
     const mediaElement = mediaRef.current;
@@ -132,7 +144,7 @@ export default function SessionScreenViewerWidget({
       return;
     }
     mediaElement.loop = Boolean(playbackState.loop);
-  }, [playbackState.loop, protectedSrc]);
+  }, [playbackState.loop, mediaIdentity]);
 
   useEffect(() => {
     const mediaElement = mediaRef.current;
@@ -154,7 +166,7 @@ export default function SessionScreenViewerWidget({
         // ignore seek errors
       }
     }
-  }, [playbackState.commandToken, playbackState.status, protectedSrc]);
+  }, [playbackState.commandToken, playbackState.status, mediaIdentity]);
 
   if (!effectiveVisible) {
     return <div style={{ width: '100%', height: '100%' }} />;
