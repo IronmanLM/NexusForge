@@ -11,6 +11,7 @@ import {
   RuntimeTargetState,
   subscribeRuntimeTargetState
 } from '../runtimeTargets';
+import { traceRuntimeTarget } from '../runtimeTargetTrace';
 
 type SessionScreenViewerWidgetProps = {
   currentSession: Session;
@@ -121,12 +122,19 @@ export default function SessionScreenViewerWidget({
     [autoplay, loop]
   );
   const playbackState = hasControlledState ? targetState?.playback ?? emptyPlaybackState() : fallbackPlayback;
+  const rotationQuarterTurns = ((targetState?.rotationQuarterTurns ?? 0) % 4 + 4) % 4;
 
   const source = controlledResource?.contentUrl || resource?.contentUrl || url;
   const sourceResource = controlledResource || resource;
   const protectedSrc = useProtectedResourceUrl(source, sourceResource?.id);
   const effectiveMode = inferDisplayMode(mode, sourceResource, source);
   const mediaIdentity = `${effectiveMode}:${sourceResource?.id || protectedSrc || source}`;
+  const rotatedStyle = {
+    width: '100%',
+    height: '100%',
+    transform: rotationQuarterTurns ? `rotate(${rotationQuarterTurns * 90}deg)` : 'none',
+    transformOrigin: 'center center'
+  } as const;
 
   useEffect(() => {
     if (!mediaIdentity) {
@@ -144,6 +152,17 @@ export default function SessionScreenViewerWidget({
       return;
     }
     mediaElement.loop = Boolean(playbackState.loop);
+    traceRuntimeTarget({
+      source: 'screen-viewer',
+      sessionId: currentSession.id,
+      templateId,
+      targetId: widgetId,
+      event: 'apply-loop',
+      detail: {
+        mediaIdentity,
+        loop: Boolean(playbackState.loop)
+      }
+    });
   }, [playbackState.loop, mediaIdentity]);
 
   useEffect(() => {
@@ -152,6 +171,19 @@ export default function SessionScreenViewerWidget({
       return;
     }
     lastCommandTokenRef.current = playbackState.commandToken;
+    traceRuntimeTarget({
+      source: 'screen-viewer',
+      sessionId: currentSession.id,
+      templateId,
+      targetId: widgetId,
+      event: 'apply-command',
+      detail: {
+        mediaIdentity,
+        status: playbackState.status,
+        loop: playbackState.loop,
+        commandToken: playbackState.commandToken
+      }
+    });
 
     if (playbackState.status === 'playing') {
       void mediaElement.play().catch(() => undefined);
@@ -168,6 +200,47 @@ export default function SessionScreenViewerWidget({
     }
   }, [playbackState.commandToken, playbackState.status, mediaIdentity]);
 
+  useEffect(() => {
+    const mediaElement = mediaRef.current;
+    if (!mediaElement) {
+      return;
+    }
+    const logEvent = (eventName: string) => {
+      traceRuntimeTarget({
+        source: 'screen-viewer',
+        sessionId: currentSession.id,
+        templateId,
+        targetId: widgetId,
+        event: `media-${eventName}`,
+        detail: {
+          mediaIdentity,
+          currentTime: Number.isFinite(mediaElement.currentTime) ? mediaElement.currentTime : null,
+          paused: mediaElement.paused,
+          ended: mediaElement.ended,
+          loop: mediaElement.loop,
+          readyState: mediaElement.readyState
+        }
+      });
+    };
+    const handlePlay = () => logEvent('play');
+    const handlePlaying = () => logEvent('playing');
+    const handlePause = () => logEvent('pause');
+    const handleEnded = () => logEvent('ended');
+    const handleLoadedMetadata = () => logEvent('loadedmetadata');
+    mediaElement.addEventListener('play', handlePlay);
+    mediaElement.addEventListener('playing', handlePlaying);
+    mediaElement.addEventListener('pause', handlePause);
+    mediaElement.addEventListener('ended', handleEnded);
+    mediaElement.addEventListener('loadedmetadata', handleLoadedMetadata);
+    return () => {
+      mediaElement.removeEventListener('play', handlePlay);
+      mediaElement.removeEventListener('playing', handlePlaying);
+      mediaElement.removeEventListener('pause', handlePause);
+      mediaElement.removeEventListener('ended', handleEnded);
+      mediaElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    };
+  }, [currentSession.id, templateId, widgetId, mediaIdentity]);
+
   if (!effectiveVisible) {
     return <div style={{ width: '100%', height: '100%' }} />;
   }
@@ -181,7 +254,15 @@ export default function SessionScreenViewerWidget({
       return <p style={{ margin: 0 }}>Chargement du PDF...</p>;
     }
     const hash = `#page=${Math.max(1, page)}${showToolbar ? '' : '&toolbar=0'}`;
-    return <iframe title={controlledContent?.title || sourceResource?.name || 'Lecteur PDF'} src={`${protectedSrc}${hash}`} style={{ border: 0, width: '100%', minHeight: '100%', background: '#fff' }} />;
+    return (
+      <div style={{ width: '100%', height: '100%', overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
+        <iframe
+          title={controlledContent?.title || sourceResource?.name || 'Lecteur PDF'}
+          src={`${protectedSrc}${hash}`}
+          style={{ ...rotatedStyle, border: 0, minHeight: '100%', background: '#fff' }}
+        />
+      </div>
+    );
   }
 
   if (effectiveMode === 'video') {
@@ -189,14 +270,16 @@ export default function SessionScreenViewerWidget({
       return <p style={{ margin: 0 }}>Chargement de la vidéo...</p>;
     }
     return (
-      <video
-        ref={mediaRef as React.MutableRefObject<HTMLVideoElement | null>}
-        src={protectedSrc}
-        controls={showToolbar}
-        autoPlay={playbackState.status === 'playing'}
-        loop={playbackState.loop}
-        style={{ width: '100%', height: '100%', objectFit: fit as 'contain' | 'cover' | 'fill', background: '#020617' }}
-      />
+      <div style={{ width: '100%', height: '100%', overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
+        <video
+          ref={mediaRef as React.MutableRefObject<HTMLVideoElement | null>}
+          src={protectedSrc}
+          controls={showToolbar}
+          autoPlay={playbackState.status === 'playing'}
+          loop={playbackState.loop}
+          style={{ ...rotatedStyle, objectFit: fit as 'contain' | 'cover' | 'fill', background: '#020617' }}
+        />
+      </div>
     );
   }
 
@@ -219,12 +302,12 @@ export default function SessionScreenViewerWidget({
   }
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center' }}>
+    <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', overflow: 'hidden' }}>
       <AuthenticatedImage
         src={source}
         resourceId={sourceResource?.id}
         alt={controlledContent?.title || sourceResource?.name || 'Écran'}
-        style={{ width: '100%', height: '100%', objectFit: fit as 'contain' | 'cover' | 'fill' }}
+        style={{ ...rotatedStyle, objectFit: fit as 'contain' | 'cover' | 'fill' }}
       />
     </div>
   );

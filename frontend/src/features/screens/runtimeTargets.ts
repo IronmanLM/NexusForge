@@ -1,5 +1,6 @@
 import { sessionRepository } from '../../data/repositories';
 import { ResourceItem } from '../../types/resource';
+import { traceRuntimeTarget } from './runtimeTargetTrace';
 
 export type RuntimeTargetContent =
   | {
@@ -23,6 +24,7 @@ export type RuntimeTargetState = {
   visible: boolean;
   content: RuntimeTargetContent | null;
   playback?: RuntimeTargetPlaybackState | null;
+  rotationQuarterTurns?: number | null;
   updatedAt: string;
 };
 
@@ -55,6 +57,34 @@ function getChannel(channelKey: string): BroadcastChannel | null {
   return channels.get(channelKey) ?? null;
 }
 
+function normalizeUpdatedAt(value: string | undefined): number {
+  if (!value) {
+    return 0;
+  }
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function normalizeRotationQuarterTurns(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0;
+  }
+  const normalized = Math.trunc(value) % 4;
+  return normalized < 0 ? normalized + 4 : normalized;
+}
+
+function shouldReplaceRuntimeTargetState(current: RuntimeTargetState, incoming: RuntimeTargetState): boolean {
+  const currentUpdatedAt = normalizeUpdatedAt(current.updatedAt);
+  const incomingUpdatedAt = normalizeUpdatedAt(incoming.updatedAt);
+  if (incomingUpdatedAt > currentUpdatedAt) {
+    return true;
+  }
+  if (incomingUpdatedAt < currentUpdatedAt) {
+    return false;
+  }
+  return JSON.stringify(current) !== JSON.stringify(incoming);
+}
+
 export function readRuntimeTargetState(params: { sessionId: string; templateId: string; targetId: string }): RuntimeTargetState {
   if (typeof window === 'undefined') {
     return { visible: false, content: null, updatedAt: new Date(0).toISOString() };
@@ -84,6 +114,7 @@ export function readRuntimeTargetState(params: { sessionId: string; templateId: 
                   : new Date(0).toISOString()
             }
           : null,
+      rotationQuarterTurns: normalizeRotationQuarterTurns(parsed?.rotationQuarterTurns),
       updatedAt: typeof parsed?.updatedAt === 'string' ? parsed.updatedAt : new Date().toISOString()
     };
   } catch {
@@ -101,6 +132,21 @@ export function writeRuntimeTargetState(params: {
     return;
   }
 
+  traceRuntimeTarget({
+    source: 'runtime-targets',
+    sessionId: params.sessionId,
+    templateId: params.templateId,
+    targetId: params.targetId,
+    event: 'write-state',
+    detail: {
+      visible: params.state.visible,
+      hasContent: Boolean(params.state.content),
+      playbackStatus: params.state.playback?.status ?? null,
+      loop: params.state.playback?.loop ?? null,
+      rotationQuarterTurns: params.state.rotationQuarterTurns ?? 0,
+      updatedAt: params.state.updatedAt
+    }
+  });
   window.localStorage.setItem(buildStorageKey(params.sessionId, params.templateId, params.targetId), JSON.stringify(params.state));
   window.dispatchEvent(new CustomEvent(buildEventName(params.sessionId, params.templateId, params.targetId), { detail: params.state }));
   const channel = getChannel(`${params.sessionId}.${params.templateId}.${params.targetId}`);
@@ -145,11 +191,43 @@ export function subscribeRuntimeTargetState(
         }
         const state = remoteState as RuntimeTargetState;
         const current = readRuntimeTargetState(params);
-        if (JSON.stringify(current) === JSON.stringify(state)) {
+        const normalizedState = {
+          visible: Boolean(state.visible),
+          content: state.content ?? null,
+          playback: state.playback ?? null,
+          rotationQuarterTurns: normalizeRotationQuarterTurns(state.rotationQuarterTurns),
+          updatedAt: typeof state.updatedAt === 'string' ? state.updatedAt : new Date().toISOString()
+        } satisfies RuntimeTargetState;
+        if (!shouldReplaceRuntimeTargetState(current, normalizedState)) {
+          traceRuntimeTarget({
+            source: 'runtime-targets',
+            sessionId: params.sessionId,
+            templateId: params.templateId,
+            targetId: params.targetId,
+            event: 'skip-stale-remote-state',
+            detail: {
+              currentUpdatedAt: current.updatedAt,
+              incomingUpdatedAt: normalizedState.updatedAt
+            }
+          });
           return;
         }
-        window.localStorage.setItem(buildStorageKey(params.sessionId, params.templateId, params.targetId), JSON.stringify(state));
-        onChange(state);
+        traceRuntimeTarget({
+          source: 'runtime-targets',
+          sessionId: params.sessionId,
+          templateId: params.templateId,
+          targetId: params.targetId,
+          event: 'apply-remote-state',
+          detail: {
+            currentUpdatedAt: current.updatedAt,
+            incomingUpdatedAt: normalizedState.updatedAt,
+            playbackStatus: normalizedState.playback?.status ?? null,
+            loop: normalizedState.playback?.loop ?? null,
+            rotationQuarterTurns: normalizedState.rotationQuarterTurns ?? 0
+          }
+        });
+        window.localStorage.setItem(buildStorageKey(params.sessionId, params.templateId, params.targetId), JSON.stringify(normalizedState));
+        onChange(normalizedState);
       })
       .catch(() => undefined);
   }, 2_500);

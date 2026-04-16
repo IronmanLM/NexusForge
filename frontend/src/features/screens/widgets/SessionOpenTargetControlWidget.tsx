@@ -9,6 +9,7 @@ import {
   subscribeRuntimeTargetState,
   writeRuntimeTargetState
 } from '../runtimeTargets';
+import { traceRuntimeTarget } from '../runtimeTargetTrace';
 import { SessionRuntimeConnection } from '../../../types/session';
 
 type SessionOpenTargetControlWidgetProps = {
@@ -44,6 +45,10 @@ function nextPlaybackState(
   } as const;
 }
 
+function nextRotationQuarterTurns(targetState: RuntimeTargetState | null): number {
+  return (((targetState?.rotationQuarterTurns ?? 0) + 1) % 4 + 4) % 4;
+}
+
 function normalizeRuntimeTargetState(value: unknown): RuntimeTargetState | null {
   if (!value || typeof value !== 'object') {
     return null;
@@ -53,6 +58,7 @@ function normalizeRuntimeTargetState(value: unknown): RuntimeTargetState | null 
     visible: Boolean(raw.visible),
     content: raw.content ?? null,
     playback: raw.playback ?? null,
+    rotationQuarterTurns: typeof raw.rotationQuarterTurns === 'number' ? raw.rotationQuarterTurns : 0,
     updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : new Date().toISOString()
   };
 }
@@ -148,6 +154,21 @@ export default function SessionOpenTargetControlWidget({
   );
 
   const pushStateToRemoteTargets = (nextState: RuntimeTargetState) => {
+    traceRuntimeTarget({
+      source: 'controller',
+      sessionId,
+      templateId,
+      targetId: targetDescriptor?.id,
+      event: 'push-state-remote',
+      detail: {
+        selectedCount: selectedRemoteTargets.length,
+        visible: nextState.visible,
+        hasContent: Boolean(nextState.content),
+        playbackStatus: nextState.playback?.status ?? null,
+        loop: nextState.playback?.loop ?? null,
+        rotationQuarterTurns: nextState.rotationQuarterTurns ?? 0
+      }
+    });
     selectedRemoteTargets.forEach((entry) => {
       if (!entry.overlayTarget || !entry.templateId) {
         return;
@@ -165,6 +186,18 @@ export default function SessionOpenTargetControlWidget({
     nextStatus?: 'playing' | 'paused' | 'stopped';
     nextLoop?: boolean;
   }) => {
+    traceRuntimeTarget({
+      source: 'controller',
+      sessionId,
+      templateId,
+      targetId: targetDescriptor?.id,
+      event: 'push-playback-remote',
+      detail: {
+        selectedCount: selectedRemoteTargets.length,
+        nextStatus: command.nextStatus ?? null,
+        nextLoop: typeof command.nextLoop === 'boolean' ? command.nextLoop : null
+      }
+    });
     await Promise.all(
       selectedRemoteTargets.map(async (entry) => {
         if (!entry.overlayTarget || !entry.templateId) {
@@ -192,6 +225,7 @@ export default function SessionOpenTargetControlWidget({
             visible: true,
             content: currentRemoteState.content,
             playback: nextPlaybackState(currentRemoteState, command.nextStatus, command.nextLoop),
+            rotationQuarterTurns: currentRemoteState.rotationQuarterTurns ?? 0,
             updatedAt: new Date().toISOString()
           }
         });
@@ -213,6 +247,19 @@ export default function SessionOpenTargetControlWidget({
       return;
     }
     const playableLocalState = currentLocalState as RuntimeTargetState;
+    traceRuntimeTarget({
+      source: 'controller',
+      sessionId,
+      templateId,
+      targetId: targetDescriptor.id,
+      event: 'push-playback-local',
+      detail: {
+        nextStatus: command.nextStatus ?? null,
+        nextLoop: typeof command.nextLoop === 'boolean' ? command.nextLoop : null,
+        currentStatus: playableLocalState.playback?.status ?? null,
+        currentLoop: playableLocalState.playback?.loop ?? null
+      }
+    });
     writeRuntimeTargetState({
       sessionId,
       templateId,
@@ -221,9 +268,81 @@ export default function SessionOpenTargetControlWidget({
         visible: true,
         content: playableLocalState.content,
         playback: nextPlaybackState(playableLocalState, command.nextStatus, command.nextLoop),
+        rotationQuarterTurns: playableLocalState.rotationQuarterTurns ?? 0,
         updatedAt: new Date().toISOString()
       }
     });
+  };
+
+  const rotateLocalTarget = async () => {
+    if (!targetDescriptor) {
+      return;
+    }
+    const currentLocalState = normalizeRuntimeTargetState(readRuntimeTargetState({ sessionId, templateId, targetId: targetDescriptor.id }));
+    if (!currentLocalState?.content || currentLocalState.content.kind !== 'resource') {
+      return;
+    }
+    const nextRotation = nextRotationQuarterTurns(currentLocalState);
+    traceRuntimeTarget({
+      source: 'controller',
+      sessionId,
+      templateId,
+      targetId: targetDescriptor.id,
+      event: 'rotate-local',
+      detail: { nextRotationQuarterTurns: nextRotation }
+    });
+    writeRuntimeTargetState({
+      sessionId,
+      templateId,
+      targetId: targetDescriptor.id,
+      state: {
+        visible: true,
+        content: currentLocalState.content,
+        playback: currentLocalState.playback ?? nextPlaybackState(currentLocalState),
+        rotationQuarterTurns: nextRotation,
+        updatedAt: new Date().toISOString()
+      }
+    });
+  };
+
+  const rotateRemoteTargets = async () => {
+    traceRuntimeTarget({
+      source: 'controller',
+      sessionId,
+      templateId,
+      targetId: targetDescriptor?.id,
+      event: 'rotate-remote',
+      detail: { selectedCount: selectedRemoteTargets.length }
+    });
+    await Promise.all(
+      selectedRemoteTargets.map(async (entry) => {
+        if (!entry.overlayTarget || !entry.templateId) {
+          return;
+        }
+        const currentRemoteState = normalizeRuntimeTargetState(
+          await sessionRepository.readRuntimeTargetState({
+            sessionId,
+            templateId: entry.templateId,
+            targetId: entry.overlayTarget.targetId
+          }).catch(() => null)
+        );
+        if (!currentRemoteState?.content || currentRemoteState.content.kind !== 'resource') {
+          return;
+        }
+        writeRuntimeTargetState({
+          sessionId,
+          templateId: entry.templateId,
+          targetId: entry.overlayTarget.targetId,
+          state: {
+            visible: true,
+            content: currentRemoteState.content,
+            playback: currentRemoteState.playback ?? nextPlaybackState(currentRemoteState),
+            rotationQuarterTurns: nextRotationQuarterTurns(currentRemoteState),
+            updatedAt: new Date().toISOString()
+          }
+        });
+      })
+    );
   };
 
   const targetContent = targetState?.content ?? null;
@@ -277,6 +396,7 @@ export default function SessionOpenTargetControlWidget({
                       visible: !(targetState?.visible ?? false),
                       content: targetContent,
                       playback: targetState?.playback ?? nextPlaybackState(targetState),
+                      rotationQuarterTurns: targetState?.rotationQuarterTurns ?? 0,
                       updatedAt: new Date().toISOString()
                     }
                   })
@@ -321,6 +441,17 @@ export default function SessionOpenTargetControlWidget({
               <Button
                 type="button"
                 variant="secondary"
+                aria-label="Pivoter de 90 degrés"
+                title="Pivoter de 90 degrés"
+                disabled={!targetContent}
+                onClick={() => void rotateLocalTarget()}
+                className="overlay-control-icon-button"
+              >
+                ↷
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
                 aria-label="Vider overlay"
                 title="Vider overlay"
                 disabled={!targetContent}
@@ -333,6 +464,7 @@ export default function SessionOpenTargetControlWidget({
                       visible: false,
                       content: null,
                       playback: nextPlaybackState(targetState, 'stopped', false),
+                      rotationQuarterTurns: 0,
                       updatedAt: new Date().toISOString()
                     }
                   })
@@ -384,11 +516,13 @@ export default function SessionOpenTargetControlWidget({
                         visible: true,
                         content: targetContent,
                         playback: targetState?.playback ?? nextPlaybackState(targetState),
+                        rotationQuarterTurns: targetState?.rotationQuarterTurns ?? 0,
                         updatedAt: new Date().toISOString()
                       })
                     }
+                    className="overlay-control-icon-button"
                   >
-                    Prévisualiser
+                    ◪
                   </Button>
                   <Button
                     type="button"
@@ -401,35 +535,57 @@ export default function SessionOpenTargetControlWidget({
                         visible: false,
                         content: targetContent,
                         playback: targetState?.playback ?? nextPlaybackState(targetState),
+                        rotationQuarterTurns: targetState?.rotationQuarterTurns ?? 0,
                         updatedAt: new Date().toISOString()
                       })
                     }
+                    className="overlay-control-icon-button"
                   >
-                    Masquer
+                    ◫
                   </Button>
                   <Button
                     type="button"
                     variant="secondary"
                     disabled={!selectedRemoteTargets.length}
                     onClick={() => void pushPlaybackCommandToRemoteTargets({ nextStatus: 'playing' })}
+                    className="overlay-control-icon-button"
+                    aria-label="Lire chez les joueurs"
+                    title="Lire chez les joueurs"
                   >
-                    Play
+                    ▶
                   </Button>
                   <Button
                     type="button"
                     variant="secondary"
                     disabled={!selectedRemoteTargets.length}
                     onClick={() => void pushPlaybackCommandToRemoteTargets({ nextStatus: 'stopped' })}
+                    className="overlay-control-icon-button"
+                    aria-label="Pause / stop chez les joueurs"
+                    title="Pause / stop chez les joueurs"
                   >
-                    Pause / stop
+                    ■
                   </Button>
                   <Button
                     type="button"
                     variant="secondary"
                     disabled={!selectedRemoteTargets.length}
                     onClick={() => void pushPlaybackCommandToRemoteTargets({ nextLoop: !loopEnabled })}
+                    className={`overlay-control-icon-button${loopEnabled ? ' is-active' : ''}`.trim()}
+                    aria-label={loopEnabled ? 'Désactiver la boucle chez les joueurs' : 'Activer la boucle chez les joueurs'}
+                    title={loopEnabled ? 'Désactiver la boucle chez les joueurs' : 'Activer la boucle chez les joueurs'}
                   >
-                    {loopEnabled ? 'Boucle on' : 'Boucle off'}
+                    ↻
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={!selectedRemoteTargets.length}
+                    onClick={() => void rotateRemoteTargets()}
+                    className="overlay-control-icon-button"
+                    aria-label="Pivoter de 90 degrés chez les joueurs"
+                    title="Pivoter de 90 degrés chez les joueurs"
+                  >
+                    ↷
                   </Button>
                   <Button
                     type="button"
@@ -442,11 +598,13 @@ export default function SessionOpenTargetControlWidget({
                         visible: false,
                         content: null,
                         playback: nextPlaybackState(targetState, 'stopped', false),
+                        rotationQuarterTurns: 0,
                         updatedAt: new Date().toISOString()
                       })
                     }
+                    className="overlay-control-icon-button"
                   >
-                    Fermer
+                    ✕
                   </Button>
                 </div>
               </div>
