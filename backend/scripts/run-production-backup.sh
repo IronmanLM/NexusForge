@@ -10,7 +10,14 @@ BACKEND_DATA_DIR="${BACKUP_BACKEND_DATA_DIR:-$BACKEND_DIR/data}"
 REMOTE_HOST="${BACKUP_REMOTE_HOST:-fremaux.biz}"
 REMOTE_USER="${BACKUP_REMOTE_USER:-root}"
 REMOTE_DIR="${BACKUP_REMOTE_DIR:-/mnt/kraken/Backups/nexusforge_backups}"
-SSH_KEY="${BACKUP_SSH_KEY:-$APP_HOME/.ssh/id_rsa_codex}"
+REMOTE_HISTORY_DIR="${BACKUP_REMOTE_HISTORY_DIR:-$REMOTE_DIR/history}"
+if [[ -n "${BACKUP_SSH_KEY:-}" ]]; then
+  SSH_KEY="$BACKUP_SSH_KEY"
+elif [[ -f "$APP_HOME/.ssh/id_ed25519_nexusforge_backup" ]]; then
+  SSH_KEY="$APP_HOME/.ssh/id_ed25519_nexusforge_backup"
+else
+  SSH_KEY="$APP_HOME/.ssh/id_rsa_codex"
+fi
 ARCHIVE_NAME="${STAMP}-nexusforge-production-data.tar.gz"
 TMP_DIR="$(mktemp -d)"
 ARCHIVE_PATH="$TMP_DIR/$ARCHIVE_NAME"
@@ -55,11 +62,6 @@ if [[ -f "$BACKEND_DATA_DIR/persist-log.jsonl" ]]; then
   cp -a "$BACKEND_DATA_DIR/persist-log.jsonl" "$STAGE_DIR/backend/data/persist-log.jsonl"
 fi
 
-if [[ -d "$BACKEND_DATA_DIR/history" ]]; then
-  mkdir -p "$STAGE_DIR/backend/data/history"
-  cp -a "$BACKEND_DATA_DIR/history/." "$STAGE_DIR/backend/data/history/"
-fi
-
 if [[ -d "$BACKEND_DATA_DIR/resources" ]]; then
   mkdir -p "$STAGE_DIR/backend/data/resources"
   find "$BACKEND_DATA_DIR/resources" -maxdepth 1 -type f \
@@ -71,12 +73,18 @@ fi
 tar -C "$STAGE_DIR" -czf "$ARCHIVE_PATH" .
 
 ssh -i "$SSH_KEY" -o BatchMode=yes -o StrictHostKeyChecking=no "$REMOTE_USER@$REMOTE_HOST" \
-  "mkdir -p '$REMOTE_DIR'"
+  "mkdir -p '$REMOTE_DIR' '$REMOTE_HISTORY_DIR'"
 
 scp -i "$SSH_KEY" -o BatchMode=yes -o StrictHostKeyChecking=no \
   "$ARCHIVE_PATH" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR/$ARCHIVE_NAME"
 
+if [[ -d "$BACKEND_DATA_DIR/history" ]]; then
+  rsync -az --delete \
+    -e "ssh -i $SSH_KEY -o BatchMode=yes -o StrictHostKeyChecking=no" \
+    "$BACKEND_DATA_DIR/history/" "$REMOTE_USER@$REMOTE_HOST:$REMOTE_HISTORY_DIR/"
+fi
+
 ARCHIVE_SIZE="$(stat -c %s "$ARCHIVE_PATH")"
 
-printf '{"ok":true,"archiveName":"%s","archiveSizeBytes":%s,"remoteHost":"%s","remoteDir":"%s"}\n' \
-  "$ARCHIVE_NAME" "$ARCHIVE_SIZE" "$REMOTE_HOST" "$REMOTE_DIR"
+printf '{"ok":true,"archiveName":"%s","archiveSizeBytes":%s,"remoteHost":"%s","remoteDir":"%s","remoteHistoryDir":"%s"}\n' \
+  "$ARCHIVE_NAME" "$ARCHIVE_SIZE" "$REMOTE_HOST" "$REMOTE_DIR" "$REMOTE_HISTORY_DIR"
