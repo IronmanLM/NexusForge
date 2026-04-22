@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nexus Forge | Maintenance</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg-1: #07111f;
+        --bg-2: #0d1b2d;
+        --line: rgba(148, 163, 184, 0.22);
+        --text: #e5eefb;
+        --muted: #9eb1ca;
+        --accent: #7dd3fc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top, rgba(56, 189, 248, 0.14), transparent 32%),
+          linear-gradient(180deg, var(--bg-2), var(--bg-1));
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+      }
+
+      main {
+        width: min(720px, 100%);
+        padding: 2rem;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: rgba(7, 17, 31, 0.84);
+        box-shadow: 0 24px 80px rgba(2, 6, 23, 0.45);
+      }
+
+      h1 {
+        margin: 0 0 0.75rem;
+        font-size: clamp(2rem, 5vw, 3.2rem);
+        line-height: 1.05;
+      }
+
+      p {
+        margin: 0;
+        font-size: 1.02rem;
+        line-height: 1.65;
+        color: var(--muted);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin-bottom: 1rem;
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        border: 1px solid rgba(125, 211, 252, 0.25);
+        color: var(--accent);
+        background: rgba(14, 165, 233, 0.1);
+        font-size: 0.88rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .badge::before {
+        content: "";
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 999px;
+        background: var(--accent);
+        box-shadow: 0 0 0 0.3rem rgba(125, 211, 252, 0.16);
+      }
+
+      .stack {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .hint {
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--line);
+        font-size: 0.95rem;
+      }
+
+      strong {
+        color: var(--text);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="badge">Maintenance en cours</div>
+      <div class="stack">
+        <h1>Nexus Forge est temporairement indisponible.</h1>
+        <p>
+          Une maintenance est en cours pour diagnostiquer un problème de charge sur le serveur.
+          Le service reviendra dès que la situation sera stabilisée.
+        </p>
+        <p class="hint">
+          <strong>Statut :</strong> accès volontairement coupé pendant l’intervention technique.
+        </p>
+      </div>
+    </main>
+  </body>
+</html>
