@@ -45,7 +45,12 @@ const ROOT_ADMIN_FIRST_NAME = process.env.ROOT_ADMIN_FIRST_NAME || 'Mikael';
 const ROOT_ADMIN_LAST_NAME = process.env.ROOT_ADMIN_LAST_NAME || 'Frémaux';
 const ROOT_ADMIN_NICKNAME = process.env.ROOT_ADMIN_NICKNAME || 'IronmanLM';
 const ROOT_ADMIN_EMAIL = (process.env.ROOT_ADMIN_EMAIL || 'ironmanlm@en-ligne.fr').toLowerCase();
-const ROOT_ADMIN_PASSWORD = process.env.ROOT_ADMIN_PASSWORD || DEFAULT_ROOT_ADMIN_PASSWORD;
+const ROOT_ADMIN_PASSWORD =
+  typeof process.env.ROOT_ADMIN_PASSWORD === 'string' && process.env.ROOT_ADMIN_PASSWORD.trim()
+    ? process.env.ROOT_ADMIN_PASSWORD
+    : NODE_ENV === 'production'
+    ? ''
+    : DEFAULT_ROOT_ADMIN_PASSWORD;
 const ROOT_ADMIN_TOTP_SECRET = String(process.env.ROOT_ADMIN_TOTP_SECRET || '').trim().replace(/\s+/g, '').toUpperCase();
 
 const EMAIL_TOKEN_TTL_MS = Number(process.env.EMAIL_TOKEN_TTL_MS || 24 * 60 * 60 * 1000);
@@ -4155,7 +4160,7 @@ async function sendResetPasswordEmail(user, token) {
 
 function seedAdminAccount() {
   const adminId = 'user-admin-root';
-  const passwordHash = bcrypt.hashSync(ROOT_ADMIN_PASSWORD, 12);
+  const hasConfiguredRootPassword = Boolean(ROOT_ADMIN_PASSWORD);
   const forceRootTotp = isValidBase32Secret(ROOT_ADMIN_TOTP_SECRET);
 
   const existing = usersByEmail.get(ROOT_ADMIN_EMAIL);
@@ -4175,12 +4180,19 @@ function seedAdminAccount() {
     user.firstName = ROOT_ADMIN_FIRST_NAME;
     user.lastName = ROOT_ADMIN_LAST_NAME;
     user.displayName = `${ROOT_ADMIN_NICKNAME} (${ROOT_ADMIN_FIRST_NAME} ${ROOT_ADMIN_LAST_NAME})`;
+    if (hasConfiguredRootPassword) {
+      user.passwordHash = bcrypt.hashSync(ROOT_ADMIN_PASSWORD, 12);
+    }
     if (forceRootTotp) {
       user.totpEnabled = true;
       user.totpSecret = ROOT_ADMIN_TOTP_SECRET;
       user.pendingTotpSecret = null;
     }
     return user;
+  }
+
+  if (!hasConfiguredRootPassword) {
+    throw new Error('[nexusforge-backend] ROOT_ADMIN_PASSWORD must be configured before creating the root admin account');
   }
 
   const user = {
@@ -4190,7 +4202,7 @@ function seedAdminAccount() {
     nickname: ROOT_ADMIN_NICKNAME,
     displayName: `${ROOT_ADMIN_NICKNAME} (${ROOT_ADMIN_FIRST_NAME} ${ROOT_ADMIN_LAST_NAME})`,
     email: ROOT_ADMIN_EMAIL,
-    passwordHash,
+    passwordHash: bcrypt.hashSync(ROOT_ADMIN_PASSWORD, 12),
     roles: ['admin', 'gm', 'player'],
     isEmailVerified: true,
     approvalStatus: 'approved',
@@ -8644,9 +8656,9 @@ app.listen(PORT, () => {
   console.log(
     `[nexusforge-backend] smtp=${canSendEmails() ? 'enabled' : 'disabled'} rootAdmin=${ROOT_ADMIN_EMAIL} dataFile=${DATA_FILE}`
   );
-  if (NODE_ENV === 'production' && ROOT_ADMIN_PASSWORD === DEFAULT_ROOT_ADMIN_PASSWORD) {
+  if (NODE_ENV === 'production' && !ROOT_ADMIN_PASSWORD) {
     // eslint-disable-next-line no-console
-    console.warn('[nexusforge-backend] warning: ROOT_ADMIN_PASSWORD still uses the embedded fallback; set it in production configuration');
+    console.warn('[nexusforge-backend] warning: ROOT_ADMIN_PASSWORD is not configured in production; persisted root admin hash is preserved as-is');
   }
   void backfillMissingResourceDerivatives();
 });
