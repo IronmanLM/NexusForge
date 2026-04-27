@@ -2,6 +2,8 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.
 
 const ACCESS_TOKEN_STORAGE_KEY = 'nexusforge.auth.accessToken';
 const REFRESH_TOKEN_STORAGE_KEY = 'nexusforge.auth.refreshToken';
+const ACCESS_TOKEN_SESSION_STORAGE_KEY = 'nexusforge.auth.sessionAccessToken';
+let inMemoryAccessToken: string | null = null;
 
 export class ApiError extends Error {
   status: number;
@@ -44,7 +46,22 @@ export function isBackendEnabled(): boolean {
 }
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+  if (inMemoryAccessToken) {
+    return inMemoryAccessToken;
+  }
+  const sessionToken = window.sessionStorage.getItem(ACCESS_TOKEN_SESSION_STORAGE_KEY);
+  if (sessionToken) {
+    inMemoryAccessToken = sessionToken;
+    return sessionToken;
+  }
+  const legacyLocalToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
+  if (legacyLocalToken) {
+    inMemoryAccessToken = legacyLocalToken;
+    window.sessionStorage.setItem(ACCESS_TOKEN_SESSION_STORAGE_KEY, legacyLocalToken);
+    localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+    return legacyLocalToken;
+  }
+  return null;
 }
 
 export function getRefreshToken(): string | null {
@@ -52,15 +69,21 @@ export function getRefreshToken(): string | null {
 }
 
 export function persistTokens(params: { accessToken: string; refreshToken?: string | null }): void {
-  localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, params.accessToken);
+  inMemoryAccessToken = params.accessToken;
+  window.sessionStorage.setItem(ACCESS_TOKEN_SESSION_STORAGE_KEY, params.accessToken);
+  localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
   if (params.refreshToken) {
     localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, params.refreshToken);
+  } else if (params.refreshToken === null) {
+    localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
   }
 }
 
 export function clearStoredTokens(): void {
+  inMemoryAccessToken = null;
   localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
   localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+  window.sessionStorage.removeItem(ACCESS_TOKEN_SESSION_STORAGE_KEY);
 }
 
 async function parseResponsePayload(response: Response): Promise<unknown> {

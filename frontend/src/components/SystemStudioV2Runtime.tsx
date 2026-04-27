@@ -4,6 +4,7 @@ import Button from './Button';
 import AuthenticatedImage from './AuthenticatedImage';
 import { messageRepository } from '../data/repositories/messageRepository';
 import { Message } from '../types/message';
+import { evaluateSafeBooleanExpression, evaluateSafeNumericExpression } from '../services/safeExpressionEvaluator';
 import {
   SystemCatalogDefinition,
   SystemCatalogEntryDefinition,
@@ -812,11 +813,7 @@ export function evaluateMathExpression(
       round: Math.round,
       clamp: (value: number, lower: number, upper: number) => Math.min(Math.max(value, lower), upper)
     };
-    const result = new Function(
-      'helpers',
-      `const { ifEq, ifGte, ifLte, min, max, abs, floor, ceil, round, clamp } = helpers; return (${withValues});`
-    )(helpers);
-    return typeof result === 'number' && Number.isFinite(result) ? result : null;
+    return evaluateSafeNumericExpression(withValues, helpers);
   } catch {
     return null;
   }
@@ -861,11 +858,7 @@ export function evaluateCondition(
     return false;
   }
 
-  try {
-    return Boolean(new Function(`return (${withValues});`)());
-  } catch {
-    return false;
-  }
+  return evaluateSafeBooleanExpression(withValues);
 }
 
 function filterRepeatItems(params: {
