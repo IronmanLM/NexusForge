@@ -132,7 +132,7 @@ app.use(
 );
 app.use(express.json({ limit: '15mb' }));
 
-const refreshTokens = new Set();
+const refreshTokenSessions = new Map();
 const emailVerificationTokens = new Map();
 const passwordResetTokens = new Map();
 const twoFactorChallenges = new Map();
@@ -1339,6 +1339,26 @@ function normalizeRoles(rawRoles) {
   return Array.from(new Set(allowed));
 }
 
+function makeRefreshSessionId() {
+  return makeId('refresh');
+}
+
+function buildClientFingerprint(req) {
+  const userAgent = String(req.headers['user-agent'] || '').trim();
+  const ip = getClientIp(req);
+  return crypto.createHash('sha256').update(`${ip}|${userAgent}`).digest('hex');
+}
+
+function revokeRefreshFamily(familyId, reason = 'family_revoked') {
+  for (const session of refreshTokenSessions.values()) {
+    if (session.familyId !== familyId) {
+      continue;
+    }
+    session.revokedAt = session.revokedAt || nowIso();
+    session.revokedReason = session.revokedReason || reason;
+  }
+}
+
 function ensureUserDefaults(user) {
   if (!user || typeof user !== 'object') {
     return;
@@ -1370,7 +1390,7 @@ function serializeState() {
     socialReports: [...socialReports.values()],
     adminAuditEvents: [...adminAuditEvents],
     discordBotEvents: [...discordBotEvents],
-    refreshTokens: [...refreshTokens.values()],
+    refreshTokenSessions: [...refreshTokenSessions.values()],
     emailVerificationTokens: [...emailVerificationTokens.entries()],
     passwordResetTokens: [...passwordResetTokens.entries()],
     twoFactorChallenges: [...twoFactorChallenges.entries()],
@@ -1472,7 +1492,7 @@ function loadPersistedState() {
     socialReports.clear();
     adminAuditEvents.splice(0, adminAuditEvents.length);
     discordBotEvents.splice(0, discordBotEvents.length);
-    refreshTokens.clear();
+    refreshTokenSessions.clear();
     emailVerificationTokens.clear();
     passwordResetTokens.clear();
     twoFactorChallenges.clear();
@@ -1582,10 +1602,38 @@ function loadPersistedState() {
       }
     }
 
-    if (Array.isArray(parsed.refreshTokens)) {
+    if (Array.isArray(parsed.refreshTokenSessions)) {
+      for (const session of parsed.refreshTokenSessions) {
+        if (session && typeof session.id === 'string') {
+          refreshTokenSessions.set(session.id, session);
+        }
+      }
+    } else if (Array.isArray(parsed.refreshTokens)) {
       for (const token of parsed.refreshTokens) {
-        if (typeof token === 'string') {
-          refreshTokens.add(token);
+        if (typeof token !== 'string' || !token) {
+          continue;
+        }
+        try {
+          const payload = jwt.verify(token, JWT_REFRESH_SECRET);
+          if (!payload || typeof payload.sub !== 'string') {
+            continue;
+          }
+          const sessionId = typeof payload.jti === 'string' && payload.jti ? payload.jti : makeRefreshSessionId();
+          const familyId = typeof payload.familyId === 'string' && payload.familyId ? payload.familyId : sessionId;
+          refreshTokenSessions.set(sessionId, {
+            id: sessionId,
+            familyId,
+            userId: payload.sub,
+            createdAt: nowIso(),
+            expiresAt: typeof payload.exp === 'number' ? new Date(payload.exp * 1000).toISOString() : null,
+            revokedAt: null,
+            revokedReason: null,
+            replacedBySessionId: null,
+            lastUsedAt: null,
+            clientFingerprint: null
+          });
+        } catch {
+          // ignore invalid legacy refresh token entries during migration
         }
       }
     }
@@ -2058,7 +2106,10 @@ async function sendEmail({ to, subject, text, html }) {
   });
 }
 
-function issueTokens(user) {
+function issueTokens(user, options = {}) {
+  const sessionId = options.sessionId || makeRefreshSessionId();
+  const familyId = options.familyId || sessionId;
+  const clientFingerprint = options.clientFingerprint || null;
   const token = jwt.sign(
     {
       sub: user.id,
@@ -2073,13 +2124,32 @@ function issueTokens(user) {
   const refreshToken = jwt.sign(
     {
       sub: user.id,
-      type: 'refresh'
+      type: 'refresh',
+      jti: sessionId,
+      familyId
     },
     JWT_REFRESH_SECRET,
     { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
   );
 
-  refreshTokens.add(refreshToken);
+  const decodedRefresh = jwt.decode(refreshToken);
+  const expiresAt =
+    decodedRefresh && typeof decodedRefresh === 'object' && typeof decodedRefresh.exp === 'number'
+      ? new Date(decodedRefresh.exp * 1000).toISOString()
+      : null;
+
+  refreshTokenSessions.set(sessionId, {
+    id: sessionId,
+    familyId,
+    userId: user.id,
+    createdAt: nowIso(),
+    expiresAt,
+    revokedAt: null,
+    revokedReason: null,
+    replacedBySessionId: null,
+    lastUsedAt: null,
+    clientFingerprint
+  });
   return { token, refreshToken };
 }
 
@@ -4574,35 +4644,71 @@ app.post('/api/auth/login', authLoginRateLimiter, async (req, res) => {
   clearLoginFailures(user);
   user.updatedAt = nowIso();
 
-  const { token, refreshToken } = issueTokens(user);
+  const { token, refreshToken } = issueTokens(user, {
+    clientFingerprint: buildClientFingerprint(req)
+  });
   schedulePersist('auth-login-success');
   return res.status(200).json({ token, refreshToken, user: publicUser(user) });
 });
 
 app.post('/api/auth/refresh', (req, res) => {
   const { refreshToken } = req.body || {};
-  if (!refreshToken || !refreshTokens.has(refreshToken)) {
+  if (!refreshToken) {
     return error(res, 401, 'REFRESH_TOKEN_REVOKED', 'Refresh token is invalid or revoked');
   }
 
   try {
     const payload = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+    if (!payload || payload.type !== 'refresh' || typeof payload.sub !== 'string' || typeof payload.jti !== 'string') {
+      return error(res, 401, 'UNAUTHENTICATED', 'Refresh token invalid');
+    }
+    const currentSession = refreshTokenSessions.get(payload.jti);
+    if (!currentSession || currentSession.userId !== payload.sub) {
+      return error(res, 401, 'REFRESH_TOKEN_REVOKED', 'Refresh token is invalid or revoked');
+    }
+    if (currentSession.revokedAt) {
+      revokeRefreshFamily(currentSession.familyId, 'refresh_token_reuse_detected');
+      schedulePersist('auth-refresh-reuse-detected');
+      return error(res, 401, 'REFRESH_TOKEN_REVOKED', 'Refresh token is invalid or revoked');
+    }
+    if (currentSession.expiresAt && Date.parse(currentSession.expiresAt) <= nowMs()) {
+      currentSession.revokedAt = nowIso();
+      currentSession.revokedReason = 'expired';
+      schedulePersist('auth-refresh-expired');
+      return error(res, 401, 'UNAUTHENTICATED', 'Refresh token invalid');
+    }
+    const currentFingerprint = buildClientFingerprint(req);
+    if (currentSession.clientFingerprint && currentSession.clientFingerprint !== currentFingerprint) {
+      revokeRefreshFamily(currentSession.familyId, 'client_fingerprint_mismatch');
+      schedulePersist('auth-refresh-fingerprint-mismatch');
+      return error(res, 401, 'REFRESH_TOKEN_REVOKED', 'Refresh token is invalid or revoked');
+    }
     const user = users.get(payload.sub);
     if (!user) {
-      refreshTokens.delete(refreshToken);
+      currentSession.revokedAt = nowIso();
+      currentSession.revokedReason = 'unknown_user';
       return error(res, 401, 'UNAUTHENTICATED', 'Unknown user');
     }
     if (!user.isActive) {
-      refreshTokens.delete(refreshToken);
+      revokeRefreshFamily(currentSession.familyId, 'account_disabled');
+      schedulePersist('auth-refresh-account-disabled');
       return error(res, 403, 'ACCOUNT_DISABLED', 'Account disabled by admin');
     }
 
-    refreshTokens.delete(refreshToken);
-    const next = issueTokens(user);
+    currentSession.lastUsedAt = nowIso();
+    currentSession.revokedAt = nowIso();
+    currentSession.revokedReason = 'rotated';
+    const next = issueTokens(user, {
+      familyId: currentSession.familyId,
+      clientFingerprint: currentFingerprint
+    });
+    const nextPayload = jwt.decode(next.refreshToken);
+    if (nextPayload && typeof nextPayload === 'object' && typeof nextPayload.jti === 'string') {
+      currentSession.replacedBySessionId = nextPayload.jti;
+    }
     schedulePersist('auth-refresh');
     return res.status(200).json(next);
   } catch {
-    refreshTokens.delete(refreshToken);
     return error(res, 401, 'UNAUTHENTICATED', 'Refresh token invalid');
   }
 });
@@ -4783,7 +4889,18 @@ app.patch('/api/auth/me', requireAuth, (req, res) => {
 app.post('/api/auth/logout', requireAuth, (req, res) => {
   const { refreshToken } = req.body || {};
   if (refreshToken) {
-    refreshTokens.delete(refreshToken);
+    try {
+      const payload = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+      if (payload && typeof payload === 'object' && typeof payload.jti === 'string') {
+        const session = refreshTokenSessions.get(payload.jti);
+        if (session) {
+          session.revokedAt = nowIso();
+          session.revokedReason = 'logout';
+        }
+      }
+    } catch {
+      // ignore invalid refresh token on logout
+    }
     schedulePersist('auth-logout');
   }
   return res.status(204).send();
