@@ -70,6 +70,7 @@ const AUTH_RATE_LIMIT_WINDOW_MS = Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS |
 const AUTH_RATE_LIMIT_MAX_LOGIN = Number(process.env.AUTH_RATE_LIMIT_MAX_LOGIN || 8);
 const AUTH_RATE_LIMIT_MAX_REGISTER = Number(process.env.AUTH_RATE_LIMIT_MAX_REGISTER || 4);
 const AUTH_RATE_LIMIT_MAX_RECOVERY = Number(process.env.AUTH_RATE_LIMIT_MAX_RECOVERY || 5);
+const AUTH_RATE_LIMIT_MAX_REFRESH = Number(process.env.AUTH_RATE_LIMIT_MAX_REFRESH || 12);
 const GENERIC_SESSION_SETTINGS = {
   allowPlayerToEditCharacterOffline: true,
   allowPlayerToPlayerChat: true,
@@ -112,8 +113,12 @@ function parseCorsOrigins(rawValue) {
     return '*';
   }
 
-  const mobileOrigins = ['http://localhost', 'https://localhost', 'capacitor://localhost', 'ionic://localhost'];
-  return Array.from(new Set([...configured, ...mobileOrigins]));
+  if (NODE_ENV !== 'production') {
+    const mobileOrigins = ['http://localhost', 'https://localhost', 'capacitor://localhost', 'ionic://localhost'];
+    return Array.from(new Set([...configured, ...mobileOrigins]));
+  }
+
+  return configured;
 }
 
 const ALLOWED_CORS_ORIGINS = parseCorsOrigins(CORS_ORIGIN);
@@ -2060,6 +2065,14 @@ const authRecoveryRateLimiter = createAuthRateLimiter({
   max: AUTH_RATE_LIMIT_MAX_RECOVERY,
   resolveKey(req) {
     return `${getClientIp(req)}:${normalizeEmail(req.body?.email) || 'unknown'}`;
+  }
+});
+
+const authRefreshRateLimiter = createAuthRateLimiter({
+  keyPrefix: 'auth-refresh',
+  max: AUTH_RATE_LIMIT_MAX_REFRESH,
+  resolveKey(req) {
+    return getClientIp(req);
   }
 });
 
@@ -4651,7 +4664,7 @@ app.post('/api/auth/login', authLoginRateLimiter, async (req, res) => {
   return res.status(200).json({ token, refreshToken, user: publicUser(user) });
 });
 
-app.post('/api/auth/refresh', (req, res) => {
+app.post('/api/auth/refresh', authRefreshRateLimiter, (req, res) => {
   const { refreshToken } = req.body || {};
   if (!refreshToken) {
     return error(res, 401, 'REFRESH_TOKEN_REVOKED', 'Refresh token is invalid or revoked');
