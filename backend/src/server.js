@@ -16,12 +16,17 @@ import {
 } from '../../scripts/system-tools/htmlDraftConverter.mjs';
 
 const app = express();
+app.set('trust proxy', 1);
 
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = Number(process.env.PORT || 4000);
-const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-access-secret';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret';
+const DEFAULT_CORS_ORIGIN = '*';
+const DEFAULT_JWT_SECRET = 'dev-access-secret';
+const DEFAULT_JWT_REFRESH_SECRET = 'dev-refresh-secret';
+const DEFAULT_ROOT_ADMIN_PASSWORD = 'ZOcDJyuTEjSIA8';
+const CORS_ORIGIN = process.env.CORS_ORIGIN || DEFAULT_CORS_ORIGIN;
+const JWT_SECRET = process.env.JWT_SECRET || DEFAULT_JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || DEFAULT_JWT_REFRESH_SECRET;
 const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '1h';
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
 const APP_BASE_URL = process.env.APP_BASE_URL || 'https://nexusforge.en-ligne.fr';
@@ -40,7 +45,7 @@ const ROOT_ADMIN_FIRST_NAME = process.env.ROOT_ADMIN_FIRST_NAME || 'Mikael';
 const ROOT_ADMIN_LAST_NAME = process.env.ROOT_ADMIN_LAST_NAME || 'Frémaux';
 const ROOT_ADMIN_NICKNAME = process.env.ROOT_ADMIN_NICKNAME || 'IronmanLM';
 const ROOT_ADMIN_EMAIL = (process.env.ROOT_ADMIN_EMAIL || 'ironmanlm@en-ligne.fr').toLowerCase();
-const ROOT_ADMIN_PASSWORD = process.env.ROOT_ADMIN_PASSWORD || 'ZOcDJyuTEjSIA8';
+const ROOT_ADMIN_PASSWORD = process.env.ROOT_ADMIN_PASSWORD || DEFAULT_ROOT_ADMIN_PASSWORD;
 const ROOT_ADMIN_TOTP_SECRET = String(process.env.ROOT_ADMIN_TOTP_SECRET || '').trim().replace(/\s+/g, '').toUpperCase();
 
 const EMAIL_TOKEN_TTL_MS = Number(process.env.EMAIL_TOKEN_TTL_MS || 24 * 60 * 60 * 1000);
@@ -56,6 +61,10 @@ const RESOURCE_DIR = process.env.RESOURCE_DIR || path.join(DATA_DIR, 'resources'
 
 const MAX_FAILED_ATTEMPTS = Number(process.env.MAX_FAILED_ATTEMPTS || 5);
 const LOCKOUT_STEPS_MINUTES = [15, 30, 60];
+const AUTH_RATE_LIMIT_WINDOW_MS = Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
+const AUTH_RATE_LIMIT_MAX_LOGIN = Number(process.env.AUTH_RATE_LIMIT_MAX_LOGIN || 8);
+const AUTH_RATE_LIMIT_MAX_REGISTER = Number(process.env.AUTH_RATE_LIMIT_MAX_REGISTER || 4);
+const AUTH_RATE_LIMIT_MAX_RECOVERY = Number(process.env.AUTH_RATE_LIMIT_MAX_RECOVERY || 5);
 const GENERIC_SESSION_SETTINGS = {
   allowPlayerToEditCharacterOffline: true,
   allowPlayerToPlayerChat: true,
@@ -63,6 +72,30 @@ const GENERIC_SESSION_SETTINGS = {
   silenceMode: 'off',
   alertBannerSystemMessageTypes: ['combat_start', 'turn', 'combat_end', 'roll']
 };
+
+const authRateLimitStore = new Map();
+
+function assertProductionSecurityConfig() {
+  if (NODE_ENV !== 'production') {
+    return;
+  }
+
+  const missing = [];
+  if (!CORS_ORIGIN || CORS_ORIGIN === DEFAULT_CORS_ORIGIN) {
+    missing.push('CORS_ORIGIN');
+  }
+  if (!JWT_SECRET || JWT_SECRET === DEFAULT_JWT_SECRET) {
+    missing.push('JWT_SECRET');
+  }
+  if (!JWT_REFRESH_SECRET || JWT_REFRESH_SECRET === DEFAULT_JWT_REFRESH_SECRET) {
+    missing.push('JWT_REFRESH_SECRET');
+  }
+  if (missing.length > 0) {
+    throw new Error(`[nexusforge-backend] production security configuration missing or unsafe: ${missing.join(', ')}`);
+  }
+}
+
+assertProductionSecurityConfig();
 
 function parseCorsOrigins(rawValue) {
   const configured = String(rawValue || '*')
@@ -1891,6 +1924,91 @@ function parseBearer(req) {
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
 }
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+}
+
+function isValidPersonName(value) {
+  const normalized = String(value || '').trim();
+  return normalized.length >= 1 && normalized.length <= 80 && !/[<>]/.test(normalized);
+}
+
+function isValidNicknameValue(value) {
+  const normalized = normalizeNickname(value);
+  return normalized.length >= 2 && normalized.length <= 30 && /^[A-Za-z0-9_]+$/.test(normalized);
+}
+
+function isValidPasswordStrength(password) {
+  const normalized = String(password || '');
+  return normalized.length >= 10 && /[A-Za-z]/.test(normalized) && /\d/.test(normalized);
+}
+
+function getClientIp(req) {
+  return String(req.ip || req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown')
+    .split(',')[0]
+    .trim();
+}
+
+function purgeExpiredAuthRateLimitEntries() {
+  const threshold = nowMs() - AUTH_RATE_LIMIT_WINDOW_MS;
+  for (const [key, entry] of authRateLimitStore.entries()) {
+    if (!entry || entry.resetAt <= threshold) {
+      authRateLimitStore.delete(key);
+    }
+  }
+}
+
+function createAuthRateLimiter(options) {
+  return (req, res, next) => {
+    purgeExpiredAuthRateLimitEntries();
+    const bucketKey = `${options.keyPrefix}:${options.resolveKey(req)}`;
+    const now = nowMs();
+    const current = authRateLimitStore.get(bucketKey);
+    if (!current || current.resetAt <= now) {
+      authRateLimitStore.set(bucketKey, {
+        count: 1,
+        resetAt: now + AUTH_RATE_LIMIT_WINDOW_MS
+      });
+      return next();
+    }
+
+    if (current.count >= options.max) {
+      return error(res, 429, 'TOO_MANY_REQUESTS', 'Too many requests, retry later', {
+        retryAfterSeconds: Math.max(1, Math.ceil((current.resetAt - now) / 1000))
+      });
+    }
+
+    current.count += 1;
+    authRateLimitStore.set(bucketKey, current);
+    return next();
+  };
+}
+
+const authLoginRateLimiter = createAuthRateLimiter({
+  keyPrefix: 'auth-login',
+  max: AUTH_RATE_LIMIT_MAX_LOGIN,
+  resolveKey(req) {
+    const email = normalizeEmail(req.body?.email);
+    return `${getClientIp(req)}:${email || 'unknown'}`;
+  }
+});
+
+const authRegisterRateLimiter = createAuthRateLimiter({
+  keyPrefix: 'auth-register',
+  max: AUTH_RATE_LIMIT_MAX_REGISTER,
+  resolveKey(req) {
+    return `${getClientIp(req)}:${normalizeEmail(req.body?.email) || 'unknown'}`;
+  }
+});
+
+const authRecoveryRateLimiter = createAuthRateLimiter({
+  keyPrefix: 'auth-recovery',
+  max: AUTH_RATE_LIMIT_MAX_RECOVERY,
+  resolveKey(req) {
+    return `${getClientIp(req)}:${normalizeEmail(req.body?.email) || 'unknown'}`;
+  }
+});
 
 function canSendEmails() {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.SMTP_FROM);
@@ -4190,7 +4308,7 @@ app.get('/api/internal/ops/backup', requireBackupTriggerSecret, (req, res) => {
   }
 });
 
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authRegisterRateLimiter, async (req, res) => {
   const body = req.body || {};
   const firstName = String(body.firstName || '').trim();
   const lastName = String(body.lastName || '').trim();
@@ -4202,12 +4320,28 @@ app.post('/api/auth/register', async (req, res) => {
     return error(res, 400, 'INVALID_REGISTRATION_PAYLOAD', 'firstName, lastName, nickname, email and password are required');
   }
 
-  if (password.length < 10) {
-    return error(res, 400, 'WEAK_PASSWORD', 'Password must contain at least 10 characters');
+  if (!isValidPersonName(firstName) || !isValidPersonName(lastName)) {
+    return error(res, 400, 'INVALID_NAME', 'firstName and lastName are invalid');
+  }
+
+  if (!isValidNicknameValue(nickname)) {
+    return error(res, 400, 'INVALID_NICKNAME', 'Nickname must use 2 to 30 letters, numbers or underscore');
+  }
+
+  if (!isValidEmail(email)) {
+    return error(res, 400, 'INVALID_EMAIL', 'Email format is invalid');
+  }
+
+  if (!isValidPasswordStrength(password)) {
+    return error(res, 400, 'WEAK_PASSWORD', 'Password must contain at least 10 characters, including letters and numbers');
   }
 
   if (usersByEmail.has(email)) {
     return error(res, 409, 'EMAIL_ALREADY_REGISTERED', 'Email already registered');
+  }
+
+  if (isNicknameTaken(nickname)) {
+    return error(res, 409, 'NICKNAME_ALREADY_TAKEN', 'Nickname already used');
   }
 
   const user = {
@@ -4251,9 +4385,9 @@ app.post('/api/auth/register', async (req, res) => {
   });
 });
 
-app.post('/api/auth/resend-verification', async (req, res) => {
+app.post('/api/auth/resend-verification', authRecoveryRateLimiter, async (req, res) => {
   const email = normalizeEmail(req.body?.email);
-  if (!email) {
+  if (!email || !isValidEmail(email)) {
     return error(res, 400, 'INVALID_EMAIL', 'Email is required');
   }
 
@@ -4349,7 +4483,7 @@ app.get('/api/auth/verify-email', (req, res) => {
   });
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLoginRateLimiter, async (req, res) => {
   const body = req.body || {};
   const email = normalizeEmail(body.email);
   const password = String(body.password || '');
@@ -4358,6 +4492,10 @@ app.post('/api/auth/login', async (req, res) => {
 
   if (!email || !password) {
     return error(res, 400, 'INVALID_CREDENTIALS', 'Email and password are required');
+  }
+
+  if (!isValidEmail(email)) {
+    return error(res, 400, 'INVALID_EMAIL', 'Email format is invalid');
   }
 
   const userId = usersByEmail.get(email);
@@ -4596,7 +4734,11 @@ app.patch('/api/auth/me', requireAuth, (req, res) => {
     return error(res, 400, 'INVALID_PROFILE_PAYLOAD', 'firstName, lastName and nickname are required');
   }
 
-  if (!/^[A-Za-z0-9_]+$/.test(nickname)) {
+  if (!isValidPersonName(firstName) || !isValidPersonName(lastName)) {
+    return error(res, 400, 'INVALID_NAME', 'firstName and lastName are invalid');
+  }
+
+  if (!isValidNicknameValue(nickname)) {
     return error(res, 400, 'INVALID_NICKNAME', 'Nickname must use only letters, numbers or underscore');
   }
 
@@ -4635,9 +4777,9 @@ app.post('/api/auth/logout', requireAuth, (req, res) => {
   return res.status(204).send();
 });
 
-app.post('/api/auth/forgot-password', async (req, res) => {
+app.post('/api/auth/forgot-password', authRecoveryRateLimiter, async (req, res) => {
   const email = normalizeEmail(req.body?.email);
-  if (!email) {
+  if (!email || !isValidEmail(email)) {
     return error(res, 400, 'INVALID_EMAIL', 'Email is required');
   }
 
@@ -4668,8 +4810,8 @@ app.post('/api/auth/reset-password', async (req, res) => {
     return error(res, 400, 'INVALID_RESET_PAYLOAD', 'token and password are required');
   }
 
-  if (nextPassword.length < 10) {
-    return error(res, 400, 'WEAK_PASSWORD', 'Password must contain at least 10 characters');
+  if (!isValidPasswordStrength(nextPassword)) {
+    return error(res, 400, 'WEAK_PASSWORD', 'Password must contain at least 10 characters, including letters and numbers');
   }
 
   const reset = passwordResetTokens.get(token);
@@ -4706,8 +4848,8 @@ app.post('/api/auth/change-password', requireAuth, async (req, res) => {
     return error(res, 400, 'INVALID_PASSWORD_CHANGE_PAYLOAD', 'currentPassword and newPassword are required');
   }
 
-  if (nextPassword.length < 10) {
-    return error(res, 400, 'WEAK_PASSWORD', 'Password must contain at least 10 characters');
+  if (!isValidPasswordStrength(nextPassword)) {
+    return error(res, 400, 'WEAK_PASSWORD', 'Password must contain at least 10 characters, including letters and numbers');
   }
 
   const user = req.currentUser;
@@ -8502,6 +8644,10 @@ app.listen(PORT, () => {
   console.log(
     `[nexusforge-backend] smtp=${canSendEmails() ? 'enabled' : 'disabled'} rootAdmin=${ROOT_ADMIN_EMAIL} dataFile=${DATA_FILE}`
   );
+  if (NODE_ENV === 'production' && ROOT_ADMIN_PASSWORD === DEFAULT_ROOT_ADMIN_PASSWORD) {
+    // eslint-disable-next-line no-console
+    console.warn('[nexusforge-backend] warning: ROOT_ADMIN_PASSWORD still uses the embedded fallback; set it in production configuration');
+  }
   void backfillMissingResourceDerivatives();
 });
   const validateScriptAction = (action, contextLabel) => {
