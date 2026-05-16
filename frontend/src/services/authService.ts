@@ -94,6 +94,35 @@ function clearCurrentUserCache(): void {
   localStorage.removeItem(CURRENT_USER_STORAGE_KEY);
 }
 
+async function refreshCurrentUserFromStoredToken(): Promise<User | null> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    clearStoredTokens();
+    clearCurrentUserCache();
+    return null;
+  }
+
+  try {
+    const refresh = await requestJson<{ token: string; refreshToken?: string }>({
+      path: '/api/auth/refresh',
+      method: 'POST',
+      withAuth: false,
+      body: { refreshToken }
+    });
+    persistTokens({ accessToken: refresh.token, refreshToken: refresh.refreshToken ?? refreshToken });
+    const retried = await requestJson<AuthMeResponse>({ path: '/api/auth/me', method: 'GET', withAuth: true });
+    persistCurrentUserCache(retried.user);
+    return retried.user;
+  } catch (refreshError) {
+    if (refreshError instanceof ApiError && (refreshError.status === 401 || refreshError.status === 403)) {
+      clearStoredTokens();
+      clearCurrentUserCache();
+      return null;
+    }
+    return loadCachedCurrentUser();
+  }
+}
+
 export async function loginService(params: {
   email: string;
   password: string;
@@ -135,7 +164,7 @@ export async function loginService(params: {
 export async function loadCurrentUserService(): Promise<User | null> {
   const token = getAccessToken();
   if (!token) {
-    return null;
+    return refreshCurrentUserFromStoredToken();
   }
 
   try {
@@ -148,32 +177,7 @@ export async function loadCurrentUserService(): Promise<User | null> {
     return payload.user;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
-      const refreshToken = getRefreshToken();
-      if (!refreshToken) {
-        clearStoredTokens();
-        clearCurrentUserCache();
-        return null;
-      }
-
-      try {
-        const refresh = await requestJson<{ token: string; refreshToken?: string }>({
-          path: '/api/auth/refresh',
-          method: 'POST',
-          withAuth: false,
-          body: { refreshToken }
-        });
-        persistTokens({ accessToken: refresh.token, refreshToken: refresh.refreshToken ?? refreshToken });
-        const retried = await requestJson<AuthMeResponse>({ path: '/api/auth/me', method: 'GET', withAuth: true });
-        persistCurrentUserCache(retried.user);
-        return retried.user;
-      } catch (refreshError) {
-        if (refreshError instanceof ApiError && (refreshError.status === 401 || refreshError.status === 403)) {
-          clearStoredTokens();
-          clearCurrentUserCache();
-          return null;
-        }
-        return loadCachedCurrentUser();
-      }
+      return refreshCurrentUserFromStoredToken();
     }
 
     return loadCachedCurrentUser();
