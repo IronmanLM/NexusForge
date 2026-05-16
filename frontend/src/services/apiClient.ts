@@ -4,6 +4,7 @@ const ACCESS_TOKEN_STORAGE_KEY = 'nexusforge.auth.accessToken';
 const REFRESH_TOKEN_STORAGE_KEY = 'nexusforge.auth.refreshToken';
 const ACCESS_TOKEN_SESSION_STORAGE_KEY = 'nexusforge.auth.sessionAccessToken';
 let inMemoryAccessToken: string | null = null;
+let refreshAccessTokenPromise: Promise<boolean> | null = null;
 
 export class ApiError extends Error {
   status: number;
@@ -98,7 +99,7 @@ async function parseResponsePayload(response: Response): Promise<unknown> {
   return text || null;
 }
 
-async function refreshAccessToken(): Promise<boolean> {
+async function performRefreshAccessToken(): Promise<boolean> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
     clearStoredTokens();
@@ -125,6 +126,15 @@ async function refreshAccessToken(): Promise<boolean> {
     : refreshToken;
   persistTokens({ accessToken: nextToken, refreshToken: nextRefreshToken });
   return true;
+}
+
+export async function refreshStoredTokens(): Promise<boolean> {
+  if (!refreshAccessTokenPromise) {
+    refreshAccessTokenPromise = performRefreshAccessToken().finally(() => {
+      refreshAccessTokenPromise = null;
+    });
+  }
+  return refreshAccessTokenPromise;
 }
 
 export async function openProtectedUrlInNewTab(src: string): Promise<void> {
@@ -191,7 +201,7 @@ export async function requestJson<T>(params: {
 
   let response = await execute();
   if ((response.status === 401 || response.status === 403) && params.withAuth !== false) {
-    const refreshed = await refreshAccessToken().catch(() => false);
+    const refreshed = await refreshStoredTokens().catch(() => false);
     if (refreshed) {
       response = await execute();
     }

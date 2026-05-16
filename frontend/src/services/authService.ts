@@ -5,6 +5,7 @@ import {
   getAccessToken,
   getRefreshToken,
   persistTokens,
+  refreshStoredTokens,
   requestJson
 } from './apiClient';
 
@@ -103,13 +104,11 @@ async function refreshCurrentUserFromStoredToken(): Promise<User | null> {
   }
 
   try {
-    const refresh = await requestJson<{ token: string; refreshToken?: string }>({
-      path: '/api/auth/refresh',
-      method: 'POST',
-      withAuth: false,
-      body: { refreshToken }
-    });
-    persistTokens({ accessToken: refresh.token, refreshToken: refresh.refreshToken ?? refreshToken });
+    const refreshed = await refreshStoredTokens();
+    if (!refreshed) {
+      clearCurrentUserCache();
+      return null;
+    }
     const retried = await requestJson<AuthMeResponse>({ path: '/api/auth/me', method: 'GET', withAuth: true });
     persistCurrentUserCache(retried.user);
     return retried.user;
