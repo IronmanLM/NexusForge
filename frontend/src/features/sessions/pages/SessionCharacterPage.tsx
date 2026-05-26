@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import Button from '../../../components/Button';
@@ -252,6 +253,7 @@ export default function SessionCharacterPage() {
   const [offlineBundle, setOfflineBundle] = useState<OfflineSessionBundle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const latestSavePayloadRef = useRef<{
@@ -283,6 +285,20 @@ export default function SessionCharacterPage() {
     currentUserId: currentUser?.id || '',
     isGmReader: canReadAsGm
   });
+  const printTemplateContext = buildSessionCharacterTemplateContext({
+    session,
+    system,
+    character,
+    currentUserId: currentUser?.id || '',
+    currentUserNickname: currentUser?.nickname,
+    isGmReader: false
+  });
+  const printRuntimeContextValues = buildSessionCharacterRuntimeContextValues({
+    character,
+    currentUserId: currentUser?.id || '',
+    isGmReader: false
+  });
+  const printRuntimeValuesV2 = { ...runtimeValuesV2, ...printRuntimeContextValues };
 
   useEffect(() => {
     latestSavePayloadRef.current = {
@@ -469,8 +485,57 @@ export default function SessionCharacterPage() {
     return () => window.clearTimeout(timer);
   }, [character, fields, runtimeValuesV2, session]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined' || typeof window === 'undefined') {
+      return;
+    }
+    document.body.classList.toggle('is-printing-character-sheet', isPrinting);
+    if (!isPrinting) {
+      return () => undefined;
+    }
+    const stopPrinting = () => setIsPrinting(false);
+    window.addEventListener('afterprint', stopPrinting);
+    return () => {
+      window.removeEventListener('afterprint', stopPrinting);
+      document.body.classList.remove('is-printing-character-sheet');
+    };
+  }, [isPrinting]);
+
+  const handlePrint = () => {
+    if (!viewV2 || !character) {
+      return;
+    }
+    setIsPrinting(true);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => window.print());
+    });
+  };
+
   const characterSyncActions = character ? localActions.filter((action) => action.entityType === 'character' && action.entityId === character.id) : [];
   const isCharacterCachedOffline = Boolean(character && offlineBundle?.characters.some((item) => item.characterId === character.id));
+  const canUsePrintPortal = typeof document !== 'undefined' && Boolean(document.body);
+  const printContent = isPrinting && viewV2 && character ? (
+    <main className="session-character-sheet-print-root">
+      <header className="session-character-sheet-print-root__header">
+        <div>
+          <p>Fiche personnage</p>
+          <h1>{character.name}</h1>
+        </div>
+      </header>
+      <SystemStudioV2Runtime
+        view={viewV2}
+        systemTheme={system?.studioTheme}
+        catalogs={system?.catalogs}
+        allViews={system?.studioSchemaV2?.views}
+        values={printRuntimeValuesV2}
+        editable={false}
+        templateContext={printTemplateContext}
+        sessionId={session?.id}
+        currentUserId={currentUser?.id}
+        flatMode
+      />
+    </main>
+  ) : null;
 
   return (
     <Layout wide>
@@ -505,9 +570,14 @@ export default function SessionCharacterPage() {
               </div>
             ) : null}
           </div>
-          <Button type="button" onClick={() => void handleSave()} disabled={isSaving || !character}>
-            {isSaving ? 'Enregistrement…' : 'Enregistrer la fiche'}
-          </Button>
+          <div className="session-character-page__actions">
+            <Button type="button" variant="secondary" onClick={handlePrint} disabled={!character || !viewV2}>
+              Imprimer
+            </Button>
+            <Button type="button" onClick={() => void handleSave()} disabled={isSaving || !character}>
+              {isSaving ? 'Enregistrement…' : 'Enregistrer la fiche'}
+            </Button>
+          </div>
         </div>
         {statusMessage ? <p className="home-alert home-alert--success">{statusMessage}</p> : null}
         {errorMessage ? <p className="home-alert home-alert--error">{errorMessage}</p> : null}
@@ -528,6 +598,7 @@ export default function SessionCharacterPage() {
             currentUserId={currentUser?.id}
           />
         ) : null}
+        {canUsePrintPortal && printContent ? createPortal(printContent, document.body) : printContent}
       </section>
     </Layout>
   );

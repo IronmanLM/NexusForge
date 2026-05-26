@@ -7026,6 +7026,14 @@ body.theme-dark .screen-studio-widget {
   margin-bottom: -0.35rem;
 }
 
+.session-character-page__actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .session-character-sheet-widget__viewport {
   height: 100%;
   min-height: 0;
