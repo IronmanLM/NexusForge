@@ -23,6 +23,31 @@ const PRINT_BASE_WIDTH_PX = 1024;
 const PRINT_A4_CONTENT_WIDTH_PX = 718;
 const PRINT_A4_CONTENT_HEIGHT_PX = 1047;
 
+async function waitForPrintableImages(root: HTMLElement | null, timeoutMs = 1400): Promise<void> {
+  if (!root) {
+    return;
+  }
+  const images = Array.from(root.querySelectorAll('img'));
+  const pendingImages = images.filter((image) => !image.complete);
+  if (!pendingImages.length) {
+    return;
+  }
+  await Promise.race([
+    Promise.all(
+      pendingImages.map(
+        (image) =>
+          new Promise<void>((resolve) => {
+            image.addEventListener('load', () => resolve(), { once: true });
+            image.addEventListener('error', () => resolve(), { once: true });
+          })
+      )
+    ),
+    new Promise<void>((resolve) => {
+      window.setTimeout(resolve, timeoutMs);
+    })
+  ]);
+}
+
 function canManageSession(session: Session, userId: string, userRoles: string[]): boolean {
   if (userRoles.includes('admin')) {
     return true;
@@ -258,6 +283,7 @@ export default function SessionCharacterPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [runtimeActiveTabs, setRuntimeActiveTabs] = useState<Record<string, string>>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const latestSavePayloadRef = useRef<{
@@ -528,7 +554,8 @@ export default function SessionCharacterPage() {
       return;
     }
     let cancelled = false;
-    const calculateAndPrint = () => {
+    const calculateAndPrint = async () => {
+      await waitForPrintableImages(printMeasureRef.current);
       const measuredHeight = printMeasureRef.current?.scrollHeight ?? PRINT_A4_CONTENT_HEIGHT_PX;
       const widthScale = PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX;
       const heightScale = measuredHeight > 0 ? PRINT_A4_CONTENT_HEIGHT_PX / measuredHeight : widthScale;
@@ -572,12 +599,6 @@ export default function SessionCharacterPage() {
     <main className="session-character-sheet-print-root" style={printScaleStyle}>
       <div className="session-character-sheet-print-root__page">
         <div ref={printMeasureRef} className="session-character-sheet-print-root__content">
-          <header className="session-character-sheet-print-root__header">
-            <div>
-              <p>Fiche personnage</p>
-              <h1>{character.name}</h1>
-            </div>
-          </header>
           <SystemStudioV2Runtime
             view={viewV2}
             systemTheme={system?.studioTheme}
@@ -589,6 +610,7 @@ export default function SessionCharacterPage() {
             sessionId={session?.id}
             currentUserId={currentUser?.id}
             flatMode
+            activeTabs={runtimeActiveTabs}
           />
         </div>
       </div>
@@ -654,6 +676,13 @@ export default function SessionCharacterPage() {
             templateContext={templateContext}
             sessionId={session?.id}
             currentUserId={currentUser?.id}
+            activeTabs={runtimeActiveTabs}
+            onTabChange={(nodeId, tabId) =>
+              setRuntimeActiveTabs((current) => ({
+                ...current,
+                [nodeId]: tabId
+              }))
+            }
           />
         ) : null}
         {canUsePrintPortal && printContent ? createPortal(printContent, document.body) : printContent}

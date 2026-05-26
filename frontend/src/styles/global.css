@@ -7621,6 +7621,8 @@ body.theme-dark .session-activity-date {
     pointer-events: auto !important;
     background: #fff !important;
     color: #111827 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   body.is-printing-character-sheet .session-character-sheet-print-root__page {
@@ -7640,8 +7642,8 @@ body.theme-dark .session-activity-date {
   body.is-printing-character-sheet .session-character-sheet-print-root *,
   body.is-printing-character-sheet .session-character-sheet-print-root *::before,
   body.is-printing-character-sheet .session-character-sheet-print-root *::after {
-    box-shadow: none !important;
-    text-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   body.is-printing-character-sheet .session-character-sheet-print-root button,
@@ -7656,8 +7658,6 @@ body.theme-dark .session-activity-date {
   body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__container,
   body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__leaf,
   body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__repeat-item {
-    background-color: transparent !important;
-    color: #111827 !important;
     break-inside: avoid;
     page-break-inside: avoid;
   }

@@ -1872,6 +1872,8 @@ function RuntimeNode(props: {
   preserveGridLayout?: boolean;
   previewRowHeight?: number;
   flatMode?: boolean;
+  activeTabs?: Record<string, string>;
+  onTabChange?: (nodeId: string, tabId: string) => void;
 }) {
   const {
     node,
@@ -1890,23 +1892,31 @@ function RuntimeNode(props: {
     visitedViewIds,
     preserveGridLayout = false,
     previewRowHeight = 36,
-    flatMode = false
+    flatMode = false,
+    activeTabs,
+    onTabChange
   } = props;
   const tabs = useMemo(
     () => visibleTabs(node.tabs, values, view, allViews, templateContext),
     [allViews, node.tabs, templateContext, values, view]
   );
-  const [activeTabId, setActiveTabId] = useState(tabs[0]?.id ?? '');
+  const [activeTabId, setActiveTabId] = useState(activeTabs?.[node.id] ?? tabs[0]?.id ?? '');
 
   useEffect(() => {
     if (!tabs.length) {
       setActiveTabId('');
       return;
     }
-    if (!tabs.some((tab) => tab.id === activeTabId)) {
-      setActiveTabId(tabs[0]?.id ?? '');
+    const externalTabId = activeTabs?.[node.id];
+    const nextTabId = externalTabId && tabs.some((tab) => tab.id === externalTabId)
+      ? externalTabId
+      : activeTabId && tabs.some((tab) => tab.id === activeTabId)
+      ? activeTabId
+      : tabs[0]?.id ?? '';
+    if (nextTabId !== activeTabId) {
+      setActiveTabId(nextTabId);
     }
-  }, [activeTabId, tabs]);
+  }, [activeTabId, activeTabs, node.id, tabs]);
 
   const children = useMemo(
     () => childNodes(nodes, node.id, null),
@@ -1972,6 +1982,9 @@ function RuntimeNode(props: {
             visitedViewIds={visitedViewIds}
             preserveGridLayout={preserveGridLayout}
             previewRowHeight={previewRowHeight}
+            flatMode={flatMode}
+            activeTabs={activeTabs}
+            onTabChange={onTabChange}
           />
         ))}
       </div>
@@ -2030,53 +2043,71 @@ function RuntimeNode(props: {
     const activeViewRootNodes = activeView ? childNodes(activeView.nodes, null, null) : [];
     const isCircular = Boolean(activeView && visitedViewIds.includes(activeView.id));
     const orientation = node.tabOrientation ?? 'horizontal';
+    const activeTabContent = !tabs.length ? (
+      <div className="system-studio-v2-runtime__placeholder">Aucune vue rattachee a ces onglets</div>
+    ) : isCircular ? (
+      <div className="system-studio-v2-runtime__placeholder">Boucle de vues detectee sur cet onglet</div>
+    ) : activeView && activeViewRootNodes.length ? (
+      <div
+        className={`system-studio-v2-runtime__grid${preserveGridLayout ? ' system-studio-v2-runtime__grid--preserve-layout' : ''}`.trim()}
+        style={runtimeGridStyle(activeView, activeViewRootNodes, preserveGridLayout, previewRowHeight)}
+      >
+        {activeViewRootNodes.map((child) => (
+          <RuntimeNode
+            key={child.id}
+            node={child}
+            nodes={activeView.nodes}
+            view={activeView}
+            systemTheme={systemTheme}
+            values={values}
+            editable={editable}
+            templateContext={templateContext}
+            validationErrors={validationErrors}
+            onValueChange={onValueChange}
+            onRepeatValueChange={onRepeatValueChange}
+            onButtonAction={onButtonAction}
+            repeatContext={repeatContext}
+            allViews={allViews}
+            visitedViewIds={activeView ? [...visitedViewIds, activeView.id] : visitedViewIds}
+            preserveGridLayout={preserveGridLayout}
+            previewRowHeight={previewRowHeight}
+            flatMode={flatMode}
+            activeTabs={activeTabs}
+            onTabChange={onTabChange}
+          />
+        ))}
+      </div>
+    ) : (
+      <div className="system-studio-v2-runtime__placeholder">La vue de cet onglet est vide ou introuvable</div>
+    );
+    if (flatMode) {
+      return (
+        <div key={node.id} className="system-studio-v2-runtime__tabs-content system-studio-v2-runtime__tabs-content--flat" style={style}>
+          {activeTabContent}
+        </div>
+      );
+    }
     return (
       <article key={node.id} className="card system-studio-v2-runtime__container" style={style}>
         {node.showTitle !== false ? <strong>{node.label}</strong> : null}
         <div className={`system-studio-v2-runtime__tabs-layout orientation-${orientation}`.trim()}>
           <div className={`system-studio-v2-runtime__tabs-list orientation-${orientation}`.trim()}>
             {tabs.map((tab) => (
-              <button key={tab.id} type="button" className={`screen-runtime-tab ${tab.id === effectiveTabId ? 'is-active' : ''}`.trim()} onClick={() => setActiveTabId(tab.id)}>
+              <button
+                key={tab.id}
+                type="button"
+                className={`screen-runtime-tab ${tab.id === effectiveTabId ? 'is-active' : ''}`.trim()}
+                onClick={() => {
+                  setActiveTabId(tab.id);
+                  onTabChange?.(node.id, tab.id);
+                }}
+              >
                 {allViews.find((viewItem) => viewItem.id === tab.viewId)?.name ?? tab.label}
               </button>
             ))}
           </div>
           <div className="system-studio-v2-runtime__tabs-content">
-            {!tabs.length ? (
-              <div className="system-studio-v2-runtime__placeholder">Aucune vue rattachee a ces onglets</div>
-            ) : isCircular ? (
-              <div className="system-studio-v2-runtime__placeholder">Boucle de vues detectee sur cet onglet</div>
-            ) : activeView && activeViewRootNodes.length ? (
-              <div
-                className={`system-studio-v2-runtime__grid${preserveGridLayout ? ' system-studio-v2-runtime__grid--preserve-layout' : ''}`.trim()}
-                style={runtimeGridStyle(activeView, activeViewRootNodes, preserveGridLayout, previewRowHeight)}
-              >
-                {activeViewRootNodes.map((child) => (
-                  <RuntimeNode
-                    key={child.id}
-                    node={child}
-                    nodes={activeView.nodes}
-                    view={activeView}
-                    systemTheme={systemTheme}
-                    values={values}
-                    editable={editable}
-                    templateContext={templateContext}
-                    validationErrors={validationErrors}
-                    onValueChange={onValueChange}
-                    onRepeatValueChange={onRepeatValueChange}
-                    onButtonAction={onButtonAction}
-                    repeatContext={repeatContext}
-                    allViews={allViews}
-                    visitedViewIds={activeView ? [...visitedViewIds, activeView.id] : visitedViewIds}
-                    preserveGridLayout={preserveGridLayout}
-                    previewRowHeight={previewRowHeight}
-                    flatMode={flatMode}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="system-studio-v2-runtime__placeholder">La vue de cet onglet est vide ou introuvable</div>
-            )}
+            {activeTabContent}
           </div>
         </div>
       </article>
@@ -2120,6 +2151,8 @@ function RuntimeNode(props: {
                   preserveGridLayout={preserveGridLayout}
                   previewRowHeight={previewRowHeight}
                   flatMode={flatMode}
+                  activeTabs={activeTabs}
+                  onTabChange={onTabChange}
                 />
               ))}
             </div>
@@ -2166,6 +2199,8 @@ type SystemStudioV2RuntimeProps = {
   sessionId?: string;
   currentUserId?: string;
   flatMode?: boolean;
+  activeTabs?: Record<string, string>;
+  onTabChange?: (nodeId: string, tabId: string) => void;
 };
 
 export default function SystemStudioV2Runtime({
@@ -2181,7 +2216,9 @@ export default function SystemStudioV2Runtime({
   previewRowHeight = 28,
   sessionId,
   currentUserId,
-  flatMode = false
+  flatMode = false,
+  activeTabs,
+  onTabChange
 }: SystemStudioV2RuntimeProps) {
   const availableViews = allViews ?? (view ? [view] : []);
   const [activeRootViewId, setActiveRootViewId] = useState(view?.id ?? '');
@@ -2746,6 +2783,8 @@ export default function SystemStudioV2Runtime({
             templateContext={templateContext}
             preserveGridLayout={preserveGridLayout}
             previewRowHeight={previewRowHeight}
+            activeTabs={activeTabs}
+            onTabChange={onTabChange}
           />
         </div>
       </section>
@@ -2842,6 +2881,8 @@ export default function SystemStudioV2Runtime({
               preserveGridLayout={preserveGridLayout}
               previewRowHeight={previewRowHeight}
               flatMode={flatMode}
+              activeTabs={activeTabs}
+              onTabChange={onTabChange}
             />
           ))
         ) : (
