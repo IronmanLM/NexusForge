@@ -7708,10 +7708,19 @@ body.theme-dark .session-activity-date {
     overflow: visible !important;
   }
 
+  body.is-printing-character-sheet--multiple .session-character-sheet-print-root__page {
+    margin: 0 !important;
+  }
+
   body.is-printing-character-sheet .session-character-sheet-print-root__content {
     width: var(--character-sheet-print-base-width, 1024px) !important;
     transform: scale(var(--character-sheet-print-scale, 0.7)) !important;
     transform-origin: top left !important;
+  }
+
+  body.is-printing-character-sheet--multiple .session-character-sheet-print-root__content {
+    zoom: var(--character-sheet-print-scale, 0.4015625) !important;
+    transform: none !important;
   }
 
   body.is-printing-character-sheet .session-character-sheet-print-root *,

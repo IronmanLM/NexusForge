@@ -19,7 +19,7 @@ import { OfflineSessionBundle } from '../../../types/offline';
 import { Session } from '../../../types/session';
 import { GameSystem, SystemStudioViewDefinitionV2 } from '../../../types/system';
 
-const PRINT_BASE_WIDTH_PX = 1024;
+const PRINT_BASE_WIDTH_PX = 1920;
 const PRINT_A4_CONTENT_WIDTH_PX = 771;
 const PRINT_A4_CONTENT_HEIGHT_PX = 1100;
 const PRINT_WIDTH_SCALE = PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX;
