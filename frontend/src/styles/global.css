@@ -7012,6 +7012,14 @@ body.theme-dark .screen-studio-widget {
   overflow: hidden;
 }
 
+.session-character-sheet-widget__header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: end;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .session-character-sheet-widget__viewport {
   height: 100%;
   min-height: 0;
@@ -7027,6 +7035,42 @@ body.theme-dark .screen-studio-widget {
 .session-character-sheet-widget__canvas-content {
   transform-origin: top left;
   will-change: transform;
+}
+
+.session-character-sheet-print-root {
+  display: none;
+}
+
+.session-character-sheet-print-root__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.session-character-sheet-print-root__header p,
+.session-character-sheet-print-root__header h1 {
+  margin: 0;
+}
+
+.session-character-sheet-print-root__header p {
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4b5563;
+}
+
+.session-character-sheet-print-root__header h1 {
+  font-size: 1.6rem;
+}
+
+.session-character-sheet-print-root__avatar {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 18px;
+  object-fit: cover;
 }
 
 .system-studio-v2-runtime {
@@ -7524,5 +7568,62 @@ body.theme-dark .session-activity-date {
 
   .landing-mobile__qr {
     justify-self: start;
+  }
+}
+
+@media print {
+  @page {
+    margin: 10mm;
+  }
+
+  body.is-printing-character-sheet {
+    background: #fff !important;
+    color: #111827 !important;
+  }
+
+  body.is-printing-character-sheet #root {
+    display: none !important;
+  }
+
+  body.is-printing-character-sheet .session-character-sheet-print-root {
+    display: block !important;
+    background: #fff !important;
+    color: #111827 !important;
+  }
+
+  body.is-printing-character-sheet .session-character-sheet-print-root *,
+  body.is-printing-character-sheet .session-character-sheet-print-root *::before,
+  body.is-printing-character-sheet .session-character-sheet-print-root *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body.is-printing-character-sheet .session-character-sheet-print-root button,
+  body.is-printing-character-sheet .session-character-sheet-print-root .button,
+  body.is-printing-character-sheet .session-character-sheet-print-root .resource-preview-modal,
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__image-actions,
+  body.is-printing-character-sheet .session-character-sheet-print-root .home-alert {
+    display: none !important;
+  }
+
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime,
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__container,
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__leaf,
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__repeat-item {
+    background-color: transparent !important;
+    color: #111827 !important;
+    break-inside: avoid;
+  }
+
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__container-body,
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__subview,
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__tabs-content {
+    overflow: visible !important;
+  }
+
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__field span,
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__placeholder,
+  body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__repeat-header small {
+    color: #374151 !important;
   }
 }

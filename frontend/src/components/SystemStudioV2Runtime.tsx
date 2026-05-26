@@ -1511,8 +1511,9 @@ function renderLeaf(params: {
     repeatContext?: { containerNode: SystemStudioNodeDefinition; itemIndex: number; item?: RepeatRuntimeItem }
   ) => void;
   repeatContext?: { containerNode: SystemStudioNodeDefinition; itemIndex: number; item?: RepeatRuntimeItem };
+  flatMode?: boolean;
 }) {
-  const { node, values, view, systemTheme, allViews, editable, templateContext, validationErrors, onValueChange, onRepeatValueChange, onButtonAction, repeatContext } = params;
+  const { node, values, view, systemTheme, allViews, editable, templateContext, validationErrors, onValueChange, onRepeatValueChange, onButtonAction, repeatContext, flatMode = false } = params;
   const options = parseOptions(node.options);
   const rawValue =
     repeatContext && node.key in values
@@ -1827,6 +1828,9 @@ function renderLeaf(params: {
     }
     case 'button':
       {
+        if (flatMode) {
+          return null;
+        }
         const buttonEnabled =
           !node.buttonActiveIf || evaluateCondition(node.buttonActiveIf, values, view, allViews, templateContext);
         const buttonText = replaceRuntimeTokens(String(node.defaultValue || node.label || 'Action'), values, view, allViews, templateContext);
@@ -1867,6 +1871,7 @@ function RuntimeNode(props: {
   visitedViewIds: string[];
   preserveGridLayout?: boolean;
   previewRowHeight?: number;
+  flatMode?: boolean;
 }) {
   const {
     node,
@@ -1884,7 +1889,8 @@ function RuntimeNode(props: {
     allViews,
     visitedViewIds,
     preserveGridLayout = false,
-    previewRowHeight = 36
+    previewRowHeight = 36,
+    flatMode = false
   } = props;
   const tabs = useMemo(
     () => visibleTabs(node.tabs, values, view, allViews, templateContext),
@@ -2064,6 +2070,7 @@ function RuntimeNode(props: {
                     visitedViewIds={activeView ? [...visitedViewIds, activeView.id] : visitedViewIds}
                     preserveGridLayout={preserveGridLayout}
                     previewRowHeight={previewRowHeight}
+                    flatMode={flatMode}
                   />
                 ))}
               </div>
@@ -2112,6 +2119,7 @@ function RuntimeNode(props: {
                   visitedViewIds={[...visitedViewIds, linkedView.id]}
                   preserveGridLayout={preserveGridLayout}
                   previewRowHeight={previewRowHeight}
+                  flatMode={flatMode}
                 />
               ))}
             </div>
@@ -2137,7 +2145,8 @@ function RuntimeNode(props: {
         onValueChange,
         onRepeatValueChange,
         onButtonAction,
-        repeatContext
+        repeatContext,
+        flatMode
       })}
     </article>
   );
@@ -2156,6 +2165,7 @@ type SystemStudioV2RuntimeProps = {
   previewRowHeight?: number;
   sessionId?: string;
   currentUserId?: string;
+  flatMode?: boolean;
 };
 
 export default function SystemStudioV2Runtime({
@@ -2170,7 +2180,8 @@ export default function SystemStudioV2Runtime({
   preserveGridLayout = true,
   previewRowHeight = 28,
   sessionId,
-  currentUserId
+  currentUserId,
+  flatMode = false
 }: SystemStudioV2RuntimeProps) {
   const availableViews = allViews ?? (view ? [view] : []);
   const [activeRootViewId, setActiveRootViewId] = useState(view?.id ?? '');
@@ -2731,6 +2742,7 @@ export default function SystemStudioV2Runtime({
             values={popupValues}
             onValuesChange={handlePopupValuesChange}
             editable={editable}
+            flatMode={flatMode}
             templateContext={templateContext}
             preserveGridLayout={preserveGridLayout}
             previewRowHeight={previewRowHeight}
@@ -2829,6 +2841,7 @@ export default function SystemStudioV2Runtime({
               visitedViewIds={[runtimeView.id]}
               preserveGridLayout={preserveGridLayout}
               previewRowHeight={previewRowHeight}
+              flatMode={flatMode}
             />
           ))
         ) : (
