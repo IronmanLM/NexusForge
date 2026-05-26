@@ -7020,6 +7020,12 @@ body.theme-dark .screen-studio-widget {
   justify-content: flex-end;
 }
 
+.session-character-sheet-widget__compact-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -0.35rem;
+}
+
 .session-character-sheet-widget__viewport {
   height: 100%;
   min-height: 0;

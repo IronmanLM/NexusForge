@@ -677,7 +677,13 @@ export default function SessionCharacterSheetWidget({
             ) : null}
           </div>
         </div>
-      ) : null}
+      ) : (
+        <div className="session-character-sheet-widget__compact-actions">
+          <Button type="button" variant="secondary" onClick={handlePrintSheet}>
+            Imprimer
+          </Button>
+        </div>
+      )}
 
       {statusMessage ? <p style={{ margin: 0, color: '#93c5fd' }}>{statusMessage}</p> : null}
       {errorMessage ? <p style={{ margin: 0, color: '#fca5a5' }}>{errorMessage}</p> : null}
