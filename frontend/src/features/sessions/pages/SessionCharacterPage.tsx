@@ -349,6 +349,17 @@ export default function SessionCharacterPage() {
   );
 
   useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    const previousTitle = document.title;
+    document.title = character?.name?.trim() || 'Fiche personnage';
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [character?.name]);
+
+  useEffect(() => {
     latestSavePayloadRef.current = {
       session,
       character,
