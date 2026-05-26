@@ -20,8 +20,9 @@ import { Session } from '../../../types/session';
 import { GameSystem, SystemStudioViewDefinitionV2 } from '../../../types/system';
 
 const PRINT_BASE_WIDTH_PX = 1024;
-const PRINT_A4_CONTENT_WIDTH_PX = 718;
-const PRINT_A4_CONTENT_HEIGHT_PX = 1047;
+const PRINT_A4_CONTENT_WIDTH_PX = 771;
+const PRINT_A4_CONTENT_HEIGHT_PX = 1100;
+const PRINT_WIDTH_SCALE = PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX;
 type PrintPageMode = 'single' | 'multiple';
 
 async function waitForPrintableImages(root: HTMLElement | null, timeoutMs = 1400): Promise<void> {
@@ -306,7 +307,7 @@ export default function SessionCharacterPage() {
   const queuedAutosaveRef = useRef(false);
   const printMeasureRef = useRef<HTMLDivElement | null>(null);
   const printTimeoutRef = useRef<number | null>(null);
-  const [printScale, setPrintScale] = useState(PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX);
+  const [printScale, setPrintScale] = useState(PRINT_WIDTH_SCALE);
   const canReadAsGm = Boolean(session && currentUser && resolveSessionRole(session, currentUser) === 'gm');
   const templateContext = buildSessionCharacterTemplateContext({
     session,
@@ -562,9 +563,8 @@ export default function SessionCharacterPage() {
     const calculateAndPrint = async () => {
       await waitForPrintableImages(printMeasureRef.current);
       const measuredHeight = printMeasureRef.current?.scrollHeight ?? PRINT_A4_CONTENT_HEIGHT_PX;
-      const widthScale = PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX;
-      const heightScale = measuredHeight > 0 ? PRINT_A4_CONTENT_HEIGHT_PX / measuredHeight : widthScale;
-      const nextScale = printPageMode === 'single' ? Math.max(0.18, Math.min(1, widthScale, heightScale)) : Math.min(1, widthScale);
+      const heightScale = measuredHeight > 0 ? PRINT_A4_CONTENT_HEIGHT_PX / measuredHeight : PRINT_WIDTH_SCALE;
+      const nextScale = printPageMode === 'single' ? Math.max(0.18, Math.min(1, PRINT_WIDTH_SCALE, heightScale)) : PRINT_WIDTH_SCALE;
       setPrintScale(nextScale);
       if (!isPrinting) {
         return;
@@ -592,7 +592,7 @@ export default function SessionCharacterPage() {
     if (!viewV2 || !character) {
       return;
     }
-    setPrintScale(PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX);
+    setPrintScale(PRINT_WIDTH_SCALE);
     setIsPrintPreviewOpen(true);
   };
 
@@ -600,6 +600,7 @@ export default function SessionCharacterPage() {
     if (!viewV2 || !character) {
       return;
     }
+    setPrintScale(printPageMode === 'multiple' ? PRINT_WIDTH_SCALE : printScale);
     setIsPrinting(true);
   };
 
@@ -652,7 +653,15 @@ export default function SessionCharacterPage() {
                 <span>1 page</span>
               </label>
               <label className={printPageMode === 'multiple' ? 'is-active' : ''}>
-                <input type="radio" name="character-print-mode" checked={printPageMode === 'multiple'} onChange={() => setPrintPageMode('multiple')} />
+                <input
+                  type="radio"
+                  name="character-print-mode"
+                  checked={printPageMode === 'multiple'}
+                  onChange={() => {
+                    setPrintPageMode('multiple');
+                    setPrintScale(PRINT_WIDTH_SCALE);
+                  }}
+                />
                 <span>Plusieurs pages</span>
               </label>
               <Button type="button" onClick={handleConfirmPrint}>

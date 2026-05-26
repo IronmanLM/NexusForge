@@ -7143,7 +7143,7 @@ body.theme-dark .screen-studio-widget {
 
 .session-character-print-preview__paper {
   width: calc(var(--character-sheet-print-base-width, 1024px) * var(--character-sheet-print-scale, 0.7));
-  min-height: 277mm;
+  min-height: 291mm;
   margin: 0 auto;
   overflow: hidden;
   background: #fff;
@@ -7151,6 +7151,7 @@ body.theme-dark .screen-studio-widget {
 }
 
 .session-character-print-preview__viewport.mode-multiple .session-character-print-preview__paper {
+  width: 204mm;
   overflow: visible;
 }
 
@@ -7659,7 +7660,7 @@ body.theme-dark .session-activity-date {
 
 @media print {
   @page {
-    margin: 10mm;
+    margin: 3mm;
   }
 
   body.is-printing-character-sheet {
@@ -7681,8 +7682,8 @@ body.theme-dark .session-activity-date {
     position: static !important;
     left: auto !important;
     top: auto !important;
-    width: 190mm !important;
-    height: 277mm !important;
+    width: 204mm !important;
+    height: 291mm !important;
     overflow: hidden !important;
     visibility: visible !important;
     pointer-events: auto !important;
@@ -7694,7 +7695,7 @@ body.theme-dark .session-activity-date {
 
   body.is-printing-character-sheet .session-character-sheet-print-root__page {
     width: calc(var(--character-sheet-print-base-width, 1024px) * var(--character-sheet-print-scale, 0.7)) !important;
-    height: 277mm !important;
+    height: 291mm !important;
     overflow: hidden !important;
     margin: 0 auto !important;
     position: relative !important;
@@ -7702,6 +7703,7 @@ body.theme-dark .session-activity-date {
 
   body.is-printing-character-sheet--multiple .session-character-sheet-print-root,
   body.is-printing-character-sheet--multiple .session-character-sheet-print-root__page {
+    width: 204mm !important;
     height: auto !important;
     overflow: visible !important;
   }
