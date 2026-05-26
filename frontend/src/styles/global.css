@@ -7658,6 +7658,87 @@ body.theme-dark .session-activity-date {
   }
 }
 
+@media (max-width: 640px) {
+  .page,
+  .page--wide {
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+  }
+
+  .card,
+  .session-section,
+  .resource-preview-modal__dialog {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .session-section__header,
+  .session-page-header,
+  .resource-page-header,
+  .resource-preview-modal__header,
+  .studio-panel__toolbar,
+  .session-character-page__actions,
+  .resource-toolbar,
+  .screen-runtime-widget__header,
+  .screen-studio-widget__header {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .session-section__header,
+  .resource-preview-modal__header,
+  .studio-panel__toolbar {
+    align-items: stretch;
+  }
+
+  .session-section__header > *,
+  .session-page-header > *,
+  .resource-page-header > *,
+  .resource-preview-modal__header > *,
+  .studio-panel__toolbar > *,
+  .session-character-page__actions > *,
+  .resource-toolbar > * {
+    min-width: 0;
+  }
+
+  .session-page-header__actions,
+  .session-page-header__status,
+  .resource-page-header__actions,
+  .session-character-page__actions,
+  .resource-toolbar {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  button,
+  .button,
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+  }
+
+  button,
+  .button {
+    white-space: normal;
+  }
+
+  .session-character-page__actions button,
+  .session-character-page__actions .button,
+  .resource-page-header__actions button,
+  .resource-page-header__actions .button,
+  .resource-toolbar button,
+  .resource-toolbar .button {
+    flex: 1 1 11rem;
+  }
+
+  .resource-preview-modal__dialog {
+    width: calc(100vw - 1rem);
+    max-height: calc(100vh - 1rem);
+  }
+}
+
 @media print {
   @page {
     margin: 3mm;
