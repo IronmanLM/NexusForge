@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import AuthenticatedImage from '../../../components/AuthenticatedImage';
-import Button from '../../../components/Button';
 import SystemStudioV2Runtime, {
   applySystemStudioV2Formulas,
   buildInitialSystemStudioV2ValuesForViews,
@@ -257,7 +255,6 @@ export default function SessionCharacterSheetWidget({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPrinting, setIsPrinting] = useState(false);
   const [runtimeScale, setRuntimeScale] = useState(1);
   const [runtimeScaledHeight, setRuntimeScaledHeight] = useState<number | null>(null);
   const latestSavePayloadRef = useRef<{
@@ -405,30 +402,6 @@ export default function SessionCharacterSheetWidget({
       }),
     [currentUser, role, selectedCharacter]
   );
-  const printTemplateContext = useMemo(
-    () =>
-      buildTemplateContext({
-        session: currentSession,
-        system,
-        character: selectedCharacter,
-        currentUser,
-        role: 'player'
-      }),
-    [currentSession, currentUser, selectedCharacter, system]
-  );
-  const printRuntimeContextValues = useMemo(
-    () =>
-      buildViewerRuntimeContextValues({
-        character: selectedCharacter,
-        currentUser,
-        role: 'player'
-      }),
-    [currentUser, selectedCharacter]
-  );
-  const printRuntimeValuesV2 = useMemo(
-    () => ({ ...runtimeValuesV2, ...printRuntimeContextValues }),
-    [printRuntimeContextValues, runtimeValuesV2]
-  );
   const canEditSheet = Boolean(selectedCharacter && (role === 'gm' || selectedCharacter.ownerUserId === currentUser.id));
   const runtimeBaseWidth = useMemo(() => {
     if (!selectedViewV2) {
@@ -473,22 +446,6 @@ export default function SessionCharacterSheetWidget({
   }, [statusMessage]);
 
   useEffect(() => {
-    if (typeof document === 'undefined' || typeof window === 'undefined') {
-      return;
-    }
-    document.body.classList.toggle('is-printing-character-sheet', isPrinting);
-    if (!isPrinting) {
-      return () => undefined;
-    }
-    const stopPrinting = () => setIsPrinting(false);
-    window.addEventListener('afterprint', stopPrinting);
-    return () => {
-      window.removeEventListener('afterprint', stopPrinting);
-      document.body.classList.remove('is-printing-character-sheet');
-    };
-  }, [isPrinting]);
-
-  useEffect(() => {
     const viewport = runtimeViewportRef.current;
     const content = runtimeContentRef.current;
     if (!viewport || !content) {
@@ -530,16 +487,6 @@ export default function SessionCharacterSheetWidget({
       return;
     }
     setFields(buildSheetFieldsFromV2View(selectedViewV2, mergedValues));
-  };
-
-  const handlePrintSheet = () => {
-    if (!selectedViewV2) {
-      return;
-    }
-    setIsPrinting(true);
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => window.print());
-    });
   };
 
   const runSave = async () => {
@@ -614,33 +561,6 @@ export default function SessionCharacterSheetWidget({
   }
 
   const effectiveMode = role === 'gm' ? viewMode : 'player';
-  const canUsePrintPortal = typeof document !== 'undefined' && Boolean(document.body);
-  const printContent = isPrinting && selectedViewV2 ? (
-    <main className="session-character-sheet-print-root">
-      <header className="session-character-sheet-print-root__header">
-        <div>
-          <p>Fiche personnage</p>
-          <h1>{characterLabel || selectedCharacter.name}</h1>
-        </div>
-        {selectedCharacter.sheet.portraitUrl ? (
-          <AuthenticatedImage src={selectedCharacter.sheet.portraitUrl} alt={selectedCharacter.name} className="session-character-sheet-print-root__avatar" />
-        ) : null}
-      </header>
-      <SystemStudioV2Runtime
-        view={selectedViewV2}
-        systemTheme={system?.studioTheme}
-        catalogs={system?.catalogs}
-        allViews={system?.studioSchemaV2?.views}
-        values={printRuntimeValuesV2}
-        editable={false}
-        templateContext={printTemplateContext}
-        sessionId={currentSession.id}
-        currentUserId={currentUser.id}
-        previewRowHeight={24}
-        flatMode
-      />
-    </main>
-  ) : null;
 
   return (
     <div className="session-character-sheet-widget">
@@ -660,9 +580,6 @@ export default function SessionCharacterSheetWidget({
             </div>
           </div>
           <div className="session-character-sheet-widget__header-actions">
-            <Button type="button" variant="secondary" onClick={handlePrintSheet}>
-              Imprimer
-            </Button>
             {characters.length > 1 ? (
               <label style={{ display: 'grid', gap: '0.35rem', minWidth: '220px' }}>
                 <span>Personnage</span>
@@ -677,13 +594,7 @@ export default function SessionCharacterSheetWidget({
             ) : null}
           </div>
         </div>
-      ) : (
-        <div className="session-character-sheet-widget__compact-actions">
-          <Button type="button" variant="secondary" onClick={handlePrintSheet}>
-            Imprimer
-          </Button>
-        </div>
-      )}
+      ) : null}
 
       {statusMessage ? <p style={{ margin: 0, color: '#93c5fd' }}>{statusMessage}</p> : null}
       {errorMessage ? <p style={{ margin: 0, color: '#fca5a5' }}>{errorMessage}</p> : null}
@@ -726,7 +637,6 @@ export default function SessionCharacterSheetWidget({
       ) : (
         <p style={{ margin: 0 }}>La vue Studio V2 de cette fiche est introuvable.</p>
       )}
-      {canUsePrintPortal && printContent ? createPortal(printContent, document.body) : printContent}
     </div>
   );
 }

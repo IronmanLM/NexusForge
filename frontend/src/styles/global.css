@@ -7020,12 +7020,6 @@ body.theme-dark .screen-studio-widget {
   justify-content: flex-end;
 }
 
-.session-character-sheet-widget__compact-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: -0.35rem;
-}
-
 .session-character-page__actions {
   display: flex;
   gap: 0.75rem;
