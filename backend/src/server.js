@@ -31,6 +31,7 @@ const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '1h';
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
 const APP_BASE_URL = process.env.APP_BASE_URL || 'https://nexusforge.en-ligne.fr';
 const API_BASE_URL = process.env.API_BASE_URL || 'https://api.nexusforge.en-ligne.fr';
+const NATIVE_APP_CORS_ORIGINS = ['https://localhost', 'capacitor://localhost', 'ionic://localhost'];
 const DISCORD_BOT_SHARED_SECRET = String(process.env.DISCORD_BOT_SHARED_SECRET || '').trim();
 const BACKUP_TRIGGER_SECRET = String(process.env.BACKUP_TRIGGER_SECRET || '').trim();
 const BACKUP_REMOTE_HOST = String(process.env.BACKUP_REMOTE_HOST || 'fremaux.biz').trim();
@@ -114,11 +115,10 @@ function parseCorsOrigins(rawValue) {
   }
 
   if (NODE_ENV !== 'production') {
-    const mobileOrigins = ['http://localhost', 'https://localhost', 'capacitor://localhost', 'ionic://localhost'];
-    return Array.from(new Set([...configured, ...mobileOrigins]));
+    return Array.from(new Set([...configured, 'http://localhost', ...NATIVE_APP_CORS_ORIGINS]));
   }
 
-  return configured;
+  return Array.from(new Set([...configured, ...NATIVE_APP_CORS_ORIGINS]));
 }
 
 const ALLOWED_CORS_ORIGINS = parseCorsOrigins(CORS_ORIGIN);
