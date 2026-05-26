@@ -7046,7 +7046,22 @@ body.theme-dark .screen-studio-widget {
 }
 
 .session-character-sheet-print-root {
-  display: none;
+  display: block;
+  position: fixed;
+  left: -100000px;
+  top: 0;
+  width: var(--character-sheet-print-base-width, 1024px);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.session-character-sheet-print-root__page {
+  width: var(--character-sheet-print-base-width, 1024px);
+}
+
+.session-character-sheet-print-root__content {
+  width: var(--character-sheet-print-base-width, 1024px);
+  transform-origin: top left;
 }
 
 .session-character-sheet-print-root__header {
@@ -7587,6 +7602,7 @@ body.theme-dark .session-activity-date {
   body.is-printing-character-sheet {
     background: #fff !important;
     color: #111827 !important;
+    overflow: hidden !important;
   }
 
   body.is-printing-character-sheet #root {
@@ -7595,8 +7611,30 @@ body.theme-dark .session-activity-date {
 
   body.is-printing-character-sheet .session-character-sheet-print-root {
     display: block !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 190mm !important;
+    height: 277mm !important;
+    overflow: hidden !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
     background: #fff !important;
     color: #111827 !important;
+  }
+
+  body.is-printing-character-sheet .session-character-sheet-print-root__page {
+    width: calc(var(--character-sheet-print-base-width, 1024px) * var(--character-sheet-print-scale, 0.7)) !important;
+    height: 277mm !important;
+    overflow: hidden !important;
+    margin: 0 auto !important;
+    position: relative !important;
+  }
+
+  body.is-printing-character-sheet .session-character-sheet-print-root__content {
+    width: var(--character-sheet-print-base-width, 1024px) !important;
+    transform: scale(var(--character-sheet-print-scale, 0.7)) !important;
+    transform-origin: top left !important;
   }
 
   body.is-printing-character-sheet .session-character-sheet-print-root *,
@@ -7621,6 +7659,7 @@ body.theme-dark .session-activity-date {
     background-color: transparent !important;
     color: #111827 !important;
     break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   body.is-printing-character-sheet .session-character-sheet-print-root .system-studio-v2-runtime__container-body,

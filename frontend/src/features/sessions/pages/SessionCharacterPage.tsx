@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Layout from '../../../components/Layout';
@@ -18,6 +18,10 @@ import { LocalAction } from '../../../types/localAction';
 import { OfflineSessionBundle } from '../../../types/offline';
 import { Session } from '../../../types/session';
 import { GameSystem, SystemStudioViewDefinitionV2 } from '../../../types/system';
+
+const PRINT_BASE_WIDTH_PX = 1024;
+const PRINT_A4_CONTENT_WIDTH_PX = 718;
+const PRINT_A4_CONTENT_HEIGHT_PX = 1047;
 
 function canManageSession(session: Session, userId: string, userRoles: string[]): boolean {
   if (userRoles.includes('admin')) {
@@ -271,6 +275,9 @@ export default function SessionCharacterPage() {
   const lastSavedSignatureRef = useRef('');
   const saveInFlightRef = useRef(false);
   const queuedAutosaveRef = useRef(false);
+  const printMeasureRef = useRef<HTMLDivElement | null>(null);
+  const printTimeoutRef = useRef<number | null>(null);
+  const [printScale, setPrintScale] = useState(PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX);
   const canReadAsGm = Boolean(session && currentUser && resolveSessionRole(session, currentUser) === 'gm');
   const templateContext = buildSessionCharacterTemplateContext({
     session,
@@ -285,20 +292,31 @@ export default function SessionCharacterPage() {
     currentUserId: currentUser?.id || '',
     isGmReader: canReadAsGm
   });
-  const printTemplateContext = buildSessionCharacterTemplateContext({
-    session,
-    system,
-    character,
-    currentUserId: currentUser?.id || '',
-    currentUserNickname: currentUser?.nickname,
-    isGmReader: false
-  });
-  const printRuntimeContextValues = buildSessionCharacterRuntimeContextValues({
-    character,
-    currentUserId: currentUser?.id || '',
-    isGmReader: false
-  });
-  const printRuntimeValuesV2 = { ...runtimeValuesV2, ...printRuntimeContextValues };
+  const printTemplateContext = useMemo(
+    () =>
+      buildSessionCharacterTemplateContext({
+        session,
+        system,
+        character,
+        currentUserId: currentUser?.id || '',
+        currentUserNickname: currentUser?.nickname,
+        isGmReader: false
+      }),
+    [character, currentUser?.id, currentUser?.nickname, session, system]
+  );
+  const printRuntimeContextValues = useMemo(
+    () =>
+      buildSessionCharacterRuntimeContextValues({
+        character,
+        currentUserId: currentUser?.id || '',
+        isGmReader: false
+      }),
+    [character, currentUser?.id]
+  );
+  const printRuntimeValuesV2 = useMemo(
+    () => ({ ...runtimeValuesV2, ...printRuntimeContextValues }),
+    [printRuntimeContextValues, runtimeValuesV2]
+  );
 
   useEffect(() => {
     latestSavePayloadRef.current = {
@@ -496,44 +514,84 @@ export default function SessionCharacterPage() {
     const stopPrinting = () => setIsPrinting(false);
     window.addEventListener('afterprint', stopPrinting);
     return () => {
+      if (printTimeoutRef.current !== null) {
+        window.clearTimeout(printTimeoutRef.current);
+        printTimeoutRef.current = null;
+      }
       window.removeEventListener('afterprint', stopPrinting);
       document.body.classList.remove('is-printing-character-sheet');
     };
   }, [isPrinting]);
 
+  useEffect(() => {
+    if (!isPrinting || typeof window === 'undefined') {
+      return;
+    }
+    let cancelled = false;
+    const calculateAndPrint = () => {
+      const measuredHeight = printMeasureRef.current?.scrollHeight ?? PRINT_A4_CONTENT_HEIGHT_PX;
+      const widthScale = PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX;
+      const heightScale = measuredHeight > 0 ? PRINT_A4_CONTENT_HEIGHT_PX / measuredHeight : widthScale;
+      const nextScale = Math.max(0.18, Math.min(1, widthScale, heightScale));
+      setPrintScale(nextScale);
+      printTimeoutRef.current = window.setTimeout(() => {
+        if (!cancelled) {
+          window.print();
+        }
+      }, 80);
+    };
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(calculateAndPrint);
+    });
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(frame);
+      if (printTimeoutRef.current !== null) {
+        window.clearTimeout(printTimeoutRef.current);
+        printTimeoutRef.current = null;
+      }
+    };
+  }, [isPrinting, printRuntimeValuesV2, viewV2]);
+
   const handlePrint = () => {
     if (!viewV2 || !character) {
       return;
     }
+    setPrintScale(PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX);
     setIsPrinting(true);
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => window.print());
-    });
   };
 
   const characterSyncActions = character ? localActions.filter((action) => action.entityType === 'character' && action.entityId === character.id) : [];
   const isCharacterCachedOffline = Boolean(character && offlineBundle?.characters.some((item) => item.characterId === character.id));
   const canUsePrintPortal = typeof document !== 'undefined' && Boolean(document.body);
+  const printScaleStyle = {
+    '--character-sheet-print-scale': String(printScale),
+    '--character-sheet-print-base-width': `${PRINT_BASE_WIDTH_PX}px`
+  } as CSSProperties;
   const printContent = isPrinting && viewV2 && character ? (
-    <main className="session-character-sheet-print-root">
-      <header className="session-character-sheet-print-root__header">
-        <div>
-          <p>Fiche personnage</p>
-          <h1>{character.name}</h1>
+    <main className="session-character-sheet-print-root" style={printScaleStyle}>
+      <div className="session-character-sheet-print-root__page">
+        <div ref={printMeasureRef} className="session-character-sheet-print-root__content">
+          <header className="session-character-sheet-print-root__header">
+            <div>
+              <p>Fiche personnage</p>
+              <h1>{character.name}</h1>
+            </div>
+          </header>
+          <SystemStudioV2Runtime
+            view={viewV2}
+            systemTheme={system?.studioTheme}
+            catalogs={system?.catalogs}
+            allViews={system?.studioSchemaV2?.views}
+            values={printRuntimeValuesV2}
+            editable={false}
+            templateContext={printTemplateContext}
+            sessionId={session?.id}
+            currentUserId={currentUser?.id}
+            flatMode
+          />
         </div>
-      </header>
-      <SystemStudioV2Runtime
-        view={viewV2}
-        systemTheme={system?.studioTheme}
-        catalogs={system?.catalogs}
-        allViews={system?.studioSchemaV2?.views}
-        values={printRuntimeValuesV2}
-        editable={false}
-        templateContext={printTemplateContext}
-        sessionId={session?.id}
-        currentUserId={currentUser?.id}
-        flatMode
-      />
+      </div>
     </main>
   ) : null;
 
