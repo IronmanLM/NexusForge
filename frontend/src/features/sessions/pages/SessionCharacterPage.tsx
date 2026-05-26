@@ -22,6 +22,7 @@ import { GameSystem, SystemStudioViewDefinitionV2 } from '../../../types/system'
 const PRINT_BASE_WIDTH_PX = 1024;
 const PRINT_A4_CONTENT_WIDTH_PX = 718;
 const PRINT_A4_CONTENT_HEIGHT_PX = 1047;
+type PrintPageMode = 'single' | 'multiple';
 
 async function waitForPrintableImages(root: HTMLElement | null, timeoutMs = 1400): Promise<void> {
   if (!root) {
@@ -282,7 +283,9 @@ export default function SessionCharacterPage() {
   const [offlineBundle, setOfflineBundle] = useState<OfflineSessionBundle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [printPageMode, setPrintPageMode] = useState<PrintPageMode>('single');
   const [runtimeActiveTabs, setRuntimeActiveTabs] = useState<Record<string, string>>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -534,6 +537,7 @@ export default function SessionCharacterPage() {
       return;
     }
     document.body.classList.toggle('is-printing-character-sheet', isPrinting);
+    document.body.classList.toggle('is-printing-character-sheet--multiple', isPrinting && printPageMode === 'multiple');
     if (!isPrinting) {
       return () => undefined;
     }
@@ -546,11 +550,12 @@ export default function SessionCharacterPage() {
       }
       window.removeEventListener('afterprint', stopPrinting);
       document.body.classList.remove('is-printing-character-sheet');
+      document.body.classList.remove('is-printing-character-sheet--multiple');
     };
-  }, [isPrinting]);
+  }, [isPrinting, printPageMode]);
 
   useEffect(() => {
-    if (!isPrinting || typeof window === 'undefined') {
+    if ((!isPrintPreviewOpen && !isPrinting) || typeof window === 'undefined') {
       return;
     }
     let cancelled = false;
@@ -559,8 +564,11 @@ export default function SessionCharacterPage() {
       const measuredHeight = printMeasureRef.current?.scrollHeight ?? PRINT_A4_CONTENT_HEIGHT_PX;
       const widthScale = PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX;
       const heightScale = measuredHeight > 0 ? PRINT_A4_CONTENT_HEIGHT_PX / measuredHeight : widthScale;
-      const nextScale = Math.max(0.18, Math.min(1, widthScale, heightScale));
+      const nextScale = printPageMode === 'single' ? Math.max(0.18, Math.min(1, widthScale, heightScale)) : Math.min(1, widthScale);
       setPrintScale(nextScale);
+      if (!isPrinting) {
+        return;
+      }
       printTimeoutRef.current = window.setTimeout(() => {
         if (!cancelled) {
           window.print();
@@ -578,13 +586,20 @@ export default function SessionCharacterPage() {
         printTimeoutRef.current = null;
       }
     };
-  }, [isPrinting, printRuntimeValuesV2, viewV2]);
+  }, [isPrintPreviewOpen, isPrinting, printPageMode, printRuntimeValuesV2, viewV2]);
 
   const handlePrint = () => {
     if (!viewV2 || !character) {
       return;
     }
     setPrintScale(PRINT_A4_CONTENT_WIDTH_PX / PRINT_BASE_WIDTH_PX);
+    setIsPrintPreviewOpen(true);
+  };
+
+  const handleConfirmPrint = () => {
+    if (!viewV2 || !character) {
+      return;
+    }
     setIsPrinting(true);
   };
 
@@ -595,26 +610,64 @@ export default function SessionCharacterPage() {
     '--character-sheet-print-scale': String(printScale),
     '--character-sheet-print-base-width': `${PRINT_BASE_WIDTH_PX}px`
   } as CSSProperties;
-  const printContent = isPrinting && viewV2 && character ? (
-    <main className="session-character-sheet-print-root" style={printScaleStyle}>
-      <div className="session-character-sheet-print-root__page">
-        <div ref={printMeasureRef} className="session-character-sheet-print-root__content">
-          <SystemStudioV2Runtime
-            view={viewV2}
-            systemTheme={system?.studioTheme}
-            catalogs={system?.catalogs}
-            allViews={system?.studioSchemaV2?.views}
-            values={printRuntimeValuesV2}
-            editable={false}
-            templateContext={printTemplateContext}
-            sessionId={session?.id}
-            currentUserId={currentUser?.id}
-            flatMode
-            activeTabs={runtimeActiveTabs}
-          />
+  const printableContent = (measure = false) => (
+    <div ref={measure ? printMeasureRef : undefined} className="session-character-sheet-print-root__content">
+      <SystemStudioV2Runtime
+        view={viewV2}
+        systemTheme={system?.studioTheme}
+        catalogs={system?.catalogs}
+        allViews={system?.studioSchemaV2?.views}
+        values={printRuntimeValuesV2}
+        editable={false}
+        templateContext={printTemplateContext}
+        sessionId={session?.id}
+        currentUserId={currentUser?.id}
+        flatMode
+        activeTabs={runtimeActiveTabs}
+      />
+    </div>
+  );
+  const printContent = (isPrintPreviewOpen || isPrinting) && viewV2 && character ? (
+    <>
+      <main className={`session-character-sheet-print-root mode-${printPageMode}`} style={printScaleStyle}>
+        <div className="session-character-sheet-print-root__page">
+          {printableContent(true)}
         </div>
-      </div>
-    </main>
+      </main>
+      {isPrintPreviewOpen ? (
+        <div className="resource-preview-modal session-character-print-preview" onClick={() => setIsPrintPreviewOpen(false)}>
+          <section className="resource-preview-modal__dialog resource-preview-modal__dialog--wide session-character-print-preview__dialog" onClick={(event) => event.stopPropagation()}>
+            <header className="resource-preview-modal__header">
+              <div>
+                <strong>Préparer l'impression</strong>
+                <small>Rendu de l'onglet actif en largeur 1024px</small>
+              </div>
+              <Button type="button" variant="secondary" onClick={() => setIsPrintPreviewOpen(false)}>
+                Fermer
+              </Button>
+            </header>
+            <div className="session-character-print-preview__toolbar">
+              <label className={printPageMode === 'single' ? 'is-active' : ''}>
+                <input type="radio" name="character-print-mode" checked={printPageMode === 'single'} onChange={() => setPrintPageMode('single')} />
+                <span>1 page</span>
+              </label>
+              <label className={printPageMode === 'multiple' ? 'is-active' : ''}>
+                <input type="radio" name="character-print-mode" checked={printPageMode === 'multiple'} onChange={() => setPrintPageMode('multiple')} />
+                <span>Plusieurs pages</span>
+              </label>
+              <Button type="button" onClick={handleConfirmPrint}>
+                Imprimer
+              </Button>
+            </div>
+            <div className={`session-character-print-preview__viewport mode-${printPageMode}`}>
+              <div className="session-character-print-preview__paper" style={printScaleStyle}>
+                {printableContent(false)}
+              </div>
+            </div>
+          </section>
+        </div>
+      ) : null}
+    </>
   ) : null;
 
   return (

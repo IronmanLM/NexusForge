@@ -7096,6 +7096,69 @@ body.theme-dark .screen-studio-widget {
   object-fit: cover;
 }
 
+.session-character-print-preview__dialog {
+  width: min(1180px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+}
+
+.session-character-print-preview__toolbar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.session-character-print-preview__toolbar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(72, 93, 131, 0.45);
+  background: rgba(15, 23, 42, 0.36);
+  cursor: pointer;
+}
+
+.session-character-print-preview__toolbar label.is-active {
+  border-color: rgba(96, 165, 250, 0.72);
+  background: rgba(37, 99, 235, 0.22);
+}
+
+.session-character-print-preview__toolbar button {
+  margin-left: auto;
+}
+
+.session-character-print-preview__viewport {
+  min-height: 0;
+  max-height: min(68vh, 780px);
+  overflow: auto;
+  padding: 1.25rem;
+  border-radius: 24px;
+  border: 1px solid rgba(72, 93, 131, 0.38);
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(30, 41, 59, 0.72)),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 12px);
+}
+
+.session-character-print-preview__paper {
+  width: calc(var(--character-sheet-print-base-width, 1024px) * var(--character-sheet-print-scale, 0.7));
+  min-height: 277mm;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+}
+
+.session-character-print-preview__viewport.mode-multiple .session-character-print-preview__paper {
+  overflow: visible;
+}
+
+.session-character-print-preview__paper > .session-character-sheet-print-root__content {
+  transform: scale(var(--character-sheet-print-scale, 0.7));
+  transform-origin: top left;
+}
+
 .system-studio-v2-runtime {
   display: grid;
   gap: 1rem;
@@ -7609,6 +7672,10 @@ body.theme-dark .session-activity-date {
     display: none !important;
   }
 
+  body.is-printing-character-sheet .session-character-print-preview {
+    display: none !important;
+  }
+
   body.is-printing-character-sheet .session-character-sheet-print-root {
     display: block !important;
     position: static !important;
@@ -7631,6 +7698,12 @@ body.theme-dark .session-activity-date {
     overflow: hidden !important;
     margin: 0 auto !important;
     position: relative !important;
+  }
+
+  body.is-printing-character-sheet--multiple .session-character-sheet-print-root,
+  body.is-printing-character-sheet--multiple .session-character-sheet-print-root__page {
+    height: auto !important;
+    overflow: visible !important;
   }
 
   body.is-printing-character-sheet .session-character-sheet-print-root__content {
