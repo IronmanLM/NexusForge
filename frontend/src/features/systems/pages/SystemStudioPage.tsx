@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import Button from '../../../components/Button';
+import AuthenticatedImage from '../../../components/AuthenticatedImage';
 import ResourcePickerField from '../../../components/ResourcePickerField';
 import { useAuth } from '../../../hooks/useAuth';
 import { canUserEditSystem, systemRepository } from '../../../data/repositories/systemRepository';
@@ -5821,6 +5822,28 @@ export default function SystemStudioPage() {
                   </div>
                   <div className="screen-studio-widget__body">
                     <div className="screen-studio-widget__preview">
+                      {(node.type === 'image' || node.type === 'static_image') && (node.reference || (typeof node.defaultValue === 'string' && node.defaultValue)) ? (
+                        <AuthenticatedImage
+                          src={node.reference || (typeof node.defaultValue === 'string' ? node.defaultValue : '')}
+                          resourceId={node.resourceId}
+                          alt={node.imageAlt || node.label}
+                          style={{
+                            width: '100%',
+                            minHeight: 0,
+                            maxHeight: '100%',
+                            flex: '1 1 auto',
+                            objectFit:
+                              node.imageFit === 'couvrir'
+                                ? 'cover'
+                                : node.imageFit === 'etirer'
+                                ? 'fill'
+                                : node.imageFit === 'taille_reelle'
+                                ? 'none'
+                                : 'contain',
+                            borderRadius: '0.45rem'
+                          }}
+                        />
+                      ) : null}
                       <strong>{node.label}</strong>
                       <small>{node.type === 'container' ? 'Structure conteneur' : node.type === 'tabs' ? 'Structure onglets' : node.key}</small>
                       {node.type === 'tabs' ? <small>{(node.tabs ?? []).map((tab) => tab.label).join(' · ') || 'Aucun onglet'}</small> : null}

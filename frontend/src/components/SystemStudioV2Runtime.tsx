@@ -1656,10 +1656,14 @@ function renderLeaf(params: {
       }
     case 'image':
     case 'static_image': {
+      const configuredSrc =
+        typeof node.defaultValue === 'string' && node.defaultValue.trim()
+          ? node.defaultValue
+          : node.reference || '';
       const src =
         typeof rawValue === 'string' && rawValue
           ? replaceRuntimeTokens(rawValue, values, view, allViews, templateContext)
-          : replaceRuntimeTokens(typeof node.defaultValue === 'string' ? node.defaultValue : node.reference || '', values, view, allViews, templateContext);
+          : replaceRuntimeTokens(configuredSrc, values, view, allViews, templateContext);
       const inputId = `system-runtime-image-${node.id}${repeatContext ? `-${repeatContext.itemIndex}` : ''}`;
       const imageContent = src ? (
         <AuthenticatedImage
