@@ -26,6 +26,7 @@ npm start
 - `BACKUP_REMOTE_HOST`
 - `BACKUP_REMOTE_USER`
 - `BACKUP_REMOTE_DIR`
+- `BACKUP_REMOTE_HISTORY_DIR`
 - `BACKUP_SSH_KEY`
 - `DISCORD_OAUTH_CLIENT_ID`
 - `DISCORD_OAUTH_CLIENT_SECRET`
@@ -84,6 +85,11 @@ Règles minimales:
 - `POST /api/admin/integrations/discord/releases`
 - `GET /api/integrations/discord/events` (secret bot requis)
 - `GET /api/internal/ops/backup` (secret backup requis)
+
+Le backup prod est maintenant hybride :
+
+- archive distante minimale pour `.env`, `state.json`, `persist-log.jsonl`, `resources/` et `.htaccess` ;
+- synchronisation `rsync` separee de `backend/data/history/` vers le dossier distant d historique.
 - `POST /api/auth/discord/link/start`
 - `POST /api/auth/discord/link/callback`
 - `DELETE /api/auth/discord/link`
