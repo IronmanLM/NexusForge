@@ -6,6 +6,7 @@ Thumbs.db
 
 # Backups
 *.bak
+*.zip
 
 # Logs
 *.log
@@ -35,5 +36,7 @@ frontend/android/key.properties
 *.keystore
 
 # Misc
+.codex
+.codex/
 .tmp/
 tmp/
