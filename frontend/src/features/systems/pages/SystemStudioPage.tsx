@@ -177,7 +177,7 @@ function supportsPlaceholder(node: SystemStudioNodeDefinition | null): boolean {
 }
 
 function supportsReference(node: SystemStudioNodeDefinition | null): boolean {
-  return Boolean(node && node.type === 'image');
+  return Boolean(node && (node.type === 'image' || node.type === 'static_image'));
 }
 
 function supportsFormulaField(node: SystemStudioNodeDefinition | null): boolean {
@@ -197,7 +197,7 @@ function supportsFieldStyle(node: SystemStudioNodeDefinition | null): boolean {
 }
 
 function supportsTypographySection(node: SystemStudioNodeDefinition | null): boolean {
-  return Boolean(node && !['container', 'tabs', 'image', 'subview'].includes(node.type));
+  return Boolean(node && !['container', 'tabs', 'image', 'static_image', 'subview'].includes(node.type));
 }
 
 function buttonUsesIcon(node: SystemStudioNodeDefinition | null): boolean {
@@ -777,6 +777,7 @@ const PALETTE_GROUPS: Array<{
     title: 'Affichage',
     items: [
       { type: 'static_text', title: 'Texte', description: 'Texte statique et variables réservées.' },
+      { type: 'static_image', title: 'Photo', description: 'Image simple non éditable.' },
       { type: 'progress', title: 'Jauge', description: 'Barre de ressource.' },
       { type: 'button', title: 'Bouton', description: 'Action visuelle.' },
       { type: 'subview', title: 'Vue liée', description: 'Référence vers une autre vue.' }
@@ -4767,16 +4768,18 @@ export default function SystemStudioPage() {
                     </PropertySection>
                   ) : null}
 
-                  {selectedNode.type === 'image' ? (
-                    <PropertySection title="Image" sectionKey={`image-${selectedNode.id}`}>
+                  {selectedNode.type === 'image' || selectedNode.type === 'static_image' ? (
+                    <PropertySection title={selectedNode.type === 'static_image' ? 'Photo' : 'Image'} sectionKey={`image-${selectedNode.id}`}>
                       <div className="grid">
-                        <label style={{ display: 'grid', gap: '0.35rem' }}>
-                          <span>Valeur vide autorisée</span>
-                          <select value={String(Boolean(selectedNode.valueAllowsEmpty))} onChange={(event) => updateSelectedNode((node) => ({ ...node, valueAllowsEmpty: event.target.value === 'true' }))} disabled={!canEdit}>
-                            <option value="false">Non</option>
-                            <option value="true">Oui</option>
-                          </select>
-                        </label>
+                        {selectedNode.type === 'image' ? (
+                          <label style={{ display: 'grid', gap: '0.35rem' }}>
+                            <span>Valeur vide autorisée</span>
+                            <select value={String(Boolean(selectedNode.valueAllowsEmpty))} onChange={(event) => updateSelectedNode((node) => ({ ...node, valueAllowsEmpty: event.target.value === 'true' }))} disabled={!canEdit}>
+                              <option value="false">Non</option>
+                              <option value="true">Oui</option>
+                            </select>
+                          </label>
+                        ) : null}
                         <label style={{ display: 'grid', gap: '0.35rem' }}>
                           <span>Mode d'ajustement</span>
                           <select value={selectedNode.imageFit ?? 'contenir'} onChange={(event) => updateSelectedNode((node) => ({ ...node, imageFit: event.target.value as SystemStudioNodeDefinition['imageFit'] }))} disabled={!canEdit}>

@@ -62,6 +62,7 @@ const NODE_DEFAULTS: Record<SystemStudioNodeType, PaletteDefaults> = {
   container: { w: 12, h: 6 },
   tabs: { w: 12, h: 6 },
   static_text: { w: 6, h: 2, defaultValue: 'Texte' },
+  static_image: { w: 6, h: 4, defaultValue: '' },
   text: { w: 6, h: 2, defaultValue: '' },
   textarea: { w: 12, h: 4, defaultValue: '' },
   date: { w: 4, h: 2, defaultValue: '' },
@@ -84,6 +85,8 @@ function baseLabel(type: SystemStudioNodeType): string {
       return 'Onglets';
     case 'static_text':
       return 'Texte';
+    case 'static_image':
+      return 'Photo';
     case 'text':
       return 'Texte editable';
     case 'textarea':

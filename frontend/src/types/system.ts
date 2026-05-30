@@ -462,6 +462,7 @@ export type SystemStudioNodeType =
   | 'container'
   | 'tabs'
   | 'static_text'
+  | 'static_image'
   | 'text'
   | 'textarea'
   | 'date'

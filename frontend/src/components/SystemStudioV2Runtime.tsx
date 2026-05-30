@@ -1654,7 +1654,8 @@ function renderLeaf(params: {
         </label>
       );
       }
-    case 'image': {
+    case 'image':
+    case 'static_image': {
       const src =
         typeof rawValue === 'string' && rawValue
           ? replaceRuntimeTokens(rawValue, values, view, allViews, templateContext)
@@ -1684,7 +1685,7 @@ function renderLeaf(params: {
       return (
         <div className="system-studio-v2-runtime__image-field">
           {imageContent}
-          {isEditable ? (
+          {isEditable && node.type === 'image' ? (
             <div className="system-studio-v2-runtime__image-actions">
               <input
                 id={inputId}
