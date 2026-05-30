@@ -1665,6 +1665,7 @@ function renderLeaf(params: {
         <AuthenticatedImage
           src={src}
           alt={node.imageAlt || node.label}
+          resourceId={node.resourceId}
           className="system-studio-v2-runtime__image"
           style={{
             objectFit:

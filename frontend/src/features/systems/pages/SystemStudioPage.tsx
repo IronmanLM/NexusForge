@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Layout from '../../../components/Layout';
 import Button from '../../../components/Button';
+import ResourcePickerField from '../../../components/ResourcePickerField';
 import { useAuth } from '../../../hooks/useAuth';
 import { canUserEditSystem, systemRepository } from '../../../data/repositories/systemRepository';
 import {
@@ -3841,10 +3842,29 @@ export default function SystemStudioPage() {
                       </label>
                     ) : null}
                     {supportsReference(selectedNode) ? (
-                      <label style={{ display: 'grid', gap: '0.35rem' }}>
-                        <span>Reference / URL</span>
-                        <input value={selectedNode.reference ?? ''} onChange={(event) => updateSelectedNode((node) => ({ ...node, reference: event.target.value }))} disabled={!canEdit} />
-                      </label>
+                      <ResourcePickerField
+                        label="Image"
+                        value={{ resourceId: selectedNode.resourceId || undefined, url: selectedNode.reference ?? '' }}
+                        onChange={(next) =>
+                          updateSelectedNode((node) => ({
+                            ...node,
+                            resourceId: next.resourceId ?? '',
+                            reference: next.url ?? ''
+                          }))
+                        }
+                        kinds={['image']}
+                        scopeTypes={['account', 'system']}
+                        resourceFilter={(resource) => resource.scopeType === 'account' || (resource.scopeType === 'system' && resource.scopeRefId === system.id)}
+                        disabled={!canEdit}
+                        allowManualUrl
+                        allowUpload={Boolean(system.id)}
+                        uploadScopeType="system"
+                        uploadScopeRefId={system.id}
+                        uploadVisibility="private"
+                        previewAlt={selectedNode.imageAlt || selectedNode.label || 'Image'}
+                        urlPlaceholder="https://.../image.png"
+                        emptyOptionLabel="Choisir une image"
+                      />
                     ) : null}
                     {supportsFormulaField(selectedNode) ? (
                       <>

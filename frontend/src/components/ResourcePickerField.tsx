@@ -15,6 +15,7 @@ type ResourcePickerFieldProps = {
   onChange: (value: ResourcePickerValue) => void;
   kinds?: ResourceKind[];
   scopeTypes?: ResourceScopeType[];
+  resourceFilter?: (resource: ResourceItem) => boolean;
   resources?: ResourceItem[];
   disabled?: boolean;
   allowManualUrl?: boolean;
@@ -72,6 +73,7 @@ export default function ResourcePickerField({
   onChange,
   kinds = [],
   scopeTypes,
+  resourceFilter,
   resources,
   disabled = false,
   allowManualUrl = true,
@@ -124,9 +126,12 @@ export default function ResourcePickerField({
       if (scopeTypes && scopeTypes.length > 0 && !scopeTypes.includes(item.scopeType)) {
         return false;
       }
+      if (resourceFilter && !resourceFilter(item)) {
+        return false;
+      }
       return true;
     });
-  }, [kinds, loadedResources, scopeTypes]);
+  }, [kinds, loadedResources, resourceFilter, scopeTypes]);
 
   const selectedResource = useMemo(
     () => filteredResources.find((item) => item.id === value.resourceId) ?? loadedResources.find((item) => item.id === value.resourceId) ?? null,
