@@ -1,7 +1,7 @@
 # TODO — NexusForge `decors`
 
 ## M1 — CSS 4 supports
-- [ ] M1.1 Audit `frontend/src/styles/global.css` (layouts, breakpoints 820/900, max 1120px)
+- [x] M1.1 Audit `frontend/src/styles/global.css` (voir `docs/m1-1-audit-global-css.md`) (layouts, breakpoints 820/900, max 1120px)
 - [ ] M1.2 Fondations variables + clamp/rem + tactile 44px + safe-area
 - [ ] M1.3 Déclinaisons TV 4K / laptop 1080p / tablette / téléphone
 - [ ] M1.4 Vues MJ / battlemap / joueurs + studio + builder + chat + fiches
