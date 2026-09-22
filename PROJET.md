@@ -108,3 +108,82 @@ Critère de sortie : AO-Dev consommable comme plugin opt-in sur branche `AO`, do
 
 - Réécriture des règles métier NexusForge, refonte backend auth/sync, multijoueur grande échelle.
 - Canon AlphaOmega lui-même (traité dans `/home/fabrice/Projets/AO/` et `/home/fabrice/Projets/AO-Dev/`).
+
+## 6. Plan système de thèmes — audit au 2026-09-22 + implémentation M2
+
+### 6.1 Audit actuel (branche `decors`, vérifié par lecture)
+
+- Fichier unique : `/home/fabrice/Projets/NexusForge/frontend/src/styles/global.css` (1563 lignes). Import seul dans `/home/fabrice/Projets/NexusForge/frontend/src/main.tsx:4`. Aucun `*.module.css`, SCSS, Tailwind, styled-components.
+- `:root` (`global.css:1-5`) : 0 variable `--*`, 0 `var()`. Light = valeurs en dur non scopées.
+- `body.theme-dark` : 59 sélecteurs (`global.css:206-318`, `987-990`, `1399-1514`). `body.theme-light` : 0 règle (togglé mais jamais défini). `data-theme` : 0 occurrence.
+- Mécanisme seul : `/home/fabrice/Projets/NexusForge/frontend/src/components/Layout.tsx:8,18-21,55-59` — `useState<'light'|'dark'>`, défaut `dark`, `localStorage nexusforge.theme`, `document.body.classList.toggle`. Pas de `ThemeContext`, pas de `document.documentElement`, pas de `prefers-color-scheme`.
+- Sélecteur UI minimal : `/home/fabrice/Projets/NexusForge/frontend/src/components/Layout.tsx:115-121` (select Dark/Light dans `.top-nav__right`). Label i18n dans `/home/fabrice/Projets/NexusForge/frontend/src/i18n/messages.ts:22,46,70,94`.
+- ~255 couleurs en dur dans `global.css` (~70 valeurs : `#d0d5dd:36`, `#155eef:15`, `#0f172a:16`, familles layout/logic/action/rpg, chat/whisper) + ~64 hex en dur dans 28 fichiers `.tsx` via 296 `style={{` (erreurs `#b42318:28`, succès `#067647/#027a48`, `#f79009/#fffaeb`, modale hard-dark `/home/fabrice/Projets/NexusForge/frontend/src/features/systems/pages/SystemStudioPage.tsx:2687,2921,2937-2938`).
+- Dexie : `/home/fabrice/Projets/NexusForge/frontend/src/data/db.ts`, `/home/fabrice/Projets/NexusForge/frontend/src/types/dashboard.ts` — aucun champ `theme/decor`, table `dashboardProfiles` sans décor.
+- Breakpoints : 2 seulement (`global.css:320` à 820px, `global.css:1516-1563` à 900px).
+- Conséquence : impossible aujourd'hui de changer complètement le visuel sans réécrire les 1563 lignes + les inlines. Tout 3e thème impose tokenisation préalable.
+
+### 6.2 Principes cibles
+
+1. **Tokens d'abord** : 100% du visuel via `var(--*)`. Aucun hex/rgba/font/radius/shadow en dur dans CSS ou TSX après migration.
+2. **Décor = thème complet** : `data-theme="sf|fantasy"` sur `<html>` + `data-mode="light|dark"` orthogonal. Chaque thème redéfinit fond, surface, texte, accent, bordure, fonts, radius, ombres, textures/assets. Pas un simple recolor.
+3. **Ne pas casser** : `body.theme-dark/light` gardé en legacy/shim vers `data-mode` pendant migration, puis supprimé. Défaut actuel `dark` conservé jusqu'au sélecteur final.
+4. **Persistant, instantané, sans flash** : script inline dans `index.html` lisant `localStorage nexusforge.theme` avant paint + `ThemeContext`.
+5. **Thème tiers ajoutable en 1 fichier** : contrat documenté, exemple minimal.
+
+### 6.3 Arborescence cible (à créer)
+
+- `/home/fabrice/Projets/NexusForge/frontend/src/styles/tokens.css` — base + `:root[data-mode]` (couleurs sémantiques, espacements, fonts système).
+- `/home/fabrice/Projets/NexusForge/frontend/src/styles/base.css` — reset, `body`, `.page`, `.top-nav`, `.card`, `.button`, `.form` réécrits en `var()`.
+- `/home/fabrice/Projets/NexusForge/frontend/src/styles/themes/theme-sf.css` — `:root[data-theme="sf"]` + variantes `[data-mode]`.
+- `/home/fabrice/Projets/NexusForge/frontend/src/styles/themes/theme-fantasy.css` — `:root[data-theme="fantasy"]` + variantes.
+- `/home/fabrice/Projets/NexusForge/frontend/src/styles/themes/_contract.css` (ou doc) — liste des variables requises.
+- `/home/fabrice/Projets/NexusForge/frontend/src/theme/ThemeContext.tsx` — provider + `useTheme()`, types `ThemeName='sf'|'fantasy'`, `Mode='light'|'dark'`.
+- `/home/fabrice/Projets/NexusForge/frontend/src/theme/ThemeSelector.tsx` — sélecteur avec preview live.
+- `/home/fabrice/Projets/NexusForge/frontend/src/assets/themes/` — fonts, textures, fonds SF/Fantasy (actuellement seul `logo.svg` existe).
+- `global.css` : gelé puis découpé et supprimé par morceaux au fil des T.
+
+### 6.4 Contrat de variables (minimum exigible par thème)
+
+```
+--bg, --bg-elevated, --surface, --surface-2
+--text, --text-muted, --text-inverse
+--accent, --accent-hover, --accent-contrast
+--border, --border-strong
+--success, --warning, --danger, --info (+ fonds muted associés)
+--font-display, --font-body, --font-mono
+--radius-sm/md/lg, --shadow-sm/md/lg
+--max-width, --space-*, --font-scale
+--theme-texture (url optionnelle), --theme-ornament (bordure/filet)
+```
+
+Règle : tout nouveau CSS ou `style={{}}` doit consommer ces tokens. Interdit : hex/rgba/font-family en dur.
+
+### 6.5 Runtime
+
+- `ThemeContext` : état `{ theme, mode, setTheme, setMode }`, applique `document.documentElement.dataset.theme/mode`, écrit `localStorage` (`nexusforge.theme`, `nexusforge.mode`), migre l'ancienne clé unique.
+- `main.tsx` : envelopper `App` dans `ThemeProvider`. `Layout.tsx` : remplacer `useState<'light'|'dark'>` + `body.classList` par `useTheme()` ; remplacer le select par `ThemeSelector`.
+- `index.html` : script pre-paint anti-flash (lecture localStorage → `data-theme/data-mode`).
+- Persistance profil (option M2.4) : champ `theme` sur `dashboardProfiles` (migration Dexie v7) ou clé `nexusforge.decor:${userId}` si pas de migration ; défaut raisonné `sf/dark` (table, projection).
+- Accessibilité : contrastes AA vérifiés par thème×mode, focus visibles, `prefers-reduced-motion` respecté.
+
+### 6.6 Étapes d'implémentation (ordre impératif)
+
+- `T1` Socle : créer `tokens.css` + `ThemeContext.tsx` + script anti-flash `index.html` + câblage `main.tsx`/`Layout.tsx`. Mapper les 70 valeurs actuelles vers tokens (script d'extraction `rg '#[0-9a-fA-F]{3,6}'`). `body.theme-dark` conservé en shim. Test : switch light/dark identique au visuel actuel, sans flash.
+- `T2` Migration `base.css` : réécrire top-nav/card/form/button/page/dashboard/chat/character/system-builder/studio en `var()`, section par section (ordre : page/top-nav → card/form/button → dashboard → chat → character → system-builder → studio). Supprimer les blocs `body.theme-dark` migrés au fur et à mesure. Critère : `rg '#[0-9a-f]{3,6}' global.css+base.css → 0` hors thèmes.
+- `T3` Chasse aux inlines : remplacer les 296 `style={{` avec hex dans les 28 TSX (priorité : `#b42318` erreurs, `#067647` succès, `#f79009` whisper, modale `SystemStudioPage.tsx:2687,2937`) par classes ou `var()`. Règle eslint/stylelint `color-no-hex` à ajouter.
+- `T4` Thème SF (`theme-sf.css`) : froid, néon/bleu, angles vifs (`--radius-sm:2px`), mono technique pour chiffres/jets, glow discret, texture grille optionnelle. Décliner light+dark.
+- `T5` Thème Fantasy (`theme-fantasy.css`) : parchemin/bois/cuir, serif titrage, filets ornés, badges cire, radius généreux, texture papier. Décliner light+dark.
+- `T6` Sélecteur : `ThemeSelector.tsx` persistant (localStorage + Dexie), preview live (hover sans appliquer ? ou applique + rollback), utilisé dans `Layout.tsx`. Supprimer l'ancien select.
+- `T7` Doc + garde-fous : `docs/THEMES.md` (contrat, exemple minimal 20 lignes, ajout font/asset), stylelint `custom-property-pattern`, test build `npm run build` vert, revue contrastes AA, captures SF/Fantasy × light/dark.
+
+### 6.7 Spéc SF vs Fantasy (pour ne pas finir en simple recolor)
+
+- SF : `--font-display: 'Orbitron',...`, `--font-mono: 'JetBrains Mono',...`, accents cyan `#22d3ee` / bleu `#3b82f6`, surfaces `#0b1220/#0f172a`, bordures fines lumineuses, uppercase + letter-spacing sur labels, coins carrés, ombres néon faibles.
+- Fantasy : `--font-display: 'Cinzel',serif`, `--font-body: 'Spectral',serif`, accents or `#b45309/#d4af37`, fonds parchemin `#faf3e3/#f5e6c8`, surfaces bois `#3f2d20`, filets double-bordure, badges cire `--danger:#9a3412` en sceau, ombres chaudes profondes.
+
+### 6.8 Critères de sortie M2
+
+- `data-theme="sf|fantasy"` × `data-mode` switch instantané, persistant, sans flash, sur les 4 supports M1.
+- 0 hex en dur hors `themes/*.css`. `npm run build` vert. Pas de régression fonctionnelle.
+- `docs/THEMES.md` permet à un tiers d'ajouter un thème en 1 fichier.
