@@ -3,7 +3,7 @@
 ## M1 — CSS 4 supports
 - [x] M1.1 Audit `frontend/src/styles/global.css` (voir `docs/m1-1-audit-global-css.md`) (layouts, breakpoints 820/900, max 1120px)
 - [x] M1.2 Fondations variables + clamp/rem + tactile 44px + safe-area (build vert via scripts/docker-npm.sh, image node:22-slim)
-- [ ] M1.3 Déclinaisons TV 4K / laptop 1080p / tablette / téléphone
+- [x] M1.3 Déclinaisons TV 4K / laptop 1080p / tablette / téléphone (640/1024/1920, build vert)
 - [ ] M1.4 Vues MJ / battlemap / joueurs + studio + builder + chat + fiches
 - [ ] M1.5 Tests 4 largeurs + `npm run build` vert
 - [ ] M1.6 Migrer `style=` inline → classes `global.css` (28/38 `.tsx`, voir `docs/css-design-rapport.md` §D1)
