@@ -1607,3 +1607,29 @@ button, [role="button"], nav a, .btn {
   min-height: var(--nf-tap);
   min-width: var(--nf-tap);
 }
+
+/* M1.3 SUPPORTS — 4 cibles : telephone / tablette / laptop (base) / TV 4K */
+/* Telephone : 1 colonne, panneaux empiles, paddings reduits */
+@media (max-width: 640px) {
+  .page { padding-left: var(--nf-space-4); padding-right: var(--nf-space-4); }
+  .grid, .studio-components-grid, .dashboard-studio__canvas,
+  .dashboard-studio, .studio-layout, .character-widget__summary-grid,
+  .chat-widget__layout {
+    grid-template-columns: 1fr;
+  }
+  .studio-fields-table { display: block; overflow-x: auto; }
+  .dashboard-toolbar__row { flex-wrap: wrap; }
+}
+/* Tablette : 2 colonnes, studio empile */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .studio-components-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-studio, .studio-layout, .chat-widget__layout {
+    grid-template-columns: 1fr;
+  }
+}
+/* TV 4K : echelle large, contenu elargi */
+@media (min-width: 1920px) {
+  body { font-size: clamp(1.05rem, 0.9rem + 0.5vw, 1.35rem); }
+  .page { max-width: 1600px; }
+  .studio-components-grid { grid-template-columns: repeat(4, 1fr); }
+}
