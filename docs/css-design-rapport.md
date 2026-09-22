@@ -6,14 +6,13 @@ Référence vues : `docs/ui/`. Objectifs M1/M2 de `TODO.md`.
 
 ## 1. Architecture actuelle
 
-- Un seul fichier de styles : `global.css`. Zéro CSS module / styled-component.
+- Un seul fichier de styles : `global.css` (1563 lignes, ~27 Ko). Zéro CSS module / styled-component.
 - `:root` statique (2 transitions), **0 variable** (`var(--…)` : 0 occurrence).
 - Thème sombre = **59 overrides `.theme-dark …`** en dur, aucun `data-theme`.
 - Responsive = **2 media queries** (`820px`, `900px`), **0 `clamp()`**.
-- **28/38 fichiers `.tsx` contiennent des `style=` inline** (couleurs, bordures,
+- **28/38 fichiers `.tsx` contiennent des `style=` inline** (à confirmer en M1.6) (couleurs, bordures,
   espacements dupliqués de `global.css`).
-- `z-index` magiques : `999` (modal), `1000` (tooltip). `overflow` : 5 `hidden`,
-  3 `auto`, 2 `scroll` sans stratégie documentée.
+- `z-index` : 2 valeurs (20, 2000). `overflow` : 4 occurrences (auto, hidden) sans stratégie documentée. Mesuré en M1.1.
 
 ## 2. Constats par axe
 
