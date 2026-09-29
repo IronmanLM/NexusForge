@@ -462,6 +462,44 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
     await saveState({ ...base, scenes: [...base.scenes, scene], activeSceneId: scene.id, updatedAt: nowIso() }, 'Nouvelle carte VTT créée.');
   };
 
+  const handleRemoveScene = async (sceneId: string) => {
+    if (!canManage) {
+      return;
+    }
+    const base = ensureVttState(vttState);
+    if (base.scenes.length <= 1) {
+      setErrorMessage('Impossible de supprimer la dernière carte VTT');
+      return;
+    }
+    const nextScenes = base.scenes.filter(scene => scene.id !== sceneId);
+    const newActiveSceneId = base.activeSceneId === sceneId 
+      ? nextScenes[0].id 
+      : base.activeSceneId;
+    await saveState({ ...base, scenes: nextScenes, activeSceneId: newActiveSceneId, updatedAt: nowIso() }, 'Carte VTT supprimée.');
+  };
+
+  const handleRenameScene = async (sceneId: string, newName: string) => {
+    if (!canManage || !newName.trim()) {
+      return;
+    }
+    const base = ensureVttState(vttState);
+    const nextScenes = base.scenes.map(scene => 
+      scene.id === sceneId ? { ...scene, name: newName.trim() } : scene
+    );
+    await saveState({ ...base, scenes: nextScenes, updatedAt: nowIso() }, 'Nom de la carte VTT modifié.');
+  };
+
+  const handleReorderScenes = async (fromIndex: number, toIndex: number) => {
+    if (!canManage) {
+      return;
+    }
+    const base = ensureVttState(vttState);
+    const scenes = [...base.scenes];
+    const [movedScene] = scenes.splice(fromIndex, 1);
+    scenes.splice(toIndex, 0, movedScene);
+    await saveState({ ...base, scenes, updatedAt: nowIso() }, 'Ordre des cartes VTT modifié.');
+  };
+
   const handleMapUpload = async (file: File | null) => {
     if (!file || !canManage) {
       return;
@@ -535,6 +573,37 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
             </select>
           </label>
           <Button type="button" variant="secondary" onClick={() => void handleAddScene()} disabled={isSaving || isUploadingMap}>Nouvelle carte VTT</Button>
+          {base.scenes.length > 1 && (
+            <Button type="button" variant="secondary" onClick={() => handleRemoveScene(activeScene.id)} disabled={isSaving || isUploadingMap}>
+              Supprimer la carte
+            </Button>
+          )}
+          <Button type="button" variant="secondary" onClick={() => {
+            const newName = window.prompt('Nouveau nom pour la carte VTT', activeScene.name);
+            if (newName !== null && newName.trim() !== '') {
+              handleRenameScene(activeScene.id, newName);
+            }
+          }} disabled={isSaving || isUploadingMap}>
+            Renommer la carte
+          </Button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <Button type="button" variant="secondary" onClick={() => {
+              const index = base.scenes.findIndex(scene => scene.id === activeScene.id);
+              if (index > 0) {
+                handleReorderScenes(index, index - 1);
+              }
+            }} disabled={isSaving || isUploadingMap}>
+              Monter
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => {
+              const index = base.scenes.findIndex(scene => scene.id === activeScene.id);
+              if (index >= 0 && index < base.scenes.length - 1) {
+                handleReorderScenes(index, index + 1);
+              }
+            }} disabled={isSaving || isUploadingMap}>
+              Descendre
+            </Button>
+          </div>\n          {base.scenes.length > 1 && (\n            <Button type="button" variant="secondary" onClick={() => handleRemoveScene(activeScene.id)} disabled={isSaving || isUploadingMap}>\n              Supprimer la carte\n            </Button>\n          )\n          <Button type="button" variant="secondary" onClick={() => {\n            const newName = window.prompt('Nouveau nom pour la carte VTT', activeScene.name);\n            if (newName !== null && newName.trim() !== '') {\n              handleRenameScene(activeScene.id, newName);\n            }\n          }} disabled={isSaving || isUploadingMap}>\n            Renommer la carte\n          </Button>\n          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>\n            <Button type="button" variant="secondary" onClick={() => {\n              const index = base.scenes.findIndex(scene => scene.id === activeScene.id);\n              if (index > 0) {\n                handleReorderScenes(index, index - 1);\n              }\n            }} disabled={isSaving || isUploadingMap}>\n              Monter\n            </Button>\n            <Button type="button" variant="secondary" onClick={() => {\n              const index = base.scenes.findIndex(scene => scene.id === activeScene.id);\n              if (index >= 0 && index < base.scenes.length - 1) {\n                handleReorderScenes(index, index + 1);\n              }\n            }} disabled={isSaving || isUploadingMap}>\n              Descendre\n            </Button>\n          </div>
           <label>
             <span>Importer une carte MJ</span>
             <input type="file" accept="image/*" disabled={isSaving || isUploadingMap} onChange={(event) => {
