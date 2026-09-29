@@ -7658,6 +7658,62 @@ body.theme-dark .session-activity-date {
   }
 }
 
+.vtt-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.vtt-panel--fullscreen {
+  min-height: 100vh;
+  border-radius: 0;
+  margin: 0;
+}
+
+.vtt-toolbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.vtt-toolbar label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.vtt-checkbox {
+  grid-auto-flow: column;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  align-self: center;
+}
+
+.vtt-token-editor {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+  padding: 1rem;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.vtt-token-editor h3,
+.vtt-token-editor p {
+  margin: 0;
+}
+
+.vtt-token-editor label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.vtt-token-editor input[type='color'] {
+  min-height: 2.6rem;
+  padding: 0.15rem;
+}
+
 @media (max-width: 640px) {
   .page,
   .page--wide {

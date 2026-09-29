@@ -3243,6 +3243,25 @@ function pushDiscordSessionEvent(kind, session) {
   });
 }
 
+function pushDiscordUserLinkEvent(kind, user, discordUserId = null) {
+  const targetDiscordUserId = String(discordUserId || user?.discordUserId || '').trim();
+  if (!targetDiscordUserId) {
+    return null;
+  }
+  return pushDiscordBotEvent('user.discord.sync', {
+    kind,
+    user: {
+      id: user.id,
+      displayName: user.displayName,
+      nickname: user.nickname || null,
+      roles: Array.isArray(user.roles) ? [...user.roles] : [],
+      discordUserId: targetDiscordUserId,
+      discordUsername: user.discordUsername || null,
+      discordGlobalName: user.discordGlobalName || null
+    }
+  });
+}
+
 function resyncDiscordSessionsForUser(userId) {
   if (!userId) {
     return 0;
@@ -4786,6 +4805,7 @@ app.post('/api/auth/discord/link/callback', requireAuth, async (req, res) => {
   req.currentUser.discordGuilds = Array.isArray(profile.guilds) ? profile.guilds : [];
   req.currentUser.discordLinkedAt = nowIso();
   req.currentUser.updatedAt = nowIso();
+  pushDiscordUserLinkEvent('link', req.currentUser);
   resyncDiscordSessionsForUser(req.currentUser.id);
   schedulePersist('discord-oauth-link');
 
@@ -4794,6 +4814,7 @@ app.post('/api/auth/discord/link/callback', requireAuth, async (req, res) => {
 
 app.delete('/api/auth/discord/link', requireAuth, (req, res) => {
   const currentUserId = req.currentUser.id;
+  const previousDiscordUserId = req.currentUser.discordUserId;
   req.currentUser.discordUserId = null;
   req.currentUser.discordUsername = null;
   req.currentUser.discordGlobalName = null;
@@ -4801,6 +4822,7 @@ app.delete('/api/auth/discord/link', requireAuth, (req, res) => {
   req.currentUser.discordGuilds = [];
   req.currentUser.discordLinkedAt = null;
   req.currentUser.updatedAt = nowIso();
+  pushDiscordUserLinkEvent('unlink', req.currentUser, previousDiscordUserId);
   resyncDiscordSessionsForUser(currentUserId);
   schedulePersist('discord-oauth-unlink');
 
@@ -5106,6 +5128,7 @@ app.post('/api/admin/users/:userId/approve', requireAuth, requireAdmin, (req, re
   user.approvalStatus = 'approved';
   user.isActive = true;
   user.updatedAt = nowIso();
+  pushDiscordUserLinkEvent('link', user);
   pushAdminAuditEvent({
     actorUserId: req.currentUser.id,
     action: 'admin_user_approve',
@@ -5149,6 +5172,9 @@ app.patch('/api/admin/users/:userId', requireAuth, requireAdmin, (req, res) => {
   }
 
   user.updatedAt = nowIso();
+  if (hasRolesUpdate || hasActiveUpdate) {
+    pushDiscordUserLinkEvent(user.isActive ? 'link' : 'unlink', user);
+  }
   pushAdminAuditEvent({
     actorUserId: req.currentUser.id,
     action: 'admin_user_update',
@@ -6355,6 +6381,164 @@ app.put('/api/sessions/:sessionId/runtime-targets/:targetId', requireAuth, (req,
   sessions.set(next.id, next);
   schedulePersist('session-runtime-target');
   return res.status(200).json({ ok: true });
+});
+
+function defaultVttState() {
+  const now = nowIso();
+  const scene = {
+    id: makeId('vtt_scene'),
+    name: 'Scène principale',
+    mapResourceId: null,
+    mapImageUrl: null,
+    mapWidth: 1600,
+    mapHeight: 1000,
+    grid: { enabled: true, type: 'square', size: 70, color: '#38bdf8', opacity: 0.35, offsetX: 0, offsetY: 0 },
+    fog: { enabled: true, mode: 'hidden-by-default', shapes: [] },
+    tokens: [],
+    pings: [],
+    permissions: { playersCanMoveOwnTokens: false },
+    createdAt: now,
+    updatedAt: now
+  };
+  return { scenes: [scene], activeSceneId: scene.id, updatedAt: now };
+}
+
+function sanitizeVttNumber(value, fallback, min, max) {
+  const next = Number(value);
+  return Number.isFinite(next) ? Math.max(min, Math.min(max, next)) : fallback;
+}
+
+function sanitizeVttPoint(point) {
+  return { x: sanitizeVttNumber(point?.x, 0, -100000, 100000), y: sanitizeVttNumber(point?.y, 0, -100000, 100000) };
+}
+
+function sanitizeVttScene(rawScene) {
+  const fallback = defaultVttState().scenes[0];
+  const now = nowIso();
+  const grid = rawScene?.grid && typeof rawScene.grid === 'object' ? rawScene.grid : fallback.grid;
+  const fog = rawScene?.fog && typeof rawScene.fog === 'object' ? rawScene.fog : fallback.fog;
+  return {
+    id: typeof rawScene?.id === 'string' && rawScene.id.trim() ? rawScene.id.trim().slice(0, 80) : makeId('vtt_scene'),
+    name: typeof rawScene?.name === 'string' && rawScene.name.trim() ? rawScene.name.trim().slice(0, 120) : fallback.name,
+    mapResourceId: typeof rawScene?.mapResourceId === 'string' && rawScene.mapResourceId.trim() ? rawScene.mapResourceId.trim() : null,
+    mapImageUrl: typeof rawScene?.mapImageUrl === 'string' && rawScene.mapImageUrl.trim() ? rawScene.mapImageUrl.trim().slice(0, 1000) : null,
+    mapWidth: sanitizeVttNumber(rawScene?.mapWidth, fallback.mapWidth, 200, 20000),
+    mapHeight: sanitizeVttNumber(rawScene?.mapHeight, fallback.mapHeight, 200, 20000),
+    grid: {
+      enabled: grid.enabled !== false,
+      type: grid.type === 'hex' ? 'hex' : 'square',
+      size: sanitizeVttNumber(grid.size, fallback.grid.size, 16, 240),
+      color: typeof grid.color === 'string' ? grid.color.slice(0, 32) : fallback.grid.color,
+      opacity: sanitizeVttNumber(grid.opacity, fallback.grid.opacity, 0, 1),
+      offsetX: sanitizeVttNumber(grid.offsetX, 0, -1000, 1000),
+      offsetY: sanitizeVttNumber(grid.offsetY, 0, -1000, 1000)
+    },
+    fog: {
+      enabled: fog.enabled !== false,
+      mode: fog.mode === 'visible-by-default' ? 'visible-by-default' : 'hidden-by-default',
+      shapes: Array.isArray(fog.shapes)
+        ? fog.shapes.slice(0, 250).map((shape) => ({
+            id: typeof shape?.id === 'string' && shape.id.trim() ? shape.id.trim().slice(0, 80) : makeId('vtt_fog'),
+            type: shape?.type === 'polygon' ? 'polygon' : 'rectangle',
+            mode: shape?.mode === 'reveal' ? 'reveal' : 'hide',
+            points: Array.isArray(shape?.points) ? shape.points.slice(0, 16).map(sanitizeVttPoint) : []
+          }))
+        : []
+    },
+    tokens: Array.isArray(rawScene?.tokens)
+      ? rawScene.tokens.slice(0, 300).map((token) => ({
+          id: typeof token?.id === 'string' && token.id.trim() ? token.id.trim().slice(0, 80) : makeId('vtt_token'),
+          name: typeof token?.name === 'string' && token.name.trim() ? token.name.trim().slice(0, 80) : 'Pion',
+          characterId: typeof token?.characterId === 'string' && token.characterId.trim() ? token.characterId.trim() : null,
+          imageResourceId: typeof token?.imageResourceId === 'string' && token.imageResourceId.trim() ? token.imageResourceId.trim() : null,
+          imageUrl: typeof token?.imageUrl === 'string' && token.imageUrl.trim() ? token.imageUrl.trim().slice(0, 1000) : null,
+          color: typeof token?.color === 'string' && token.color.trim() ? token.color.trim().slice(0, 32) : '#f59e0b',
+          x: sanitizeVttNumber(token?.x, 0, -100000, 100000),
+          y: sanitizeVttNumber(token?.y, 0, -100000, 100000),
+          width: sanitizeVttNumber(token?.width, 56, 8, 1000),
+          height: sanitizeVttNumber(token?.height, 56, 8, 1000),
+          rotation: sanitizeVttNumber(token?.rotation, 0, -360, 360),
+          ownerUserId: typeof token?.ownerUserId === 'string' && token.ownerUserId.trim() ? token.ownerUserId.trim() : null,
+          visibleToPlayers: token?.visibleToPlayers !== false,
+          locked: Boolean(token?.locked)
+        }))
+      : [],
+    pings: Array.isArray(rawScene?.pings)
+      ? rawScene.pings.slice(-20).map((ping) => ({
+          id: typeof ping?.id === 'string' && ping.id.trim() ? ping.id.trim().slice(0, 80) : makeId('vtt_ping'),
+          x: sanitizeVttNumber(ping?.x, 0, -100000, 100000),
+          y: sanitizeVttNumber(ping?.y, 0, -100000, 100000),
+          color: typeof ping?.color === 'string' && ping.color.trim() ? ping.color.trim().slice(0, 32) : '#38bdf8',
+          label: typeof ping?.label === 'string' && ping.label.trim() ? ping.label.trim().slice(0, 80) : null,
+          createdByUserId: typeof ping?.createdByUserId === 'string' && ping.createdByUserId.trim() ? ping.createdByUserId.trim() : null,
+          createdAt: typeof ping?.createdAt === 'string' ? ping.createdAt : now
+        }))
+      : [],
+    permissions: { playersCanMoveOwnTokens: Boolean(rawScene?.permissions?.playersCanMoveOwnTokens) },
+    createdAt: typeof rawScene?.createdAt === 'string' ? rawScene.createdAt : now,
+    updatedAt: typeof rawScene?.updatedAt === 'string' ? rawScene.updatedAt : now
+  };
+}
+
+function sanitizeVttState(rawVtt) {
+  if (!rawVtt || typeof rawVtt !== 'object') {
+    return defaultVttState();
+  }
+  const scenes = Array.isArray(rawVtt.scenes) ? rawVtt.scenes.slice(0, 50).map(sanitizeVttScene) : [];
+  if (scenes.length === 0) {
+    return defaultVttState();
+  }
+  const activeSceneId = typeof rawVtt.activeSceneId === 'string' && scenes.some((scene) => scene.id === rawVtt.activeSceneId) ? rawVtt.activeSceneId : scenes[0].id;
+  return { scenes, activeSceneId, updatedAt: typeof rawVtt.updatedAt === 'string' ? rawVtt.updatedAt : nowIso() };
+}
+
+function stripVttRealtimeFields(vtt) {
+  return {
+    ...vtt,
+    updatedAt: null,
+    scenes: (vtt.scenes || []).map((scene) => ({
+      ...scene,
+      updatedAt: null,
+      pings: []
+    }))
+  };
+}
+
+function isOnlyVttPingsChange(currentVtt, requestedVtt) {
+  return JSON.stringify(stripVttRealtimeFields(currentVtt)) === JSON.stringify(stripVttRealtimeFields(requestedVtt));
+}
+
+app.get('/api/sessions/:sessionId/vtt', requireAuth, (req, res) => {
+  const session = sessions.get(req.params.sessionId);
+  if (!session) {
+    return error(res, 404, 'SESSION_NOT_FOUND', 'Session not found');
+  }
+  if (!canViewSession(session, req.currentUser)) {
+    return error(res, 403, 'SESSION_ACCESS_FORBIDDEN', 'You cannot access this session');
+  }
+  return res.status(200).json({ vtt: sanitizeVttState(session.vtt) });
+});
+
+app.put('/api/sessions/:sessionId/vtt', requireAuth, (req, res) => {
+  const session = sessions.get(req.params.sessionId);
+  if (!session) {
+    return error(res, 404, 'SESSION_NOT_FOUND', 'Session not found');
+  }
+  const requestedVtt = sanitizeVttState(req.body?.vtt);
+  const canManageVtt = canManageSession(session, req.currentUser);
+  if (!canManageVtt) {
+    if (!canViewSession(session, req.currentUser)) {
+      return error(res, 403, 'SESSION_ACCESS_FORBIDDEN', 'You cannot access this session');
+    }
+    const currentVtt = sanitizeVttState(session.vtt);
+    if (!isOnlyVttPingsChange(currentVtt, requestedVtt)) {
+      return error(res, 403, 'SESSION_VTT_FORBIDDEN', 'Only GM/admin can update VTT tokens, maps and fog');
+    }
+  }
+  const next = { ...session, vtt: requestedVtt, updatedAt: nowIso() };
+  sessions.set(next.id, next);
+  schedulePersist(canManageVtt ? 'session-vtt-update' : 'session-vtt-ping');
+  return res.status(200).json({ vtt: next.vtt });
 });
 
 app.patch('/api/sessions/:sessionId', requireAuth, (req, res) => {

@@ -29,6 +29,7 @@ function mapApiSession(raw: Record<string, unknown>): Session {
     screenTemplateAssignments: (raw.screenTemplateAssignments as Session['screenTemplateAssignments']) ?? undefined,
     screenTemplateSelections: (raw.screenTemplateSelections as Session['screenTemplateSelections']) ?? undefined,
     discordIntegration: (raw.discordIntegration as Session['discordIntegration']) ?? undefined,
+    vtt: (raw.vtt as Session['vtt']) ?? undefined,
     createdAt: String(raw.createdAt ?? new Date().toISOString()),
     updatedAt: String(raw.updatedAt ?? new Date().toISOString())
   };
@@ -120,6 +121,7 @@ export const sessionRepository = {
             screenTemplateAssignments: session.screenTemplateAssignments,
             screenTemplateSelections: session.screenTemplateSelections,
             discordIntegration: session.discordIntegration ?? null,
+            vtt: session.vtt,
             archivedAt: session.archivedAt ?? null
           }
         });

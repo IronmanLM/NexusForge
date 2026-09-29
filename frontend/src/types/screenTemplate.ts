@@ -19,7 +19,9 @@ export type ScreenWidgetType =
   | 'character_list'
   | 'dice_history'
   | 'initiative'
-  | 'session_journal';
+  | 'session_journal'
+  | 'vtt_player'
+  | 'vtt_gm';
 
 export interface ScreenWidgetLayout {
   x: number;

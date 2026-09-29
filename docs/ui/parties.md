@@ -33,13 +33,21 @@ La messagerie de partie, elle, continue de s appuyer sur la couche locale puis s
 
 ## Structure de la page Partie
 
-La page `Partie` est structuree en 3 onglets :
+La page `Partie` est structuree en 4 onglets :
 
 - `General`
   - resume compact en lecture seule
   - participants actifs
   - personnages visibles selon le role
   - documents de partie
+- `VTT`
+  - table virtuelle PixiJS attachee a la partie
+  - carte issue des ressources Nexus Forge ou d une URL directe
+  - grille carree ou hexagonale avec taille personnalisable
+  - pions libres/manuels pour la V1
+  - brouillard de guerre manuel avec masques rectangulaires et polygonaux
+  - vue MJ distincte de la vue joueur : le brouillard reste indicatif cote MJ et masque reellement cote joueur
+  - mode plein ecran dedie pour table/projection
 - `Parametres`
   - edition du resume de partie
   - invitations et participants
@@ -131,6 +139,30 @@ Regle de suppression :
 - template MJ par defaut pour la partie
 - template joueur propose aux joueurs
 - clonage du template propose vers un template personnel
+
+## VTT de la partie
+
+Le module VTT est une premiere tranche progressive basee sur PixiJS pour le rendu canvas et React pour les panneaux de configuration.
+
+V1 preproduction :
+
+- stockage de l etat VTT dans la partie via `/api/sessions/:sessionId/vtt` ;
+- creation automatique d une scene principale si la partie n a pas encore d etat VTT ;
+- rendu PixiJS avec couches carte, grille, pions et brouillard ;
+- selection d une carte parmi les ressources de la partie ou saisie d une URL d image ;
+- reglage de la grille : actif/inactif, carre ou hexagone, taille personnalisable ;
+- pions libres/manuels positionnes dans la scene ;
+- brouillard manuel : rectangle de revelation rapide et reserve technique pour polygones ;
+- bouton `Plein ecran VTT` route `/sessions/:sessionId/vtt/fullscreen` pour table/projection ;
+- edition reservee au MJ/admin dans cette tranche ; les joueurs consultent la vue joueur.
+
+Evolutions prevues :
+
+- synchronisation temps reel des deplacements et du brouillard ;
+- upload direct depuis le panneau VTT en plus des ressources de partie ;
+- deplacements joueur conditionnes par `playersCanMoveOwnTokens` ;
+- outils de dessin de rectangles/polygones complets ;
+- rattachement optionnel aux personnages/PNJ et aux futures regles systeme.
 
 ## Synchronisation et conflits
 

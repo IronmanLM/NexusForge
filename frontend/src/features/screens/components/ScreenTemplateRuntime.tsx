@@ -20,6 +20,8 @@ import SessionOpenTargetControlWidget from '../widgets/SessionOpenTargetControlW
 import SessionOpenTargetOverlayWidget from '../widgets/SessionOpenTargetOverlayWidget';
 import SessionParticipantPresenceWidget from '../widgets/SessionParticipantPresenceWidget';
 import SessionScreenViewerWidget from '../widgets/SessionScreenViewerWidget';
+import SessionVttPlayerWidget from '../../vtt/widgets/SessionVttPlayerWidget';
+import SessionVttGMWidget from '../../vtt/widgets/SessionVttGMWidget';
 import { RuntimeTargetDescriptor } from '../runtimeTargets';
 import { ensureScreenFormatForScreen, ensureScreenSetFormat, screenFormatSummary } from '../screenSetPresets';
 import { buildApiUrl, getAccessToken } from '../../../services/apiClient';
@@ -723,6 +725,24 @@ export function RuntimeWidgetContent({
     );
   }
 
+   if (widget.type === 'vtt_player') {
+     return (
+       <SessionVttPlayerWidget
+         currentUser={currentUser}
+         currentSession={session}
+       />
+     );
+   }
+
+   if (widget.type === 'vtt_gm') {
+     return (
+       <SessionVttGMWidget
+         currentUser={currentUser}
+         currentSession={session}
+       />
+     );
+   }
+ 
   return (
     <>
       <strong>{preview.headline}</strong>

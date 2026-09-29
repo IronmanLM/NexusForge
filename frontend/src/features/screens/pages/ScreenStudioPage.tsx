@@ -66,7 +66,9 @@ const WIDGET_PALETTE: WidgetPaletteItem[] = [
   { type: 'character_list', title: 'Liste des personnages', minW: 3, minH: 4, defaultW: 5, defaultH: 7, description: 'Acces rapide aux personnages de la partie.' },
   { type: 'dice_history', title: 'Historique des jets', minW: 3, minH: 4, defaultW: 5, defaultH: 6, description: 'Derniers jets visibles dans la partie.' },
   { type: 'initiative', title: 'Initiative', minW: 4, minH: 4, defaultW: 6, defaultH: 7, description: 'Ordre de tour et initiative.' },
-  { type: 'session_journal', title: 'Journal de partie', minW: 4, minH: 4, defaultW: 6, defaultH: 7, description: 'Evenements marquants et historique de session.' }
+  { type: 'session_journal', title: 'Journal de partie', minW: 4, minH: 4, defaultW: 6, defaultH: 7, description: 'Evenements marquants et historique de session.' },
+  { type: 'vtt_player', title: 'VTT Joueur', minW: 6, minH: 4, defaultW: 8, defaultH: 6, description: 'Affiche la vue joueur de la table virtuelle.' },
+  { type: 'vtt_gm', title: 'VTT MJ', minW: 6, minH: 4, defaultW: 8, defaultH: 6, description: 'Affiche la vue MJ de la table virtuelle.' }
 ];
 
 function DetachedStudioPanelPortal({
