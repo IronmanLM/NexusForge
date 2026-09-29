@@ -7,6 +7,7 @@ import './VttPixiStage.css';
 export type VttMapTool = 'pan' | 'ping' | 'fog_reveal_rect' | 'fog_reveal_poly' | 'fog_hide_rect' | 'fog_hide_poly';
 
 interface VttPixiStageProps {
+  sessionId: string;
   scene: VttScene;
   viewMode: VttViewMode;
   currentUserId: string;
@@ -17,6 +18,10 @@ interface VttPixiStageProps {
   onMapPing?: (x: number, y: number) => void;
   onFogShapePlace?: (tool: Exclude<VttMapTool, 'pan' | 'ping'>, x: number, y: number) => void;
   onFogRectangleDraw?: (tool: 'fog_reveal_rect' | 'fog_hide_rect', startX: number, startY: number, endX: number, endY: number) => void;
+}
+
+function buildVttResourceContentUrl(sessionId: string, resourceId: string): string {
+  return `/api/sessions/${encodeURIComponent(sessionId)}/vtt/resources/${encodeURIComponent(resourceId)}/content`;
 }
 
 function parseColor(value: string, fallback = 0x38bdf8): number {
@@ -124,7 +129,7 @@ async function createMapSprite(src: string): Promise<Sprite> {
   }
 }
 
-export default function VttPixiStage({ scene, viewMode, currentUserId, selectedTokenId, mapTool = 'pan', onTokenSelect, onTokenMove, onMapPing, onFogShapePlace, onFogRectangleDraw }: VttPixiStageProps) {
+export default function VttPixiStage({ sessionId, scene, viewMode, currentUserId, selectedTokenId, mapTool = 'pan', onTokenSelect, onTokenMove, onMapPing, onFogShapePlace, onFogRectangleDraw }: VttPixiStageProps) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const onTokenMoveRef = useRef<typeof onTokenMove>(onTokenMove);
   const onTokenSelectRef = useRef<typeof onTokenSelect>(onTokenSelect);
@@ -150,9 +155,10 @@ export default function VttPixiStage({ scene, viewMode, currentUserId, selectedT
       const world = new Container();
       app.stage.addChild(world);
       let mapTexture: Texture | null = null;
-      if (scene.mapImageUrl) {
+      const mapSource = scene.mapResourceId ? buildVttResourceContentUrl(sessionId, scene.mapResourceId) : scene.mapImageUrl;
+      if (mapSource) {
         try {
-          const mapSprite = await createMapSprite(scene.mapImageUrl);
+          const mapSprite = await createMapSprite(mapSource);
           mapTexture = mapSprite.texture;
           mapSprite.width = scene.mapWidth || mapSprite.width;
           mapSprite.height = scene.mapHeight || mapSprite.height;
@@ -283,7 +289,7 @@ export default function VttPixiStage({ scene, viewMode, currentUserId, selectedT
     }
     void mount();
     return () => { destroyed = true; cleanup?.(); };
-  }, [currentUserId, mapTool, scene, selectedTokenId, viewMode]);
+  }, [currentUserId, mapTool, scene, selectedTokenId, sessionId, viewMode]);
 
   return <div ref={hostRef} className="vtt-pixi-stage" aria-label="Table virtuelle Nexus Forge" />;
 }

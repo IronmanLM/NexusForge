@@ -462,6 +462,10 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
     await saveState({ ...base, scenes: [...base.scenes, scene], activeSceneId: scene.id, updatedAt: nowIso() }, 'Nouvelle carte VTT créée.');
   };
 
+
+
+
+
   const handleRemoveScene = async (sceneId: string) => {
     if (!canManage) {
       return;
@@ -573,7 +577,7 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
             </select>
           </label>
           <Button type="button" variant="secondary" onClick={() => void handleAddScene()} disabled={isSaving || isUploadingMap}>Nouvelle carte VTT</Button>
-          {base.scenes.length > 1 && (
+          {ensureVttState(vttState).scenes.length > 1 && (
             <Button type="button" variant="secondary" onClick={() => handleRemoveScene(activeScene.id)} disabled={isSaving || isUploadingMap}>
               Supprimer la carte
             </Button>
@@ -588,7 +592,8 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
           </Button>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <Button type="button" variant="secondary" onClick={() => {
-              const index = base.scenes.findIndex(scene => scene.id === activeScene.id);
+              const state = ensureVttState(vttState);
+              const index = state.scenes.findIndex(scene => scene.id === activeScene.id);
               if (index > 0) {
                 handleReorderScenes(index, index - 1);
               }
@@ -596,14 +601,15 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
               Monter
             </Button>
             <Button type="button" variant="secondary" onClick={() => {
-              const index = base.scenes.findIndex(scene => scene.id === activeScene.id);
-              if (index >= 0 && index < base.scenes.length - 1) {
+              const state = ensureVttState(vttState);
+              const index = state.scenes.findIndex(scene => scene.id === activeScene.id);
+              if (index >= 0 && index < state.scenes.length - 1) {
                 handleReorderScenes(index, index + 1);
               }
             }} disabled={isSaving || isUploadingMap}>
               Descendre
             </Button>
-          </div>\n          {base.scenes.length > 1 && (\n            <Button type="button" variant="secondary" onClick={() => handleRemoveScene(activeScene.id)} disabled={isSaving || isUploadingMap}>\n              Supprimer la carte\n            </Button>\n          )\n          <Button type="button" variant="secondary" onClick={() => {\n            const newName = window.prompt('Nouveau nom pour la carte VTT', activeScene.name);\n            if (newName !== null && newName.trim() !== '') {\n              handleRenameScene(activeScene.id, newName);\n            }\n          }} disabled={isSaving || isUploadingMap}>\n            Renommer la carte\n          </Button>\n          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>\n            <Button type="button" variant="secondary" onClick={() => {\n              const index = base.scenes.findIndex(scene => scene.id === activeScene.id);\n              if (index > 0) {\n                handleReorderScenes(index, index - 1);\n              }\n            }} disabled={isSaving || isUploadingMap}>\n              Monter\n            </Button>\n            <Button type="button" variant="secondary" onClick={() => {\n              const index = base.scenes.findIndex(scene => scene.id === activeScene.id);\n              if (index >= 0 && index < base.scenes.length - 1) {\n                handleReorderScenes(index, index + 1);\n              }\n            }} disabled={isSaving || isUploadingMap}>\n              Descendre\n            </Button>\n          </div>
+          </div>
           <label>
             <span>Importer une carte MJ</span>
             <input type="file" accept="image/*" disabled={isSaving || isUploadingMap} onChange={(event) => {
@@ -615,22 +621,26 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
           <label>
             <span>Carte depuis les ressources</span>
             <select value={activeScene.mapResourceId ?? ''} onChange={(event) => void handleMapResourceChange(event.target.value)} disabled={isSaving}>
-              <option value="">Aucune carte</option>
+              <option value=''>Aucune carte</option>
               {imageResources.map((resource) => (
                 <option key={resource.id} value={resource.id}>{resource.name}</option>
               ))}
             </select>
           </label>
+          <label className="vtt-checkbox">
+            <input type="checkbox" checked={activeScene.grid.enabled} onChange={(event) => void updateScene({ grid: { ...activeScene.grid, enabled: event.target.checked } }, event.target.checked ? 'Grille affichée.' : 'Grille masquée.')} disabled={isSaving} />
+            Afficher la grille
+          </label>
           <label>
-            <span>Grille</span>
-            <select value={activeScene.grid.type} onChange={(event) => void updateScene({ grid: { ...activeScene.grid, type: event.target.value as 'square' | 'hex' } }, 'Type de grille mis à jour.')} disabled={isSaving}>
+            <span>Type grille</span>
+            <select value={activeScene.grid.type} onChange={(event) => void updateScene({ grid: { ...activeScene.grid, type: event.target.value as 'square' | 'hex' } }, 'Type de grille mis à jour.')} disabled={isSaving || !activeScene.grid.enabled}>
               <option value="square">Carrée</option>
               <option value="hex">Hexagonale</option>
             </select>
           </label>
           <label>
             <span>Taille grille</span>
-            <input type="number" min={16} max={240} value={activeScene.grid.size} onChange={(event) => void updateScene({ grid: { ...activeScene.grid, size: Number(event.target.value) || 70 } }, 'Taille de grille mise à jour.')} disabled={isSaving} />
+            <input type="number" min={16} max={240} value={activeScene.grid.size} onChange={(event) => void updateScene({ grid: { ...activeScene.grid, size: Number(event.target.value) || 70 } }, 'Taille de grille mise à jour.')} disabled={isSaving || !activeScene.grid.enabled} />
           </label>
           <label className="vtt-checkbox">
             <input type="checkbox" checked={activeScene.permissions.playersCanMoveOwnTokens} onChange={(event) => void updateScene({ permissions: { playersCanMoveOwnTokens: event.target.checked } }, 'Permission de déplacement joueur mise à jour.')} disabled={isSaving} />
@@ -732,6 +742,7 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
       ) : null}
 
       <VttPixiStage
+        sessionId={session.id}
         scene={activeScene}
         viewMode={viewMode}
         currentUserId={currentUserId}

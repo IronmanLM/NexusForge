@@ -6541,6 +6541,53 @@ app.put('/api/sessions/:sessionId/vtt', requireAuth, (req, res) => {
   return res.status(200).json({ vtt: next.vtt });
 });
 
+app.get('/api/sessions/:sessionId/vtt/resources/:resourceId/content', requireAuth, (req, res) => {
+  const session = sessions.get(req.params.sessionId);
+  if (!session) {
+    return error(res, 404, 'SESSION_NOT_FOUND', 'Session not found');
+  }
+  if (!canViewSession(session, req.currentUser)) {
+    return error(res, 403, 'SESSION_ACCESS_FORBIDDEN', 'You cannot access this session');
+  }
+  const resource = resources.get(req.params.resourceId);
+  if (!resource) {
+    return error(res, 404, 'RESOURCE_NOT_FOUND', 'Resource not found');
+  }
+
+  const vtt = sanitizeVttState(session.vtt);
+  const isVttManager = canManageSession(session, req.currentUser);
+  const scenes = isVttManager
+    ? vtt.scenes
+    : vtt.scenes.filter((scene) => scene.id === vtt.activeSceneId);
+  const referencedInVtt = scenes.some((scene) => {
+    if (scene.mapResourceId === resource.id) {
+      return true;
+    }
+    return (scene.tokens || []).some((token) => {
+      if (isVttManager) {
+        return token.imageResourceId === resource.id;
+      }
+      return token.visibleToPlayers !== false && token.imageResourceId === resource.id;
+    });
+  });
+
+  const isSessionResource = resource.scopeType === 'session' && resource.scopeRefId === session.id;
+  if (!(referencedInVtt && isSessionResource) && !canViewResource(resource, req.currentUser)) {
+    return error(res, 403, 'RESOURCE_ACCESS_FORBIDDEN', 'Forbidden');
+  }
+
+  const absolutePath = path.join(RESOURCE_DIR, resource.storagePath || '');
+  if (!resource.storagePath || !existsSync(absolutePath)) {
+    return error(res, 404, 'RESOURCE_FILE_MISSING', 'Stored file not found');
+  }
+
+  res.setHeader('Content-Type', resource.mimeType || 'application/octet-stream');
+  res.setHeader('Content-Disposition', `inline; filename="${resource.originalName || resource.name}"`);
+  res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  return res.sendFile(absolutePath);
+});
+
 app.patch('/api/sessions/:sessionId', requireAuth, (req, res) => {
   const session = sessions.get(req.params.sessionId);
   if (!session) {
