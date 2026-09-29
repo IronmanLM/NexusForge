@@ -2,11 +2,11 @@
 
 ## E0 — Priorité validée : ergonomie des points d'entrée (aucun codage pour l'instant)
 > Commencer par l'ergonomie : revoir en profondeur les points d'entrée du point de vue du joueur et de l'utilisateur. Organisation uniquement, pas de codage.
-- [ ] E0.1 Cartographier les entrées joueur / utilisateur : `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`, `/sessions`, `/sessions/:sessionId`, `/sessions/:sessionId/studio`, `/account/security` (`/` redirige vers `/sessions` ou `/login`).
-- [ ] E0.2 Cartographier les entrées MJ / admin : `/systems`, `/systems/:systemId/studio`, `/i18n-dictionary`, `/admin/users/pending`.
-- [ ] E0.3 Grille de revue par entrée : premier écran, clics vers l'action, lisibilité, états vides et d'erreur, tactile 44 px, clavier.
-- [ ] E0.4 Arbitrage : traiter M1.4 en premier (vues MJ / battlemap / joueurs, studio, builder, chat, fiches), thèmes M2 ensuite.
-- [ ] E0.5 Restituer une note courte avant tout codage.
+- [x] E0.1 Cartographier les entrées joueur / utilisateur : `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`, `/sessions`, `/sessions/:sessionId`, `/sessions/:sessionId/studio`, `/account/security` (`/` redirige vers `/sessions` ou `/login`).
+- [x] E0.2 Cartographier les entrées MJ / admin : `/systems`, `/systems/:systemId/studio`, `/i18n-dictionary`, `/admin/users/pending`.
+- [x] E0.3 Grille de revue par entrée : premier écran, clics vers l'action, lisibilité, états vides et d'erreur, tactile 44 px, clavier (voir `docs/e0-revue-entrees-joueur.md`).
+- [ ] E0.4 Arbitrage : traiter M1.4 en premier (vues MJ / battlemap / joueurs, studio, builder, chat, fiches), thèmes M2 ensuite — plan M1.4a/b/c proposé en §4 de la revue, à valider.
+- [x] E0.5 Restituer une note courte avant tout codage (`docs/e0-revue-entrees-joueur.md`).
 
 ## M1 — CSS 4 supports
 - [x] M1.1 Audit `frontend/src/styles/global.css` (voir `docs/m1-1-audit-global-css.md`) (layouts, breakpoints 820/900, max 1120px)
