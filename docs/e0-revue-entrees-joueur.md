@@ -95,3 +95,15 @@ Manques constatés pour une vraie adaptation :
 - M1.4c : navigation mobile + socle accessibilité (points 4 et 5), avec `npm run build` vert
   et tests manuels aux quatre largeurs (M1.5).
 - Thèmes M2 ensuite, sur des écrans d'entrée déjà sains.
+
+## 5. Exigences complémentaires validées
+
+1. Fond et forme impérativement séparés : aucun texte en dur dans les composants (tout passe
+   par l'internationalisation), aucune couleur ni police en dur dans les vues (tout passe par
+   des variables de thème). Le socle existe déjà (`I18nProvider`, page dictionnaire de traduction,
+   jetons `--nf-*`) : l'exiger systématiquement pour chaque nouvel écran.
+2. Thème par MJ et par séance : le choix du thème (système `data-theme`, piste M2) se règle
+   au niveau de la table — chaque MJ choisit l'ambiance de sa séance (SF, Fantasy, etc.) —
+   avec persistance par compte et par rôle, sans flash à l'affichage.
+3. Traduction au-delà du français : toute chaîne d'interface existe en français par défaut
+   et reste traduisible (dictionnaire, nouvelles langues sans toucher aux composants).

@@ -7,6 +7,9 @@
 - [x] E0.3 Grille de revue par entrée : premier écran, clics vers l'action, lisibilité, états vides et d'erreur, tactile 44 px, clavier (voir `docs/e0-revue-entrees-joueur.md`).
 - [ ] E0.4 Arbitrage : traiter M1.4 en premier (vues MJ / battlemap / joueurs, studio, builder, chat, fiches), thèmes M2 ensuite — plan M1.4a/b/c proposé en §4 de la revue, à valider.
 - [x] E0.5 Restituer une note courte avant tout codage (`docs/e0-revue-entrees-joueur.md`).
+- [ ] E0.6 Fond et forme séparés : textes via i18n, couleurs et polices via variables de thème, exigé pour chaque écran (voir revue §5).
+- [ ] E0.7 Thème par MJ et par séance (`data-theme`, persistant par compte et par rôle, sans flash).
+- [ ] E0.8 Traduction au-delà du français, français par défaut (dictionnaire, sans toucher aux composants).
 
 ## M1 — CSS 4 supports
 - [x] M1.1 Audit `frontend/src/styles/global.css` (voir `docs/m1-1-audit-global-css.md`) (layouts, breakpoints 820/900, max 1120px)
