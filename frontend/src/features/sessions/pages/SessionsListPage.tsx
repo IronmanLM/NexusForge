@@ -38,27 +38,26 @@ function canManageSession(session: Session, userId: string | undefined, isAdmin:
   return session.ownerUserId === userId || session.gmUserId === userId || (session.gmUserIds || []).includes(userId);
 }
 
-function participantLabel(session: Session, userId: string | undefined | null): string {
+function participantLabel(session: Session, userId: string | undefined | null, unknownLabel: string): string {
   if (!userId) {
-    return 'Inconnu';
+    return unknownLabel;
   }
   const participant = (session.participants ?? []).find((item) => item.userId === userId);
   return participant?.nickname || participant?.displayName || userId;
 }
 
-function gmLabels(session: Session): string {
-  return (session.gmUserIds || [session.gmUserId]).map((userId) => participantLabel(session, userId)).join(', ');
+function gmLabels(session: Session, unknownLabel: string): string {
+  return (session.gmUserIds || [session.gmUserId]).map((userId) => participantLabel(session, userId, unknownLabel)).join(', ');
 }
 
 const ALERT_BANNER_SYSTEM_TYPE_OPTIONS: Array<{
   value: NonNullable<NonNullable<Session['settings']>['alertBannerSystemMessageTypes']>[number];
-  label: string;
 }> = [
-  { value: 'combat_start', label: 'Début de combat' },
-  { value: 'turn', label: 'Changement de tour' },
-  { value: 'combat_end', label: 'Fin de combat' },
-  { value: 'roll', label: 'Jets de dés' },
-  { value: 'round', label: 'Nouveau round' }
+  { value: 'combat_start' },
+  { value: 'turn' },
+  { value: 'combat_end' },
+  { value: 'roll' },
+  { value: 'round' }
 ];
 
 export default function SessionsListPage() {
@@ -88,6 +87,9 @@ export default function SessionsListPage() {
 
   const selectedSystemName = (systemId: string) => systemsById.get(systemId)?.name ?? systemId;
   const selectedSystemDraft = systemsById.get(systemIdDraft);
+  const stateLabel = (state: Session['state']) => t(`parties.state.${state}`);
+  const roleLabel = (role: string) =>
+    role === 'gm' ? t('parties.role.gm') : role === 'player' ? t('parties.role.player') : role;
   const discordInviteStatus = searchParams.get('discordInvite');
   const pendingInvitations = useMemo(() => {
     if (!currentUser) {
@@ -198,16 +200,16 @@ export default function SessionsListPage() {
     }
 
     if (discordInviteStatus === 'expired') {
-      setErrorMessage('Le lien d invitation Discord a expiré. Demande une nouvelle invitation.');
+      setErrorMessage(t('parties.discord.expired'));
       setStatusMessage(null);
     } else if (discordInviteStatus === 'invalid') {
-      setErrorMessage('Le lien d invitation Discord est invalide ou incomplet.');
+      setErrorMessage(t('parties.discord.invalid'));
       setStatusMessage(null);
     } else if (discordInviteStatus === 'accepted') {
-      setStatusMessage('Invitation Discord acceptée.');
+      setStatusMessage(t('parties.discord.accepted'));
       setErrorMessage(null);
     } else if (discordInviteStatus === 'declined') {
-      setStatusMessage('Invitation Discord refusée.');
+      setStatusMessage(t('parties.discord.declined'));
       setErrorMessage(null);
     }
 
@@ -279,7 +281,7 @@ export default function SessionsListPage() {
       return;
     }
 
-    const confirmed = window.confirm(`Suppression définitive de "${session.name}" ?`);
+    const confirmed = window.confirm(`${t('parties.deleteConfirm')} « ${session.name} » ?`);
     if (!confirmed) {
       return;
     }
@@ -321,26 +323,26 @@ export default function SessionsListPage() {
 
       {pendingInvitations.length > 0 ? (
         <section className="card" style={{ marginBottom: '1rem' }}>
-          <h2 style={{ marginTop: 0 }}>Invitations reçues</h2>
+          <h2 style={{ marginTop: 0 }}>{t('parties.invite.title')}</h2>
           <div className="session-participants-list">
             {pendingInvitations.map(({ session, invitation }) => (
               <article key={invitation.id} className="session-participant-row">
                 <div>
                   <strong>{session.name}</strong>
                   <small>
-                    {selectedSystemName(session.systemId)} · rôle proposé : {invitation.role}
+                    {selectedSystemName(session.systemId)} · {t('parties.invite.role')} {roleLabel(invitation.role)}
                   </small>
                 </div>
                 <div>
-                  <span>Invité par </span>
+                  <span>{t('parties.invite.by')} </span>
                   <strong>@{invitation.invitedByNickname || invitation.invitedByUserId}</strong>
                 </div>
                 <div className="session-inline-actions">
                   <Button type="button" variant="secondary" onClick={() => void handleInvitationResponse(session, invitation.id, 'decline')}>
-                    Refuser
+                    {t('parties.invite.decline')}
                   </Button>
                   <Button type="button" onClick={() => void handleInvitationResponse(session, invitation.id, 'accept')}>
-                    Accepter
+                    {t('parties.invite.accept')}
                   </Button>
                 </div>
               </article>
@@ -351,10 +353,10 @@ export default function SessionsListPage() {
 
       <section className="card" style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <h2 style={{ margin: 0 }}>Mes parties actives</h2>
+          <h2 style={{ margin: 0 }}>{t('parties.mine.title')}</h2>
           <label style={{ display: 'inline-flex', gap: '0.45rem', alignItems: 'center' }}>
             <input type="checkbox" checked={includeArchived} onChange={(event) => setIncludeArchived(event.target.checked)} />
-            Afficher les parties archivées
+            {t('parties.showArchived')}
           </label>
         </div>
       </section>
@@ -376,30 +378,30 @@ export default function SessionsListPage() {
           ? visibleSessions.map((session) => (
               <article key={session.id} className="card" style={{ opacity: session.archivedAt ? 0.78 : 1 }}>
                 <h2 style={{ marginTop: 0 }}>{session.name}</h2>
-                <p>{session.description ?? 'Aucune description'}</p>
+                <p>{session.description || t('parties.noDescription')}</p>
                 <p>
-                  État: <strong>{session.state}</strong>
+                  {t('parties.stateLabel')} <strong>{stateLabel(session.state)}</strong>
                 </p>
-                <p style={{ marginTop: 0 }}>Système: {selectedSystemName(session.systemId)}</p>
+                <p style={{ marginTop: 0 }}>{t('parties.systemLabel')} {selectedSystemName(session.systemId)}</p>
                 <p style={{ marginTop: 0 }}>
-                  Propriétaire: <strong>{participantLabel(session, session.ownerUserId ?? session.gmUserId)}</strong> | MJ: {gmLabels(session)}
+                  {t('parties.ownerLabel')} <strong>{participantLabel(session, session.ownerUserId ?? session.gmUserId, t('parties.unknown'))}</strong> | {t('parties.role.gm')}: {gmLabels(session, t('parties.unknown'))}
                 </p>
-                {session.archivedAt ? <p style={{ color: '#475467' }}>Archivée le {new Date(session.archivedAt).toLocaleString()}</p> : null}
+                {session.archivedAt ? <p style={{ color: '#475467' }}>{t('parties.archived')} {new Date(session.archivedAt).toLocaleString()}</p> : null}
                 <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <Link to={`/sessions/${session.id}`}>{t('parties.open')}</Link>
                   {canManageSession(session, currentUser?.id, isAdmin) && !session.archivedAt ? (
                     <button className="button secondary" type="button" onClick={() => void handleArchive(session)}>
-                      Archiver
+                      {t('parties.archive')}
                     </button>
                   ) : null}
                   {canManageSession(session, currentUser?.id, isAdmin) && session.archivedAt ? (
                     <button className="button secondary" type="button" onClick={() => void handleRestore(session)}>
-                      Restaurer
+                      {t('parties.restore')}
                     </button>
                   ) : null}
                   {canDeleteSession(session, currentUser?.id, isAdmin) ? (
                     <button className="button secondary" type="button" onClick={() => void handleDelete(session)}>
-                      Suppression définitive
+                      {t('parties.deleteFull')}
                     </button>
                   ) : null}
                 </div>
@@ -410,6 +412,7 @@ export default function SessionsListPage() {
 
       <section className="card" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
         <h2 style={{ marginTop: 0 }}>{t('parties.create.title')}</h2>
+        <p style={{ marginTop: 0 }}>{t('parties.create.audience')}</p>
         {canCreateSessions ? (
           <form className="form" onSubmit={handleCreate}>
             <label htmlFor="party-name">{t('parties.create.name')}</label>
@@ -418,7 +421,7 @@ export default function SessionsListPage() {
               type="text"
               value={nameDraft}
               onChange={(event) => setNameDraft(event.target.value)}
-              placeholder="Chroniques de Nexus"
+              placeholder={t('parties.create.namePh')}
               required
             />
 
@@ -428,7 +431,7 @@ export default function SessionsListPage() {
               type="text"
               value={descriptionDraft}
               onChange={(event) => setDescriptionDraft(event.target.value)}
-              placeholder="Optionnelle"
+              placeholder={t('parties.create.descriptionPh')}
             />
 
             <label htmlFor="party-system">{t('parties.create.system')}</label>
@@ -438,38 +441,38 @@ export default function SessionsListPage() {
               onChange={(event) => setSystemIdDraft(event.target.value)}
               disabled={systems.length === 0}
             >
-              {systems.length === 0 ? <option value="">Aucun système publié avec fiche personnage</option> : null}
+              {systems.length === 0 ? <option value="">{t('parties.noSystemPublished')}</option> : null}
               {systems.map((system) => (
                 <option
                   key={system.id}
                   value={system.id}
-                  title={system.forkedFromSystemName ? `Basé sur ${system.forkedFromSystemName}` : 'Système original'}
+                  title={system.forkedFromSystemName ? `${t('parties.create.forked')} « ${system.forkedFromSystemName} »` : t('parties.create.original')}
                 >
                   {system.name}
-                  {system.forkedFromSystemName ? ` (fork de ${system.forkedFromSystemName})` : ''}
+                  {system.forkedFromSystemName ? ` (${t('parties.create.forked')} ${system.forkedFromSystemName})` : ''}
                 </option>
               ))}
             </select>
             {systemIdDraft ? (
               <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: '0.95rem', opacity: 0.85 }}>
-                Templates écran appliqués automatiquement à la création :
+                {t('parties.create.templatesAuto')}
                 {' '}
-                MJ <strong>{systemScreenTemplates.gm ?? 'aucun'}</strong>
-                {' '}| Joueur <strong>{systemScreenTemplates.player ?? 'aucun'}</strong>
+                {t('parties.role.gm')} <strong>{systemScreenTemplates.gm ?? t('parties.none')}</strong>
+                {' '}| {t('parties.role.player')} <strong>{systemScreenTemplates.player ?? t('parties.none')}</strong>
               </p>
             ) : null}
             {selectedSystemDraft?.forkedFromSystemName ? (
               <p style={{ marginTop: '0.45rem', marginBottom: 0 }}>
                 <span
-                  title={`Basé sur \"${selectedSystemDraft.forkedFromSystemName}\"`}
+                  title={`${t('parties.create.forked')} « ${selectedSystemDraft.forkedFromSystemName} »`}
                   style={{ borderBottom: '1px dotted currentColor', cursor: 'help' }}
                 >
-                  Ce système est basé sur "{selectedSystemDraft.forkedFromSystemName}".
+                  {t('parties.create.forked')} « {selectedSystemDraft.forkedFromSystemName} ».
                 </span>
               </p>
             ) : null}
 
-            <strong>Template générique (modifiable)</strong>
+            <strong>{t('parties.settings.title')}</strong>
             <label>
               <input
                 type="checkbox"
@@ -481,7 +484,7 @@ export default function SessionsListPage() {
                   }))
                 }
               />{' '}
-              Joueurs: édition fiche hors-ligne
+              {t('parties.settings.allowOffline')}
             </label>
             <label>
               <input
@@ -494,7 +497,7 @@ export default function SessionsListPage() {
                   }))
                 }
               />{' '}
-              Joueurs: chat entre joueurs
+              {t('parties.settings.allowChat')}
             </label>
             <label>
               <input
@@ -507,9 +510,9 @@ export default function SessionsListPage() {
                   }))
                 }
               />{' '}
-              Joueurs: documents entre joueurs
+              {t('parties.settings.allowDocs')}
             </label>
-            <label htmlFor="silenceMode">Mode silence</label>
+            <label htmlFor="silenceMode">{t('parties.settings.silence')}</label>
             <select
               id="silenceMode"
               value={settingsDraft.silenceMode || 'off'}
@@ -520,12 +523,12 @@ export default function SessionsListPage() {
                 }))
               }
             >
-              <option value="off">Off</option>
-              <option value="noGlobal">No Global</option>
-              <option value="playersToPlayersBlocked">Players ↔ Players bloqué</option>
-              <option value="full">Full</option>
+              <option value="off">{t('parties.settings.silence.off')}</option>
+              <option value="noGlobal">{t('parties.settings.silence.noGlobal')}</option>
+              <option value="playersToPlayersBlocked">{t('parties.settings.silence.playersToPlayersBlocked')}</option>
+              <option value="full">{t('parties.settings.silence.full')}</option>
             </select>
-            <strong>Messages système dans le bandeau d alerte</strong>
+            <strong>{t('parties.settings.alertTitle')}</strong>
             {ALERT_BANNER_SYSTEM_TYPE_OPTIONS.map((option) => {
               const selectedTypes = settingsDraft.alertBannerSystemMessageTypes ?? DEFAULT_TEMPLATE.alertBannerSystemMessageTypes ?? [];
               return (
@@ -546,7 +549,7 @@ export default function SessionsListPage() {
                       })
                     }
                   />{' '}
-                  {option.label}
+                  {t(`parties.settings.alert.${option.value}`)}
                 </label>
               );
             })}
@@ -557,7 +560,7 @@ export default function SessionsListPage() {
           </form>
         ) : (
           <p style={{ marginBottom: 0 }}>
-            Seuls les utilisateurs avec le rôle <strong>MJ</strong> peuvent créer une partie.
+            {t('parties.create.gmOnly')}
           </p>
         )}
       </section>
