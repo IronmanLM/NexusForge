@@ -502,6 +502,9 @@ function clone(value) {
 }
 
 const MAX_SYSTEM_ROLL_DEFINITIONS = 500;
+const MAX_SYSTEM_RULES_PROGRAM_BLOCKS = 1000;
+const MAX_SESSION_PARTICIPANTS = 500;
+const MAX_SESSION_INITIATIVE_ENTRIES = 500;
 const MAX_SYSTEM_VIEWS = 100;
 const MAX_SYSTEM_NODES = 5000;
 const MAX_SYSTEM_CATALOGS = 100;
@@ -538,6 +541,228 @@ function validateRollDefinitions(value) {
     }
   });
   return value;
+}
+
+function validateStringArray(value, path, { maxLength = 1000 } = {}) {
+  if (!Array.isArray(value)) {
+    throw new Error(`${path} doit être un tableau.`);
+  }
+  if (value.length > maxLength) {
+    throw new Error(`${path} dépasse ${maxLength} entrées.`);
+  }
+  value.forEach((item, index) => {
+    if (typeof item !== 'string') {
+      throw new Error(`${path}[${index}] doit être une chaîne.`);
+    }
+  });
+  return value;
+}
+
+function validateRulesProgram(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!Array.isArray(value)) {
+    throw new Error('`rulesProgram` doit être un tableau.');
+  }
+  if (value.length > MAX_SYSTEM_RULES_PROGRAM_BLOCKS) {
+    throw new Error(`Trop de blocs de programme de règles (${MAX_SYSTEM_RULES_PROGRAM_BLOCKS} max).`);
+  }
+
+  value.forEach((block, index) => {
+    const pathLabel = `rulesProgram[${index}]`;
+    if (!isPlainObject(block)) {
+      throw new Error(`${pathLabel} doit être un objet.`);
+    }
+    if (typeof block.id !== 'string' || !block.id.trim()) {
+      throw new Error(`${pathLabel}.id doit être une chaîne non vide.`);
+    }
+    if (typeof block.label !== 'string' || !block.label.trim()) {
+      throw new Error(`${pathLabel}.label doit être une chaîne non vide.`);
+    }
+
+    if (block.type === 'set_secondary_stat') {
+      if (typeof block.targetFieldId !== 'string' || !block.targetFieldId.trim()) {
+        throw new Error(`${pathLabel}.targetFieldId doit être une chaîne non vide.`);
+      }
+      validateStringArray(block.sourceFieldIds, `${pathLabel}.sourceFieldIds`);
+      if (!['sum', 'subtract', 'multiply', 'average'].includes(block.operation)) {
+        throw new Error(`${pathLabel}.operation est invalide.`);
+      }
+      if (block.constantModifier !== undefined && typeof block.constantModifier !== 'number') {
+        throw new Error(`${pathLabel}.constantModifier doit être un nombre.`);
+      }
+      if (block.rounding !== undefined && !['none', 'floor', 'ceil', 'round'].includes(block.rounding)) {
+        throw new Error(`${pathLabel}.rounding est invalide.`);
+      }
+      return;
+    }
+
+    if (block.type === 'define_roll') {
+      if (typeof block.actionId !== 'string' || !block.actionId.trim()) {
+        throw new Error(`${pathLabel}.actionId doit être une chaîne non vide.`);
+      }
+      if (typeof block.diceCount !== 'number' || !Number.isFinite(block.diceCount) || block.diceCount < 1) {
+        throw new Error(`${pathLabel}.diceCount doit être un nombre positif.`);
+      }
+      if (typeof block.diceSides !== 'number' || !Number.isFinite(block.diceSides) || block.diceSides < 1) {
+        throw new Error(`${pathLabel}.diceSides doit être un nombre positif.`);
+      }
+      if (block.modifierFieldId !== undefined && typeof block.modifierFieldId !== 'string') {
+        throw new Error(`${pathLabel}.modifierFieldId doit être une chaîne.`);
+      }
+      if (block.flatModifier !== undefined && typeof block.flatModifier !== 'number') {
+        throw new Error(`${pathLabel}.flatModifier doit être un nombre.`);
+      }
+      if (block.description !== undefined && typeof block.description !== 'string') {
+        throw new Error(`${pathLabel}.description doit être une chaîne.`);
+      }
+      return;
+    }
+
+    throw new Error(`${pathLabel}.type est invalide.`);
+  });
+
+  return value;
+}
+
+function validateSessionSettings(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!isPlainObject(value)) {
+    throw new Error('`settings` doit être un objet.');
+  }
+  ['allowPlayerToEditCharacterOffline', 'allowPlayerToPlayerChat', 'allowPlayerToPlayerDocuments'].forEach((key) => {
+    if (value[key] !== undefined && typeof value[key] !== 'boolean') {
+      throw new Error(`settings.${key} doit être un booléen.`);
+    }
+  });
+  if (value.silenceMode !== undefined && !['off', 'noGlobal', 'playersToPlayersBlocked', 'full'].includes(value.silenceMode)) {
+    throw new Error('settings.silenceMode est invalide.');
+  }
+  if (value.alertBannerSystemMessageTypes !== undefined) {
+    validateStringArray(value.alertBannerSystemMessageTypes, 'settings.alertBannerSystemMessageTypes', { maxLength: 50 });
+  }
+  return value;
+}
+
+function validateSessionParticipants(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!Array.isArray(value)) {
+    throw new Error('`participants` doit être un tableau.');
+  }
+  if (value.length > MAX_SESSION_PARTICIPANTS) {
+    throw new Error(`Trop de participants (${MAX_SESSION_PARTICIPANTS} max).`);
+  }
+  value.forEach((participant, index) => {
+    const pathLabel = `participants[${index}]`;
+    if (!isPlainObject(participant)) {
+      throw new Error(`${pathLabel} doit être un objet.`);
+    }
+    if (typeof participant.userId !== 'string' || !participant.userId.trim()) {
+      throw new Error(`${pathLabel}.userId doit être une chaîne non vide.`);
+    }
+    if (!['gm', 'player', 'observer'].includes(participant.role)) {
+      throw new Error(`${pathLabel}.role est invalide.`);
+    }
+    ['displayName', 'nickname', 'characterId', 'lastSeenAt'].forEach((key) => {
+      if (participant[key] !== undefined && participant[key] !== null && typeof participant[key] !== 'string') {
+        throw new Error(`${pathLabel}.${key} doit être une chaîne ou null.`);
+      }
+    });
+    if (participant.isConnected !== undefined && typeof participant.isConnected !== 'boolean') {
+      throw new Error(`${pathLabel}.isConnected doit être un booléen.`);
+    }
+  });
+  return value;
+}
+
+function validateSessionInitiative(value) {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!isPlainObject(value)) {
+    throw new Error('`initiative` doit être un objet.');
+  }
+  ['round', 'turnIndex'].forEach((key) => {
+    if (value[key] !== undefined && (typeof value[key] !== 'number' || !Number.isFinite(value[key]))) {
+      throw new Error(`initiative.${key} doit être un nombre.`);
+    }
+  });
+  if (value.isInCombat !== undefined && typeof value.isInCombat !== 'boolean') {
+    throw new Error('initiative.isInCombat doit être un booléen.');
+  }
+  if (value.entries !== undefined) {
+    if (!Array.isArray(value.entries)) {
+      throw new Error('initiative.entries doit être un tableau.');
+    }
+    if (value.entries.length > MAX_SESSION_INITIATIVE_ENTRIES) {
+      throw new Error(`Trop d'entrées d'initiative (${MAX_SESSION_INITIATIVE_ENTRIES} max).`);
+    }
+    value.entries.forEach((entry, index) => {
+      const pathLabel = `initiative.entries[${index}]`;
+      if (!isPlainObject(entry)) {
+        throw new Error(`${pathLabel} doit être un objet.`);
+      }
+      if (typeof entry.id !== 'string' || typeof entry.name !== 'string') {
+        throw new Error(`${pathLabel} est incomplet.`);
+      }
+      if (!['character', 'group', 'other'].includes(entry.type)) {
+        throw new Error(`${pathLabel}.type est invalide.`);
+      }
+      if (typeof entry.initiative !== 'number' || !Number.isFinite(entry.initiative)) {
+        throw new Error(`${pathLabel}.initiative doit être un nombre.`);
+      }
+      if (entry.characterId !== undefined && entry.characterId !== null && typeof entry.characterId !== 'string') {
+        throw new Error(`${pathLabel}.characterId doit être une chaîne ou null.`);
+      }
+      if (entry.isActive !== undefined && typeof entry.isActive !== 'boolean') {
+        throw new Error(`${pathLabel}.isActive doit être un booléen.`);
+      }
+    });
+  }
+  if (value.config !== undefined) {
+    if (!isPlainObject(value.config)) {
+      throw new Error('initiative.config doit être un objet.');
+    }
+    if (value.config.mode !== undefined && !['system_default', 'combat_once', 'round_recalc', 'gm_fixed', 'manual_turn'].includes(value.config.mode)) {
+      throw new Error('initiative.config.mode est invalide.');
+    }
+    if (value.config.formula !== undefined && value.config.formula !== null && typeof value.config.formula !== 'string') {
+      throw new Error('initiative.config.formula doit être une chaîne ou null.');
+    }
+  }
+  return value;
+}
+
+function validateSessionPatchPayload(patch) {
+  if (!isPlainObject(patch)) {
+    throw new Error('Le payload session doit être un objet.');
+  }
+  if (patch.settings !== undefined) {
+    validateSessionSettings(patch.settings);
+  }
+  if (patch.participants !== undefined) {
+    validateSessionParticipants(patch.participants);
+  }
+  if (patch.gmUserIds !== undefined) {
+    validateStringArray(patch.gmUserIds, 'gmUserIds', { maxLength: MAX_SESSION_PARTICIPANTS });
+  }
+  if (patch.invitations !== undefined && !Array.isArray(patch.invitations)) {
+    throw new Error('`invitations` doit être un tableau.');
+  }
+  if (patch.screenTemplateAssignments !== undefined && !isPlainObject(patch.screenTemplateAssignments)) {
+    throw new Error('`screenTemplateAssignments` doit être un objet.');
+  }
+  if (patch.screenTemplateSelections !== undefined && !isPlainObject(patch.screenTemplateSelections)) {
+    throw new Error('`screenTemplateSelections` doit être un objet.');
+  }
+  if (patch.initiative !== undefined) {
+    validateSessionInitiative(patch.initiative);
+  }
 }
 
 function validateStudioSchemaV2(value) {
@@ -6600,6 +6825,11 @@ app.patch('/api/sessions/:sessionId', requireAuth, (req, res) => {
   }
 
   const patch = req.body || {};
+  try {
+    validateSessionPatchPayload(patch);
+  } catch (validationError) {
+    return error(res, 400, 'SESSION_PAYLOAD_INVALID', validationError instanceof Error ? validationError.message : 'Payload session invalide');
+  }
   let nextParticipants = Array.isArray(patch.participants) ? patch.participants : session.participants || [];
   let nextGmUserIds = Array.isArray(patch.gmUserIds) ? patch.gmUserIds.filter((item) => typeof item === 'string') : getSessionGmUserIds(session);
 
@@ -7333,6 +7563,7 @@ app.get('/api/systems/:systemId', requireAuth, (req, res) => {
 app.post('/api/systems', requireAuth, (req, res) => {
   const body = req.body || {};
   let validatedRollDefinitions;
+  let validatedRulesProgram;
   let validatedRulesPresentation;
   let validatedStudioTheme;
   let validatedStudioSchemaV2;
@@ -7341,6 +7572,7 @@ app.post('/api/systems', requireAuth, (req, res) => {
   let validatedCharacterCreationConfig;
   try {
     validatedRollDefinitions = validateRollDefinitions(body.rollDefinitions);
+    validatedRulesProgram = validateRulesProgram(body.rulesProgram);
     validatedRulesPresentation = validateRulesPresentation(body.rulesPresentation);
     validatedStudioTheme = validateStudioTheme(body.studioTheme);
     validatedStudioSchemaV2 = validateStudioSchemaV2(body.studioSchemaV2);
@@ -7391,7 +7623,7 @@ app.post('/api/systems', requireAuth, (req, res) => {
     editorUserIds: Array.isArray(body.editorUserIds) ? body.editorUserIds.filter((id) => typeof id === 'string') : [],
     tags: Array.isArray(body.tags) ? body.tags : ['custom'],
     rollDefinitions: Array.isArray(validatedRollDefinitions) ? validatedRollDefinitions : [],
-    rulesProgram: Array.isArray(body.rulesProgram) ? body.rulesProgram : rulesProgram,
+    rulesProgram: Array.isArray(validatedRulesProgram) ? validatedRulesProgram : rulesProgram,
     ...(validatedRulesPresentation
       ? { rulesPresentation: validatedRulesPresentation }
       : rulesPresentation
@@ -7454,6 +7686,7 @@ app.patch('/api/systems/:systemId', requireAuth, (req, res) => {
 
   const body = req.body || {};
   let validatedRollDefinitions;
+  let validatedRulesProgram;
   let validatedRulesPresentation;
   let validatedStudioTheme;
   let validatedStudioSchemaV2;
@@ -7462,6 +7695,7 @@ app.patch('/api/systems/:systemId', requireAuth, (req, res) => {
   let validatedCharacterCreationConfig;
   try {
     validatedRollDefinitions = validateRollDefinitions(body.rollDefinitions);
+    validatedRulesProgram = validateRulesProgram(body.rulesProgram);
     validatedRulesPresentation = validateRulesPresentation(body.rulesPresentation);
     validatedStudioTheme = validateStudioTheme(body.studioTheme);
     validatedStudioSchemaV2 = validateStudioSchemaV2(body.studioSchemaV2);
@@ -7490,7 +7724,7 @@ app.patch('/api/systems/:systemId', requireAuth, (req, res) => {
       : {}),
     ...(Array.isArray(body.tags) ? { tags: body.tags } : {}),
     ...(Array.isArray(validatedRollDefinitions) ? { rollDefinitions: validatedRollDefinitions } : {}),
-    ...(Array.isArray(body.rulesProgram) ? { rulesProgram: body.rulesProgram } : {}),
+    ...(Array.isArray(validatedRulesProgram) ? { rulesProgram: validatedRulesProgram } : {}),
     ...(validatedRulesPresentation ? { rulesPresentation: validatedRulesPresentation } : {}),
     ...(validatedStudioTheme ? { studioTheme: validatedStudioTheme } : {}),
     ...(validatedStudioSchemaV2 ? { studioSchemaV2: validatedStudioSchemaV2 } : {}),
