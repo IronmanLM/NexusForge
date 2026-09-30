@@ -3,7 +3,12 @@
 Ce document sert de référence unique pour suivre l'avancement du projet.
 Il est mis à jour à chaque lot de travail significatif.
 
-Dernière mise à jour: 2026-03-28
+Dernière mise à jour: 2026-09-25
+
+## Roadmap - Annonces Nexus Forge
+
+- Ajouter l edition des annonces par leur auteur depuis Nexus Forge : modification du systeme de jeu, du statut, des places recherchees, des disponibilites, du mode de jeu et des champs de description utiles.
+- Synchroniser chaque modification d annonce avec les messages Discord de recrutement deja publies par le bot.
 
 ## Dernier lot - Libelles de champs stylables et conteneurs silencieux
 

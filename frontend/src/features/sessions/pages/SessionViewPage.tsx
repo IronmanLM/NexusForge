@@ -29,6 +29,7 @@ import { runSyncCycle, SyncCycleReport } from '../../../services/syncService';
 import ScreenTemplateRuntime from '../../screens/components/ScreenTemplateRuntime';
 import SessionCharacterCreationWizard from '../components/SessionCharacterCreationWizard';
 import { ensureScreenSetFormat, screenFormatSummary } from '../../screens/screenSetPresets';
+import SessionVttPanel from '../../vtt/pages/SessionVttPanel';
 
 const DEFAULT_SETTINGS: SessionSettings = {
   allowPlayerToEditCharacterOffline: true,
@@ -417,7 +418,7 @@ export default function SessionViewPage() {
   const [isBusy, setIsBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'general' | 'settings' | 'logs'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'vtt' | 'settings' | 'logs'>('general');
   const [runtimeSetId, setRuntimeSetId] = useState('');
   const [pendingRuntimeLaunch, setPendingRuntimeLaunch] = useState<null | { markRunning: boolean }>(null);
 
@@ -1700,6 +1701,9 @@ export default function SessionViewPage() {
         <button type="button" className={`session-tab-button${activeTab === 'general' ? ' is-active' : ''}`} onClick={() => setActiveTab('general')}>
           Général
         </button>
+        <button type="button" className={`session-tab-button${activeTab === 'vtt' ? ' is-active' : ''}`} onClick={() => setActiveTab('vtt')}>
+          VTT
+        </button>
         <button type="button" className={`session-tab-button${activeTab === 'settings' ? ' is-active' : ''}`} onClick={() => setActiveTab('settings')}>
           Paramètres
         </button>
@@ -1882,6 +1886,17 @@ export default function SessionViewPage() {
             )}
           </section>
         </div>
+      ) : null}
+
+      {activeTab === 'vtt' ? (
+        <SessionVttPanel
+          session={session}
+          currentUserId={currentUser.id}
+          viewMode={role === 'gm' ? 'gm' : 'player'}
+          canManage={canManage}
+          sessionResources={sessionResources}
+          characters={characters}
+        />
       ) : null}
 
       {activeTab === 'settings' ? (

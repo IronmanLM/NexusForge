@@ -41,6 +41,8 @@ const PORT = Math.max(1, Number(process.env.PORT || 3000));
 const SESSION_COOKIE_NAME = 'nf_discord_bot_session';
 const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const LINKED_ACCOUNT_ROLE_NAME = 'Nexus Forge';
+const GM_ROLE_NAME = 'MJ';
 
 if (!DISCORD_BOT_TOKEN) {
   throw new Error('DISCORD_BOT_TOKEN est requis');
@@ -222,6 +224,7 @@ function loadDashboardState() {
     },
     announcementMessages: {},
     linkedSessionChannels: {},
+    managedDiscordLayout: {},
     sessions: {},
     oauthStates: {}
   };
@@ -240,6 +243,7 @@ function loadDashboardState() {
         : fallback.globalConfig,
       announcementMessages: isPlainObject(parsed.announcementMessages) ? parsed.announcementMessages : {},
       linkedSessionChannels: isPlainObject(parsed.linkedSessionChannels) ? parsed.linkedSessionChannels : {},
+      managedDiscordLayout: isPlainObject(parsed.managedDiscordLayout) ? parsed.managedDiscordLayout : {},
       sessions: isPlainObject(parsed.sessions) ? parsed.sessions : {},
       oauthStates: isPlainObject(parsed.oauthStates) ? parsed.oauthStates : {}
     };
@@ -534,6 +538,124 @@ async function readJsonBody(req) {
     return {};
   }
   return JSON.parse(raw);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function discordRest(method, pathName, body = undefined) {
+  for (;;) {
+    const response = await fetch(`https://discord.com/api/v10${pathName}`, {
+      method,
+      headers: {
+        authorization: `Bot ${DISCORD_BOT_TOKEN}`,
+        'content-type': 'application/json'
+      },
+      body: body === undefined ? undefined : JSON.stringify(body)
+    });
+    const raw = await response.text().catch(() => '');
+    const payload = raw
+      ? (() => {
+          try {
+            return JSON.parse(raw);
+          } catch {
+            return raw;
+          }
+        })()
+      : null;
+    if (response.status === 429) {
+      const retryAfter = Number(payload?.retry_after || 1);
+      await sleep(Math.ceil(retryAfter * 1000));
+      continue;
+    }
+    if (!response.ok) {
+      const error = new Error(`Discord REST ${method} ${pathName} failed (${response.status}): ${raw}`);
+      error.status = response.status;
+      throw error;
+    }
+    return payload;
+  }
+}
+
+function getManagedGuildIds() {
+  const ids = new Set(Object.keys(dashboardState.guildConfigs || {}));
+  const layoutGuildId = String(dashboardState.managedDiscordLayout?.guildId || '').trim();
+  if (layoutGuildId) {
+    ids.add(layoutGuildId);
+  }
+  return [...ids].filter(Boolean);
+}
+
+async function ensureLinkedAccountRole(guildId) {
+  const roles = await discordRest('GET', `/guilds/${guildId}/roles`);
+  const configuredRoleId = String(dashboardState.managedDiscordLayout?.roles?.nexusForge || '').trim();
+  const configuredRole = configuredRoleId ? roles.find((role) => role.id === configuredRoleId && !role.managed) : null;
+  if (configuredRole) {
+    return configuredRole;
+  }
+  const existingRole = roles.find((role) => role.name === LINKED_ACCOUNT_ROLE_NAME && !role.managed);
+  const role =
+    existingRole ||
+    (await discordRest('POST', `/guilds/${guildId}/roles`, {
+      name: LINKED_ACCOUNT_ROLE_NAME,
+      mentionable: false,
+      hoist: false,
+      color: 0x2d7ff9
+    }));
+  dashboardState.managedDiscordLayout = isPlainObject(dashboardState.managedDiscordLayout) ? dashboardState.managedDiscordLayout : {};
+  dashboardState.managedDiscordLayout.roles = isPlainObject(dashboardState.managedDiscordLayout.roles)
+    ? dashboardState.managedDiscordLayout.roles
+    : {};
+  dashboardState.managedDiscordLayout.roles.nexusForge = role.id;
+  saveDashboardState();
+  return role;
+}
+
+async function ensureRoleByName(guildId, name, color = 0x5865f2) {
+  const roles = await discordRest('GET', `/guilds/${guildId}/roles`);
+  const existingRole = roles.find((role) => role.name === name && !role.managed);
+  if (existingRole) {
+    return existingRole;
+  }
+  return discordRest('POST', `/guilds/${guildId}/roles`, {
+    name,
+    mentionable: false,
+    hoist: false,
+    color
+  });
+}
+
+async function syncLinkedAccountRole(event) {
+  const discordUserId = String(event.payload?.user?.discordUserId || '').trim();
+  if (!discordUserId) {
+    return;
+  }
+  const kind = String(event.payload?.kind || 'link');
+  const appRoles = Array.isArray(event.payload?.user?.roles) ? event.payload.user.roles.map(String) : [];
+  const shouldHaveGmRole = kind !== 'unlink' && appRoles.includes('gm');
+  for (const guildId of getManagedGuildIds()) {
+    try {
+      const role = await ensureLinkedAccountRole(guildId);
+      const gmRole = await ensureRoleByName(guildId, GM_ROLE_NAME, 0xc084fc);
+      if (kind === 'unlink') {
+        await discordRest('DELETE', `/guilds/${guildId}/members/${discordUserId}/roles/${role.id}`);
+      } else {
+        await discordRest('PUT', `/guilds/${guildId}/members/${discordUserId}/roles/${role.id}`);
+      }
+      if (shouldHaveGmRole) {
+        await discordRest('PUT', `/guilds/${guildId}/members/${discordUserId}/roles/${gmRole.id}`);
+      } else {
+        await discordRest('DELETE', `/guilds/${guildId}/members/${discordUserId}/roles/${gmRole.id}`);
+      }
+    } catch (error) {
+      if (error?.status === 404) {
+        log(`utilisateur Discord ${discordUserId} absent de la guilde ${guildId}, role ${LINKED_ACCOUNT_ROLE_NAME} ignore`);
+        continue;
+      }
+      throw error;
+    }
+  }
 }
 
 async function fetchEvents(afterId) {
@@ -1362,6 +1484,11 @@ async function dispatchEvent(event) {
       } else {
         await upsertAnnouncementMessages(event);
       }
+      handled = true;
+      break;
+    }
+    case 'user.discord.sync': {
+      await syncLinkedAccountRole(event);
       handled = true;
       break;
     }

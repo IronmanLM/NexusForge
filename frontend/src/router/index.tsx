@@ -20,6 +20,7 @@ import SocialPage from '../features/social/pages/SocialPage';
 import SessionsListPage from '../features/sessions/pages/SessionsListPage';
 import SessionViewPage from '../features/sessions/pages/SessionViewPage';
 import SessionCharacterPage from '../features/sessions/pages/SessionCharacterPage';
+import SessionVttFullscreenPage from '../features/vtt/pages/SessionVttFullscreenPage';
 import RulesStudioPage from '../features/systems/pages/RulesStudioPage';
 import SystemStudioPage from '../features/systems/pages/SystemStudioPage';
 import TranslationDictionaryPage from '../features/i18n/pages/TranslationDictionaryPage';
@@ -236,6 +237,14 @@ export const router = createBrowserRouter([
     element: (
       <RequireAuth>
         <SessionViewPage />
+      </RequireAuth>
+    )
+  },
+  {
+    path: '/sessions/:sessionId/vtt/fullscreen',
+    element: (
+      <RequireAuth>
+        <SessionVttFullscreenPage />
       </RequireAuth>
     )
   },

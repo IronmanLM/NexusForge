@@ -1,4 +1,5 @@
 import { SystemMessageType } from './message';
+import { VttState } from '../features/vtt/types';
 
 export type SessionState = 'planned' | 'running' | 'paused' | 'finished';
 
@@ -147,6 +148,7 @@ export interface Session {
   screenTemplateSelections?: Record<string, SessionScreenTemplateUserSelection>;
   runtimeConnections?: SessionRuntimeConnection[];
   discordIntegration?: SessionDiscordIntegration | null;
+  vtt?: VttState;
   createdAt: string;
   updatedAt: string;
 }
