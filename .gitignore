@@ -29,6 +29,10 @@ frontend/coverage/
 *.tsbuildinfo
 frontend/*.tsbuildinfo
 
+# Runtime state / local persistent data
+backend/data/
+**/state.json
+
 # Android local release material
 frontend/android/local.properties
 frontend/android/key.properties
