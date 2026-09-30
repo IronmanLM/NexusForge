@@ -1,0 +1,4 @@
+storeFile=/absolute/path/to/nexusforge-release.jks
+storePassword=change_me
+keyAlias=nexusforge
+keyPassword=change_me

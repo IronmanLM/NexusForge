@@ -1,163 +1,161 @@
-# Modèle de données – Nexus Forge
+# Modele de donnees - Nexus Forge
 
-Ce dossier contient les définitions des principaux schémas JSON utilisés par Nexus Forge.  
-Ils servent de base pour la persistance locale (offline?first), la synchronisation et les API backend.
+Ce dossier contient les principaux schemas JSON utilises par Nexus Forge.
+Ils servent de base a la persistance locale, a la synchronisation et aux contrats backend.
 
----
+## Vocabulaire
 
-## Liste des schémas
+Le modele technique conserve encore le terme `session` dans plusieurs schemas et champs :
+
+- `session.schema.json`
+- `sessionId`
+- `sessionState`
+
+Dans l interface utilisateur, ces memes concepts sont maintenant affiches comme des `parties`.
+
+Exemples :
+
+- `session.schema.json` represente une partie
+- `message.sessionId` est l identifiant technique de la partie
+- `character.sessionState` est l etat de la fiche dans la partie courante
+
+## Liste des schemas
 
 ### `system.schema.json`
 
-Représente un **système de jeu** générique.
+Represente un systeme de jeu generique.
 
-- Identité : `id`, `name`, `version`, `author`, `tags`, `visibility`.
-- Briques de règles :
-  - `attributes` : caractéristiques de base (Force, Dex, etc.).
-  - `resources` : ressources (PV, mana…).
-  - `skills` : compétences, dons, etc.
+- Identite : `id`, `name`, `version`, `author`, `tags`, `visibility`
+- Briques de regles :
+  - `attributes` : caracteristiques de base
+  - `resources` : ressources
+  - `skills` : competences, dons, capacites
 - Fiches :
-  - `characterTemplates` : templates pour PJ, PNJ, monstres, etc.
-- Jets et règles :
-  - `rollDefinitions` : définitions de jets typiques (attaque, sauvegarde…).
-  - `scripts` : scripts de règles (JS sandbox ou blocs visuels).
-  - `hooks` : hooks d’évènements (onAttackRoll, onLevelUp, etc.).
-- Paramètres globaux dans `settings` (notation de dés, options par défaut, etc.).
-
----
+  - `characterTemplates` : templates PJ, PNJ, creatures
+- Jets et regles :
+  - `rollDefinitions`
+  - `scripts`
+  - `hooks`
+- Parametres globaux dans `settings`
 
 ### `character.schema.json`
 
-Représente une **fiche de personnage** (PJ, PNJ, monstre…).
+Represente une fiche de personnage.
 
 - Liens :
-  - `systemId` : système de jeu utilisé.
-  - `templateId` : template de fiche choisi.
-  - `ownerUserId` : propriétaire (joueur) éventuel.
-- Données de jeu :
-  - `attributes` : valeurs d’attributs (indexés par IDs du système).
-  - `resources` : PV, mana, etc.
-  - `skills` : rangs de compétences/dons.
-  - `inventory` : objets, équipements.
-  - `customFields` : champs supplémentaires propres à cette fiche.
-- Notes et visibilité :
-  - `playerPrivateNotes` : notes privées du joueur.
-  - `gmPrivateNotes` : notes privées du MJ.
-  - `visibility` : attributs/ressources/inventaire cachés aux joueurs.
-- État de session :
+  - `systemId`
+  - `templateId`
+  - `ownerUserId`
+- Donnees de jeu :
+  - `attributes`
+  - `resources`
+  - `skills`
+  - `inventory`
+  - `customFields`
+- Notes et visibilite :
+  - `playerPrivateNotes`
+  - `gmPrivateNotes`
+  - `visibility`
+- Etat de partie :
   - `sessionState` : initiative, conditions, etc.
 - Sync :
-  - `sync` : infos de synchronisation (conflits, dernier modificateur…).
-
----
+  - `sync`
 
 ### `session.schema.json`
 
-Représente une **session de jeu** (partie en cours ou planifiée).
+Represente une partie au niveau technique.
 
-- Métadonnées :
-  - `systemId`, `campaignId`, `name`, `description`, `gmUserId`, `state`.
-- Paramètres :
-  - `settings` : options de session (édition offline PJ, communications autorisées, modes de silence…).
+- Metadonnees :
+  - `systemId`, `campaignId`, `name`, `description`, `gmUserId`, `state`
+- Parametres :
+  - `settings` : options de partie
 - Participants :
-  - `participants` : liste des utilisateurs, rôles (gm/player/observer), PJ liés.
-- Écrans :
-  - `screens` : instances d’écrans (MJ, battlemap, playerDashboard) avec leurs configs.
+  - `participants` : utilisateurs, roles, fiches liees
+- Ecrans :
+  - `screens` : instances runtime d ecrans
 - Initiative :
-  - `initiative` : round, tour courant, entrées d’initiative (PJ, PNJ, groupes).
+  - `initiative`
 - Groupes :
-  - `groups` : groupes de joueurs (ex : groupe A/B lorsqu’ils se séparent).
+  - `groups`
 - Communication :
-  - `communication` : canaux logiques (global, groupe, direct), dernier message.
-- Documents de session :
-  - `documents` : handouts, images, fiches partagées, avec métadonnées de partage.
+  - `communication`
+- Documents :
+  - `documents`
 - Historique :
-  - `log` : évènements importants (jets, notes ajoutées, docs partagés).
+  - `log`
 - Sync :
-  - `sync` : infos de synchronisation.
-
----
+  - `sync`
 
 ### `message.schema.json`
 
-Représente un **message de chat** (global, privé, groupe, système).
+Represente un message de chat.
 
 - Contexte :
-  - `sessionId`, `channelType` (global, group, direct, system), `channelId`.
+  - `sessionId`, `channelType`, `channelId`
 - Participants :
-  - `fromUserId`, `toUserIds`, `groupId`, `isPrivateToGM`.
+  - `fromUserId`, `toUserIds`, `groupId`, `isPrivateToGM`
 - Contenu :
-  - `kind` : `text`, `roll`, `document`, `mixed`.
-  - `content` : texte (markdown/texte brut).
-  - `attachments` : pièces jointes (documents, fiches, items…).
-  - `rollResult` : détails d’un jet (expression, total, succès…).
+  - `kind`
+  - `content`
+  - `attachments`
+  - `rollResult`
 - UI :
-  - `ui` : importance, bandeau central, épinglage sur l’écran MJ.
-- État :
-  - `readByUserIds`, `deletedForUserIds`.
+  - `ui`
+- Etat :
+  - `readByUserIds`, `deletedForUserIds`
 - Sync :
-  - `sync` : origine device, pending offline, etc.
-
----
+  - `sync`
 
 ### `note.schema.json`
 
-Représente une **note** liée à une campagne, une session, un personnage, etc.
+Represente une note liee a une campagne, une partie, un personnage ou une autre ressource.
 
 - Contexte :
-  - `scope` : `campaign`, `session`, `character`, `npc`, `location`, `item`, `other`.
-  - `scopeRefId` : ID exact de la ressource liée.
+  - `scope` : `campaign`, `session`, `character`, `npc`, `location`, `item`, `other`
+  - `scopeRefId`
 - Type :
-  - `type` : `player_private`, `gm_private`, `public`.
+  - `type` : `player_private`, `gm_private`, `public`
 - Contenu :
-  - `title`, `content`.
-  - `tags` : classification (indice, background…).
-- Propriété / visibilité :
-  - `createdByUserId`, `ownerUserId`.
-  - `visibility` : `visibleToAllPlayers`, `visibleToUserIds`.
+  - `title`, `content`, `tags`
+- Propriete / visibilite :
+  - `createdByUserId`, `ownerUserId`, `visibility`
 - Sync :
-  - `sync` : encryptée pour owner uniquement, horodatages.
-
----
+  - `sync`
 
 ### `document.schema.json`
 
-Représente un **document** générique (image, PDF, handout, lien de fiche).
+Represente un document generique.
 
-- Identité :
-  - `id`, `type` (`image`, `pdf`, `text`, `handout`, …), `title`, `description`.
+- Identite :
+  - `id`, `type`, `title`, `description`
 - Liens :
-  - `ownerUserId`, `createdByUserId`.
-  - `fileUrl`, `thumbnailUrl`.
-  - `linkedEntity` : lien vers une entité (character, item, note…).
-- Visibilité :
-  - `visibility` : `isPublic`, `sharedWithUserIds`.
+  - `ownerUserId`, `createdByUserId`
+  - `fileUrl`, `thumbnailUrl`
+  - `linkedEntity`
+- Visibilite :
+  - `visibility`
 - Sync :
-  - `sync` : horodatages, dernier modificateur.
+  - `sync`
 
----
+### `userDevice.schema.json`
 
-### `userDevice.schema.json` (optionnel)
+Represente un device utilisateur pour la synchronisation et les capacites runtime.
 
-Représente un **device utilisateur** pour la gestion de la synchronisation et des capacités.
-
-- Identité :
-  - `id`, `userId`, `deviceType`, `name`.
+- Identite :
+  - `id`, `userId`, `deviceType`, `name`
 - Infos runtime :
-  - `lastSeenAt`, `lastIp`.
-  - `capabilities` : multi?écrans, PWA installée, notifications supportées.
+  - `lastSeenAt`, `lastIp`
+  - `capabilities`
 - Sync :
-  - `sync` : dernière full sync / partial sync.
+  - `sync`
 
----
+## Usage des schemas
 
-## Usage des schémas
-
-- Côté frontend :
-  - servir de référence pour la structure des objets en base locale (IndexedDB).
-  - valider les données lors de l’import/export JSON (systèmes, fiches, etc.).
-- Côté backend :
-  - définir les modèles de stockage et les contrats d’API.
-- Côté utilisateur avancé :
-  - permettre de comprendre comment sont structurés les systèmes, fiches, sessions, etc.,
-  - faciliter la création de scripts et d’outils autour de Nexus Forge.
+- Cote frontend :
+  - reference pour la structure des objets en base locale
+  - validation import/export JSON
+- Cote backend :
+  - definition des modeles de stockage et contrats d API
+- Cote utilisateur avance :
+  - comprendre comment sont structures les systemes, fiches, parties et documents
+  - faciliter la creation d outils autour de Nexus Forge

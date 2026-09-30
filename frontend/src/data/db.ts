@@ -1,18 +1,14 @@
 import Dexie, { Table } from 'dexie';
 import { Character } from '../types/character';
-import { DashboardProfile } from '../types/dashboard';
 import { Document } from '../types/document';
 import { Message } from '../types/message';
 import { Note } from '../types/note';
+import { ResourceFolder, ResourceItem } from '../types/resource';
+import { ScreenTemplate } from '../types/screenTemplate';
 import { Session } from '../types/session';
 import { GameSystem } from '../types/system';
 import { LocalAction } from '../types/localAction';
-import { seededDocuments } from './seeds/documents';
-import { seededCharacters } from './seeds/characters';
-import { seededMessages } from './seeds/messages';
-import { seededNotes } from './seeds/notes';
-import { seededSessions } from './seeds/sessions';
-import { seededSystems } from './seeds/systems';
+import { OfflineResourceFile, OfflineSessionBundle } from '../types/offline';
 
 class NexusForgeDatabase extends Dexie {
   systems!: Table<GameSystem, string>;
@@ -21,8 +17,12 @@ class NexusForgeDatabase extends Dexie {
   notes!: Table<Note, string>;
   messages!: Table<Message, string>;
   documents!: Table<Document, string>;
+  resources!: Table<ResourceItem, string>;
+  resourceFolders!: Table<ResourceFolder, string>;
   localActions!: Table<LocalAction, string>;
-  dashboardProfiles!: Table<DashboardProfile, string>;
+  screenTemplates!: Table<ScreenTemplate, string>;
+  offlineSessions!: Table<OfflineSessionBundle, string>;
+  offlineResourceFiles!: Table<OfflineResourceFile, string>;
 
   constructor() {
     super('nexus-forge-db');
@@ -84,6 +84,87 @@ class NexusForgeDatabase extends Dexie {
       localActions: 'id, entityType, entityId, createdAt, syncStatus',
       dashboardProfiles: 'id, userId, role, sessionId, isFavorite, updatedAt'
     });
+
+    this.version(7).stores({
+      systems: 'id, ownerUserId, visibility, updatedAt',
+      characters: 'id, systemId, ownerUserId, sessionId',
+      sessions: 'id, gmUserId, state, updatedAt',
+      notes: 'id, type, scope, scopeRefId, updatedAt',
+      messages: 'id, sessionId, channelType, channelId, createdAt',
+      documents: 'id, sessionId, ownerUserId, createdAt',
+      resources: 'id, ownerUserId, scopeType, scopeRefId, kind, updatedAt',
+      localActions: 'id, entityType, entityId, createdAt, syncStatus',
+      dashboardProfiles: 'id, userId, role, sessionId, isFavorite, updatedAt'
+    });
+
+    this.version(8).stores({
+      systems: 'id, ownerUserId, visibility, updatedAt',
+      characters: 'id, systemId, ownerUserId, sessionId',
+      sessions: 'id, gmUserId, state, updatedAt',
+      notes: 'id, type, scope, scopeRefId, updatedAt',
+      messages: 'id, sessionId, channelType, channelId, createdAt',
+      documents: 'id, sessionId, ownerUserId, createdAt',
+      resources: 'id, ownerUserId, scopeType, scopeRefId, kind, updatedAt',
+      localActions: 'id, entityType, entityId, createdAt, syncStatus',
+      dashboardProfiles: 'id, userId, role, sessionId, isFavorite, updatedAt',
+      screenTemplates: 'id, createdBy, scopeType, scopeRefId, roleTarget, visibility, updatedAt'
+    });
+
+    this.version(9).stores({
+      systems: 'id, ownerUserId, visibility, updatedAt',
+      characters: 'id, systemId, ownerUserId, sessionId',
+      sessions: 'id, gmUserId, state, updatedAt',
+      notes: 'id, type, scope, scopeRefId, updatedAt',
+      messages: 'id, sessionId, channelType, channelId, createdAt',
+      documents: 'id, sessionId, ownerUserId, createdAt',
+      resources: 'id, ownerUserId, scopeType, scopeRefId, folderId, kind, updatedAt',
+      resourceFolders: 'id, ownerUserId, scopeType, scopeRefId, parentFolderId, updatedAt',
+      localActions: 'id, entityType, entityId, createdAt, syncStatus',
+      dashboardProfiles: 'id, userId, role, sessionId, isFavorite, updatedAt',
+      screenTemplates: 'id, createdBy, scopeType, scopeRefId, roleTarget, visibility, updatedAt'
+    });
+
+    this.version(10).stores({
+      systems: 'id, ownerUserId, visibility, updatedAt',
+      characters: 'id, systemId, ownerUserId, sessionId',
+      sessions: 'id, gmUserId, state, updatedAt',
+      notes: 'id, type, scope, scopeRefId, updatedAt',
+      messages: 'id, sessionId, channelType, channelId, createdAt',
+      documents: 'id, sessionId, ownerUserId, createdAt',
+      resources: 'id, ownerUserId, scopeType, scopeRefId, folderId, kind, updatedAt',
+      resourceFolders: 'id, ownerUserId, scopeType, scopeRefId, parentFolderId, updatedAt',
+      localActions: 'id, entityType, entityId, createdAt, syncStatus',
+      screenTemplates: 'id, createdBy, scopeType, scopeRefId, roleTarget, visibility, updatedAt'
+    });
+
+    this.version(11).stores({
+      systems: 'id, ownerUserId, visibility, updatedAt',
+      characters: 'id, systemId, ownerUserId, sessionId',
+      sessions: 'id, gmUserId, state, updatedAt',
+      notes: 'id, type, scope, scopeRefId, updatedAt',
+      messages: 'id, sessionId, channelType, channelId, createdAt',
+      documents: 'id, sessionId, ownerUserId, createdAt',
+      resources: 'id, ownerUserId, scopeType, scopeRefId, folderId, kind, updatedAt',
+      resourceFolders: 'id, ownerUserId, scopeType, scopeRefId, parentFolderId, updatedAt',
+      localActions: 'id, entityType, entityId, createdAt, syncStatus',
+      screenTemplates: 'id, createdBy, scopeType, scopeRefId, roleTarget, visibility, updatedAt',
+      offlineSessions: 'sessionId, accountUserId, status, lastHydratedAt, lastSyncAt'
+    });
+
+    this.version(12).stores({
+      systems: 'id, ownerUserId, visibility, updatedAt',
+      characters: 'id, systemId, ownerUserId, sessionId',
+      sessions: 'id, gmUserId, state, updatedAt',
+      notes: 'id, type, scope, scopeRefId, updatedAt',
+      messages: 'id, sessionId, channelType, channelId, createdAt',
+      documents: 'id, sessionId, ownerUserId, createdAt',
+      resources: 'id, ownerUserId, scopeType, scopeRefId, folderId, kind, updatedAt',
+      resourceFolders: 'id, ownerUserId, scopeType, scopeRefId, parentFolderId, updatedAt',
+      localActions: 'id, entityType, entityId, createdAt, syncStatus',
+      screenTemplates: 'id, createdBy, scopeType, scopeRefId, roleTarget, visibility, updatedAt',
+      offlineSessions: 'sessionId, accountUserId, status, lastHydratedAt, lastSyncAt',
+      offlineResourceFiles: 'resourceId, downloadedAt, updatedAt'
+    });
   }
 }
 
@@ -97,36 +178,6 @@ export async function ensureDatabaseIsInitialized(): Promise<void> {
   }
 
   await db.open();
-
-  const sessionsCount = await db.sessions.count();
-  if (sessionsCount === 0) {
-    await db.sessions.bulkPut(seededSessions);
-  }
-
-  const systemsCount = await db.systems.count();
-  if (systemsCount === 0) {
-    await db.systems.bulkPut(seededSystems);
-  }
-
-  const charactersCount = await db.characters.count();
-  if (charactersCount === 0) {
-    await db.characters.bulkPut(seededCharacters);
-  }
-
-  const notesCount = await db.notes.count();
-  if (notesCount === 0) {
-    await db.notes.bulkPut(seededNotes);
-  }
-
-  const documentsCount = await db.documents.count();
-  if (documentsCount === 0) {
-    await db.documents.bulkPut(seededDocuments);
-  }
-
-  const messagesCount = await db.messages.count();
-  if (messagesCount === 0) {
-    await db.messages.bulkPut(seededMessages);
-  }
 
   didInit = true;
 }

@@ -1,179 +1,187 @@
-# Interface des fiches personnages (PJ / PNJ)
+# Interface des fiches personnages
 
-Ce document décrit l’interface des fiches personnages dans Nexus Forge, côté joueur et côté MJ, en s’appuyant sur `character.schema.json` et les définitions du `System`.
+Ce document decrit l'affichage runtime des fiches personnages dans NexusForge.
 
----
+## Principe actuel
 
-## 1. Principes généraux
+La fiche de personnage part maintenant des vues du Studio systÃ¨me V2.
 
-- La fiche est **générée dynamiquement** à partir :
-  - du `System` (attributs, ressources, compétences, templates),
-  - du `characterTemplate` choisi (`templateId`),
-  - des valeurs concrètes du `Character`.
-- L’interface doit être :
-  - **responsive** (desktop, tablette, mobile),
-  - **clair** : sections, regroupements, champs lisibles,
-  - **cohérente** pour MJ et joueur, avec des différences de visibilité.
+Une vue de systeme peut etre marquee comme fiche personnage via :
 
----
+- `Vue de fiche personnage = Oui`
 
-## 2. Structure globale de la fiche
+La creation d un personnage de partie utilise ensuite directement cette vue Studio.
 
-### 2.1. Zones principales
+## Studio systÃ¨me V2
 
-Sur desktop (layout exemple) :
+Une fiche Studio V2 est construite a partir de :
 
-- Bandeau supérieur :
-  - portrait, nom, alias,
-  - type (PJ/PNJ/monstre),
-  - tags (classe, faction, rôle…),
-  - quelques ressources clés (PV, mana…).
-- Colonne gauche :
-  - attributs,
-  - compétences.
-- Colonne droite :
-  - ressources détaillées,
-  - inventaire,
-  - effets & conditions.
-- Bas de page / onglets :
-  - notes liées au personnage,
-  - historique (jets récents, changements importants).
+- vues du systeme
+- composants sur grille
+- structures `Conteneur` et `Onglets`
+- composants `Affichage`
+- composants `Champs editables`
 
-Sur mobile :
+Une vue peut etre :
 
-- Même contenu, mais en **pile verticale** avec navigation par onglets/sections :
-  - Onglets : « Vue générale », « Compétences », « Inventaire », « Effets », « Notes ».
+- `Vue par defaut joueur`
+- `Vue de fiche personnage`
+- `Type de fiche = PJ`
+- `Type de fiche = PNJ`
+- `Type de fiche = Creature`
 
-### 2.2. Sections typiques
+## Variables reservees
 
-En se basant sur le `System` et les `characterTemplates` :
+Les fiches personnages peuvent injecter automatiquement :
 
-- **En-tête** :
-  - nom, alias, type, portrait,
-  - niveau, classe / archétype (si le système le prévoit via customFields).
-- **Attributs** (`attributes`) :
-  - liste d’attributs (Force, Dex…) avec leurs valeurs,
-  - éventuellement score + modificateur (si le système le calcule via scripts).
-- **Ressources** (`resources`) :
-  - PV, mana, stress, etc. (barres, gauges),
-  - valeur actuelle / max, états associés.
-- **Compétences** (`skills`) :
-  - catégories ou liste simple (nom, rang, attribut lié…).
-- **Inventaire** (`inventory`) :
-  - objets, équipements, consommables, avec quantité, état équipé ou non.
-- **Conditions & états** (`sessionState.conditions`) :
-  - états temporaires (blessé, empoisonné, avantage, etc.).
-- **Notes liées au personnage** :
-  - notes publiques concernant ce personnage,
-  - côté joueur : ses notes privées sur ce perso,
-  - côté MJ : ses notes privées MJ.
+- `{{nompj}}`
+- `{{nompartie}}`
+- `{{nommj}}`
+- `{{nomjoueur}}`
+- `{{pseudojoueur}}`
+- `{{nomsysteme}}`
+- `{{datecreation}}`
 
----
+Elles servent notamment a generer le nom d une fiche a sa creation.
+Au runtime, elles sont aussi resolues avec le contexte reel de la partie et du personnage quand la fiche est ouverte depuis une partie.
 
-## 3. Différences Joueur / MJ
+Exemple :
 
-### 3.1. Côté joueur
+- `{{nompartie}} Â· {{nompj}}`
 
-- Voit :
-  - toutes les données **non masquées** par `Character.visibility`,
-  - ses propres `playerPrivateNotes`.
-- Ne voit pas :
-  - `gmPrivateNotes`,
-  - les attributs/ressources/inventaire marqués cachés dans `visibility`.
-- Actions :
-  - modifier certains champs (définis par le système/session),
-  - faire des jets via boutons d’action (liés aux `rollDefinitions` du `System`),
-  - ajouter/éditer ses notes privées,
-  - en mode offline, ses modifications sont stockées localement et synchronisées plus tard (avec gestion de conflit côté MJ pour la fiche).
+Reference detaillee :
 
-### 3.2. Côté MJ
+- voir [character-sheet-variables.md](/mnt/c/Users/mikael/.codex/worktrees/e534/NexusForge/docs/ui/character-sheet-variables.md)
 
-- Voit :
-  - toutes les données, y compris celles cachées aux joueurs (`visibility`),
-  - `gmPrivateNotes`,
-  - `playerPrivateNotes` seulement si la politique de confidentialité le permet (par défaut : non).
-- Actions :
-  - modifier toutes les valeurs (sauf choix de restreindre certains champs),
-  - appliquer des conditions, ajuster PV, XP, inventaire, etc.,
-  - accéder rapidement à cette fiche via les widgets « Initiative & combat » ou « Table des personnages ».
+## Flux de partie
 
----
+### Creation joueur
 
-## 4. Comportement offline et sync sur la fiche
+Si un joueur rejoint une partie sans personnage attribue :
 
-- **Offline joueur** :
-  - la fiche est consultable et éditable selon les permissions.
-  - les changements sont enregistrés dans la base locale (IndexedDB) et marqués dans `Character.sync` (`lastModifiedBy`, `conflictStatus`).
-- **Offline MJ** :
-  - même principe, mais sa version fait autorité par défaut pour la plupart des champs.
-- **Sync** :
-  - lors de la synchronisation :
-    - les fiches PJ avec modifications côté joueur ET MJ passent en état `conflictStatus = "pending_review"`,
-    - le MJ accède à un écran de comparaison champ à champ (hors du scope de ce fichier, mais dépendant de `Character.sync`).
+- la page `Partie` lui propose `Creer mon personnage`
+- il choisit une vue de fiche `PJ`
+- il renseigne le nom du personnage
+- la fiche est creee pour lui et rattachee a son participant
 
----
+Si aucune vue n est explicitement marquee `PJ`, la partie reutilise les vues `fiche personnage` disponibles pour ne pas bloquer la creation.
 
-## 5. Interactions courantes sur la fiche
+### Pre-tire MJ
 
-### 5.1. Jets
+Le MJ peut preparer un personnage non attribue dans une partie, puis :
 
-- Des boutons associés aux attributs/compétences/ressources peuvent déclencher des jets :
-  - basés sur `System.rollDefinitions`,
-  - en utilisant le moteur de scripts (JS / blocs).
-- Résultat :
-  - affiché dans le widget Chat & messages (type `message.kind = "roll"`),
-  - éventuellement enregistré dans `Session.log`.
+- choisir un joueur cible
+- dupliquer ce personnage
+- attribuer la copie au joueur
 
-### 5.2. Édition rapide
+La fiche source reste intacte.
+La copie porte :
 
-- Champs souvent modifiés (PV, ressources, inventaire, conditions) doivent être :
-  - éditables directement sans ouvrir des modales complexes,
-  - avec des contrôles adaptés (stepper, sliders pour PV, etc.).
-- Côté MJ, édition rapide pour gérer les PNJ pendant un combat.
+- `sourceCharacterId`
+- `isPreGeneratedClone = true`
 
-### 5.3. Liens vers autres vues
+## Cycle de vie en partie
 
-Depuis la fiche :
+Les cartes personnage affichent maintenant un statut simple :
 
-- bouton pour ouvrir les **notes liées** (filtre sur ce personnage),
-- bouton pour voir l’**historique des jets** de ce perso,
-- pour le MJ : actions comme « ajouter au combat » (ajout dans `Session.initiative.entries`).
+- `Modele MJ`
+- `Clone joueur`
+- `Fiche attribuee`
 
----
+Regle metier :
 
-## 6. Layout basé sur le template
+- le proprietaire d une fiche joueur peut la `supprimer definitivement`
+- un MJ peut `retirer de la partie` une fiche joueur sans la detruire
+- un `Modele MJ` non attribue reste supprimable par le MJ car il s agit d un modele de table
+- un transfert de fiche passe par une reattribution du champ `Attribue a`
+- une desattribution propre laisse la fiche dans la partie avec `ownerUserId = null`
 
-Le `characterTemplate.layout` du `System` peut définir :
+Retirer de la partie :
 
-- des **sections** (ex: « Profil », « Combat », « Magie », « Inventaire »),
-- l’ordre d’affichage,
-- des regroupements (colonnes, groupes de champs).
+- detache la fiche de la partie
+- libere l attribution participant -> personnage
+- ne detruit pas la fiche joueur
 
-L’interface doit :
+## Initiative
 
-- lire ce layout pour construire les sections et l’ordre,
-- tomber sur une disposition par défaut si aucun layout n’est défini.
+Une vue fiche personnage peut definir la strategie d initiative par defaut :
 
----
+- `combat_once`
+- `round_recalc`
+- `gm_fixed`
+- `manual_turn`
 
-## 7. V1 – Priorités sur la fiche
+Pour `combat_once` et `round_recalc`, une formule d initiative peut etre renseignee.
 
-Pour la première version :
+Le MJ garde ensuite la possibilite de forcer un autre mode au niveau de la partie.
 
-- Sections minimum :
-  - en-tête (nom, portrait, type, quelques tags),
-  - attributs,
-  - ressources (PV au minimum),
-  - compétences (liste simple),
-  - inventaire (liste simple),
-  - conditions (liste simple),
-  - notes liées (une zone basique).
-- Comportements minimum :
-  - consultation complète côté joueur et MJ,
-  - édition côté joueur des champs autorisés,
-  - édition totale côté MJ,
-  - quelques boutons de jets rapides,
-  - fonctionnement offline / sync basique avec `Character.sync`.
+Au runtime ecran, le widget `Fiche de personnage` tient maintenant compte de la vue cible quand `viewId` est configure.
 
-Les raffinements (layout avancé, filtres, historique détaillé) pourront être ajoutés ensuite.
+La page `Partie` permet maintenant d ouvrir une fiche dans un nouvel onglet dedie, avec le meme moteur de rendu que l apercu final du Studio systÃ¨me.
 
+## References supportees
+
+Dans le runtime Studio :
+
+- `@Label`
+- `@vue_reference.Label`
+- `{{Label}}`
+- `{{vue_reference.Label}}`
+- `{{Label[]}}`
+- `{{Label[0]}}`
+
+## Comportement attendu
+
+### Affichage
+
+Les composants `Affichage` sont en lecture seule :
+
+- `Texte`
+- `Texte multiligne`
+- `Numerique`
+- `Vue`
+- `Date`
+- `Heure`
+- `Image`
+- `Liste deroulante`
+- `Menu multichoix`
+- `Jauge`
+- `Bouton`
+
+### Editable
+
+Les composants `Editable` sont modifiables au runtime si `Editable si` le permet :
+
+- `Texte`
+- `Texte multiligne`
+- `Numerique`
+- `Case a cocher`
+
+## Boutons
+
+Les boutons Studio peuvent :
+
+- aller vers une vue
+- ouvrir une vue en popup
+- lancer un jet
+- executer un script
+
+## Objectif actuel
+
+Le but est d avoir :
+
+- un affichage runtime coherent avec le Studio systÃ¨me V2
+- un moteur de rendu unique pour :
+  - l apercu final du Studio systÃ¨me
+  - la fiche ouverte depuis une Partie
+  - le widget fiche personnage du Studio Ecrans
+- une mise en page responsive pour que lignes et colonnes se replient proprement hors canvas
+- une distinction claire entre lecture seule et champs modifiables
+- un support des references entre vues
+- un support des boutons de navigation/popup/jet
+
+## Notes
+
+Le flux personnage ne depend plus de `referenceSheets`.
+La source de verite est la vue Studio marquee `Vue de fiche personnage`.
+Un systeme doit etre `publie` et contenir au moins une vue fiche personnage pour pouvoir etre joue dans une partie.

@@ -1,11 +1,13 @@
 export interface SheetField {
   id: string;
   label: string;
-  type: 'number' | 'text' | 'resource' | 'tag';
+  type: 'number' | 'text' | 'textarea' | 'select' | 'multiselect' | 'resource' | 'tag';
   value: number | string;
   max?: number;
   groupId: string;
   isPrimary?: boolean;
+  options?: Array<{ key: string; label: string }>;
+  rows?: number;
 }
 
 export interface SheetGroup {

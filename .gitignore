@@ -6,6 +6,7 @@ Thumbs.db
 
 # Backups
 *.bak
+*.zip
 
 # Logs
 *.log
@@ -28,6 +29,14 @@ frontend/coverage/
 *.tsbuildinfo
 frontend/*.tsbuildinfo
 
+# Android local release material
+frontend/android/local.properties
+frontend/android/key.properties
+*.jks
+*.keystore
+
 # Misc
+.codex
+.codex/
 .tmp/
 tmp/

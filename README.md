@@ -1,7 +1,7 @@
 # Nexus Forge
 
-Nexus Forge est une application de gestion de jeux de rôle sur table (JDR) **offline‑first**, pensée pour toute la table : meneur de jeu (MJ) et joueurs.  
-Elle permet de créer des systèmes de jeu génériques, gérer fiches de personnages, campagnes, notes et documents, et de jouer en session live avec multi‑écrans.
+Nexus Forge est une application de gestion de jeux de rôle sur table (JDR) **offline-first**, pensée pour toute la table : meneur de jeu (MJ) et joueurs.  
+Elle permet de créer des systèmes de jeu génériques, gerer fiches de personnages, parties, notes et fichiers, et de jouer avec multi-ecrans.
 
 ---
 
@@ -10,10 +10,10 @@ Elle permet de créer des systèmes de jeu génériques, gérer fiches de person
 - Offrir un **outil générique** non lié à un système de JDR particulier.
 - Permettre aux utilisateurs de **créer / dupliquer / modifier** leurs propres systèmes de jeu sans écrire de code.
 - Fonctionner en mode **offline‑first** sur PC, tablette et téléphone, avec synchronisation vers une plateforme web.
-- Faciliter la gestion de table en session (présentiel ou en ligne) avec :
-  - vues dédiées MJ, battlemap et joueurs,
-  - communication riche (chat, messages privés, partage de documents),
-  - dashboard MJ totalement personnalisable.
+- Faciliter la gestion de table en partie (presentiel ou en ligne) avec :
+  - vues dediees MJ et joueurs,
+  - communication riche (chat, messages prives, partage de fichiers),
+  - Studio Ecrans pour composer les interfaces de table.
 
 ---
 
@@ -40,20 +40,12 @@ Elle permet de créer des systèmes de jeu génériques, gérer fiches de person
   - MJ prioritaire sur la majorité des données,
   - fiches PJ : validation champ par champ par le MJ en cas de conflit.
 
-### 4. Sessions live et multi‑écrans
+### 4. Parties et multi-ecrans
 
-- Création de sessions live (présentiel ou online).
-- Trois vues principales :
-  - **Écran MJ** : dashboard complet, outils, notes privées.
-  - **Battlemap** : carte, tokens, fog of war.
-  - **Infos joueurs** : initiative, effets, docs, handouts, images, etc.
-- Support multi‑écrans / multi‑onglets (un écran par vue).
-
-### 5. Dashboard MJ drag & drop
-
-- Dashboard MJ sous forme de **widgets** :
-  - initiative, liste PJ/PNJ, notes, contrôles battlemap, contrôles écran joueurs, messages privés, macros, etc.
-- Organisation libre par drag & drop, redimensionnement, presets par campagne/système.
+- Creation de parties planifiees ou actives.
+- Page `Partie` structuree en onglets.
+- Support multi-ecrans / multi-onglets via `Studio Ecrans`.
+- Runtimes separes pour les ecrans MJ et joueurs selon le template choisi.
 
 ### 6. Communication & partage
 
@@ -76,20 +68,20 @@ Elle permet de créer des systèmes de jeu génériques, gérer fiches de person
 
 ---
 
-## État du projet
+## Etat du projet
 
-Le projet est en **prototype fonctionnel offline-first** avec:
+Le projet est en **prototype fonctionnel offline-first** avec :
 
-- session locale (chargement IndexedDB),
+- parties locales (chargement IndexedDB),
 - chat persistant,
 - initiative persistante,
 - notes/documents persistants,
 - sync locale avec gestion des conflits,
-- dashboard multi-profils par compte/rôle (drag & drop + tailles widgets),
+- Studio Ecrans multi-profils par compte ou systeme (widgets sur grille),
 - catalogue des systèmes de jeu (sélection, création, duplication),
-- éditeur visuel de système type Scratch (blocs + drag & drop),
-- templates de fiches de référence (CRUD, drag & drop champs/groupes, preview),
-- création de fiches de session depuis templates système,
+- Studio système V2 sur grille,
+- fiches personnage rendues par le runtime V2,
+- creation de fiches de partie depuis les vues du systeme,
 - permissions d'édition des systèmes (propriétaire ou admin),
 - seed `SteamShadows Core` enrichi (PJ, PNJ, Créature, Horreurs Arcanum).
 
@@ -103,10 +95,10 @@ Contrats API (MVP): [`docs/api/index.md`](docs/api/index.md).
 1. Définition des schémas JSON de base :
    - systèmes de jeu,
    - fiches PJ/PNJ,
-   - sessions, notes, messages, documents.
+   - parties, notes, messages, documents.
 2. Prototype de l’éditeur de systèmes (blocs + JSON + exécution locale).
-3. Prototype minimal de session live (MJ + 1 joueur, initiative et chat).
-4. Mise en place du dashboard MJ simple.
+3. Prototype minimal de partie live (MJ + 1 joueur, initiative et chat).
+4. Mise en place du Studio Ecrans.
 5. Ajout progressif :
    - multi‑écrans,
    - partage de documents,
@@ -120,7 +112,7 @@ Les contributions seront bienvenues une fois les premiers schémas et choix tech
 Les pistes de contribution incluent :
 
 - schémas de données (JSON),
-- UX/UI (dashboard MJ, fiches, écrans joueurs),
+- UX/UI (parties, fiches, ecrans joueurs),
 - moteur de règles,
 - gestion offline / synchronisation.
 

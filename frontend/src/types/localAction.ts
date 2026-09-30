@@ -4,7 +4,9 @@ export type LocalActionEntityType =
   | 'session'
   | 'note'
   | 'message'
-  | 'document';
+  | 'document'
+  | 'resource'
+  | 'resource_folder';
 
 export type LocalActionSyncStatus = 'pending' | 'synced' | 'failed' | 'conflict';
 

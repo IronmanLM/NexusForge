@@ -1,0 +1,949 @@
+{
+  "id": "earth2569-system-v0-1",
+  "name": "Earth 2569",
+  "description": "Premiere base de systeme Studio Ecran pour Earth 2569, remodelee pour la magie, le combat et les augmentations.",
+  "version": "0.1.0",
+  "author": "Codex",
+  "ownerUserId": "local-earth2569-author",
+  "status": "draft",
+  "visibility": "private",
+  "tags": ["post-apo", "science-fantasy", "d100", "magie", "cybernetique", "genomique"],
+  "rollDefinitions": [
+    {
+      "id": "roll-standard-d100",
+      "label": "Jet standard d100",
+      "formula": "1d100",
+      "description": "Jet percentile de base."
+    },
+    {
+      "id": "roll-initiative",
+      "label": "Initiative",
+      "formula": "1d100",
+      "description": "A comparer a Sens + Raisonnement."
+    }
+  ],
+  "rulesProgram": [],
+  "catalogs": [
+    {
+      "id": "catalog-aug-genomiques",
+      "key": "augmentations_genomiques",
+      "label": "Augmentations genomiques",
+      "columns": [
+        { "id": "col-g-type", "key": "type", "label": "Type", "type": "text" },
+        { "id": "col-g-arbre", "key": "arbre", "label": "Arbre", "type": "text" },
+        { "id": "col-g-niveau", "key": "niveau", "label": "Niveau", "type": "number" },
+        { "id": "col-g-nom", "key": "nom", "label": "Nom", "type": "text" },
+        { "id": "col-g-jet", "key": "jet_associe", "label": "Jet associe", "type": "text" },
+        { "id": "col-g-effet", "key": "effet", "label": "Effet", "type": "textarea" },
+        { "id": "col-g-malus", "key": "malus", "label": "Malus", "type": "textarea" },
+        { "id": "col-g-actif", "key": "actif", "label": "Actif", "type": "checkbox" }
+      ],
+      "entries": [
+        {
+          "id": "gen-mental-1",
+          "values": {
+            "type": "genomique",
+            "arbre": "mental",
+            "niveau": 1,
+            "nom": "Connexion empathique",
+            "jet_associe": "Mental + Volonte",
+            "effet": "+15, perception emotionnelle de base.",
+            "malus": "",
+            "actif": false
+          }
+        },
+        {
+          "id": "gen-elementaire-2",
+          "values": {
+            "type": "genomique",
+            "arbre": "elementaire",
+            "niveau": 2,
+            "nom": "Manipulation elementaire",
+            "jet_associe": "Mental + Creativite ou Physique + Constitution",
+            "effet": "Controle simple d un element ou d un environnement proche.",
+            "malus": "Fatigue cellulaire a l activation.",
+            "actif": true
+          }
+        },
+        {
+          "id": "gen-physique-4",
+          "values": {
+            "type": "genomique",
+            "arbre": "physique",
+            "niveau": 4,
+            "nom": "Mutation corporelle",
+            "jet_associe": "Physique + Constitution",
+            "effet": "+60, adaptation physique majeure.",
+            "malus": "Cout en Constitution selon usage.",
+            "actif": true
+          }
+        },
+        {
+          "id": "gen-sensoriel-6",
+          "values": {
+            "type": "genomique",
+            "arbre": "sensoriel",
+            "niveau": 6,
+            "nom": "Sens du danger",
+            "jet_associe": "Physique + Sens",
+            "effet": "Jamais surpris, +20 initiative, esquive automatique 1/round contre 1 Constitution.",
+            "malus": "Depense de Constitution.",
+            "actif": true
+          }
+        },
+        {
+          "id": "gen-hybride-5",
+          "values": {
+            "type": "genomique",
+            "arbre": "hybride",
+            "niveau": 5,
+            "nom": "Glande pheromonale",
+            "jet_associe": "Physique + Constitution",
+            "effet": "+75 aux jets sociaux lies aux pheromones.",
+            "malus": "",
+            "actif": true
+          }
+        },
+        {
+          "id": "gen-psycho-4",
+          "values": {
+            "type": "genomique",
+            "arbre": "psychokinetique",
+            "niveau": 4,
+            "nom": "Telekinesie puissante",
+            "jet_associe": "Mental + Volonte",
+            "effet": "+60 contre Physique de la cible, projection 1d10.",
+            "malus": "Fatigue x2 ou plus selon usage.",
+            "actif": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-aug-cyber",
+      "key": "augmentations_cybernetiques",
+      "label": "Augmentations cybernetiques",
+      "columns": [
+        { "id": "col-c-type", "key": "type", "label": "Type", "type": "text" },
+        { "id": "col-c-arbre", "key": "arbre", "label": "Arbre", "type": "text" },
+        { "id": "col-c-zone", "key": "zone", "label": "Zone", "type": "text" },
+        { "id": "col-c-niveau", "key": "niveau", "label": "Niveau", "type": "number" },
+        { "id": "col-c-nom", "key": "nom", "label": "Nom", "type": "text" },
+        { "id": "col-c-jet", "key": "jet_associe", "label": "Jet associe", "type": "text" },
+        { "id": "col-c-effet", "key": "effet", "label": "Effet", "type": "textarea" },
+        { "id": "col-c-malus", "key": "malus", "label": "Malus", "type": "textarea" },
+        { "id": "col-c-actif", "key": "actif", "label": "Actif", "type": "checkbox" }
+      ],
+      "entries": [
+        {
+          "id": "cyber-optique-3",
+          "values": {
+            "type": "cybernetique",
+            "arbre": "optique",
+            "zone": "tete",
+            "niveau": 3,
+            "nom": "Alignement automatique",
+            "jet_associe": "Physique + Sens ou Domaine Armes",
+            "effet": "+45 Armes avec arme compatible.",
+            "malus": "-15 Social",
+            "actif": false
+          }
+        },
+        {
+          "id": "cyber-bras-6",
+          "values": {
+            "type": "cybernetique",
+            "arbre": "bras",
+            "zone": "bras",
+            "niveau": 6,
+            "nom": "Bras de combat autonome",
+            "jet_associe": "Physique + Dexterite ou Force",
+            "effet": "Parade ou attaque automatique 1/round, degats 1d10 + Force.",
+            "malus": "-15 Social",
+            "actif": true
+          }
+        },
+        {
+          "id": "cyber-jambe-5",
+          "values": {
+            "type": "cybernetique",
+            "arbre": "jambe",
+            "zone": "jambe",
+            "niveau": 5,
+            "nom": "Interface de commande neuronale",
+            "jet_associe": "Physique + Agilite",
+            "effet": "+75 Agilite, esquive automatique 1/round.",
+            "malus": "-30 Motricite si puce desactivee.",
+            "actif": true
+          }
+        },
+        {
+          "id": "cyber-neural-5",
+          "values": {
+            "type": "cybernetique",
+            "arbre": "neural",
+            "zone": "tete",
+            "niveau": 5,
+            "nom": "IA co-pilote",
+            "jet_associe": "Mental + Raisonnement",
+            "effet": "+75 Raisonnement, conseil tactique 1/scen e.",
+            "malus": "Peut etre hackee.",
+            "actif": true
+          }
+        },
+        {
+          "id": "cyber-structural-5",
+          "values": {
+            "type": "cybernetique",
+            "arbre": "structural",
+            "zone": "tronc",
+            "niveau": 5,
+            "nom": "Blindage integral",
+            "jet_associe": "Physique + Constitution",
+            "effet": "+75 Constitution, reduction auto +5, resistance explosion.",
+            "malus": "-20 Agilite, -15 Social",
+            "actif": false
+          }
+        },
+        {
+          "id": "cyber-nanomed-6",
+          "values": {
+            "type": "cybernetique",
+            "arbre": "nanomedical",
+            "zone": "tronc",
+            "niveau": 6,
+            "nom": "Essaim nanorobotique offensif",
+            "jet_associe": "Physique + Constitution ou Medecine",
+            "effet": "+90, degats 1d10/round pendant 3 rounds a portee de contact.",
+            "malus": "Retour des nanorobots apres 10 minutes.",
+            "actif": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-aug-magiques",
+      "key": "augmentations_magiques",
+      "label": "Augmentations magiques",
+      "columns": [
+        { "id": "col-m-type", "key": "type", "label": "Type", "type": "text" },
+        { "id": "col-m-flux", "key": "flux", "label": "Flux", "type": "text" },
+        { "id": "col-m-niveau", "key": "niveau", "label": "Niveau", "type": "number" },
+        { "id": "col-m-nom", "key": "nom", "label": "Nom", "type": "text" },
+        { "id": "col-m-jet", "key": "jet_associe", "label": "Jet associe", "type": "text" },
+        { "id": "col-m-effet", "key": "effet", "label": "Effet", "type": "textarea" },
+        { "id": "col-m-cout", "key": "cout", "label": "Cout", "type": "textarea" },
+        { "id": "col-m-actif", "key": "actif", "label": "Actif", "type": "checkbox" }
+      ],
+      "entries": [
+        {
+          "id": "mag-anima-1",
+          "values": {
+            "type": "magique",
+            "flux": "Anima",
+            "niveau": 1,
+            "nom": "Toucher de guerison",
+            "jet_associe": "Mental + Volonte",
+            "effet": "Soin de base, purification mineure.",
+            "cout": "Volonte selon UE du sort.",
+            "actif": true
+          }
+        },
+        {
+          "id": "mag-lux-2",
+          "values": {
+            "type": "magique",
+            "flux": "Lux",
+            "niveau": 2,
+            "nom": "Voile de lumiere",
+            "jet_associe": "Mental + Volonte",
+            "effet": "Illumine, revele ou protege selon construction.",
+            "cout": "Volonte 1 a 3.",
+            "actif": true
+          }
+        },
+        {
+          "id": "mag-fulmen-2",
+          "values": {
+            "type": "magique",
+            "flux": "Fulmen",
+            "niveau": 2,
+            "nom": "Decharge disruptive",
+            "jet_associe": "Mental + Volonte",
+            "effet": "Paralysie, surchauffe implants, eclair aveuglant.",
+            "cout": "Volonte 2 a 5.",
+            "actif": true
+          }
+        },
+        {
+          "id": "mag-kairos-5",
+          "values": {
+            "type": "magique",
+            "flux": "Kairos",
+            "niveau": 5,
+            "nom": "Acceleration opportune",
+            "jet_associe": "Mental + Volonte",
+            "effet": "Action supplementaire ou initiative +30.",
+            "cout": "Volonte elevee, flux avance.",
+            "actif": true
+          }
+        },
+        {
+          "id": "mag-oculus-5",
+          "values": {
+            "type": "magique",
+            "flux": "Oculus",
+            "niveau": 5,
+            "nom": "Clairvoyance tactique",
+            "jet_associe": "Mental + Volonte",
+            "effet": "Vision a distance, revelation de mensonges et invisibles.",
+            "cout": "Volonte 3 a 5.",
+            "actif": true
+          }
+        },
+        {
+          "id": "mag-arcana-6",
+          "values": {
+            "type": "magique",
+            "flux": "Arcana",
+            "niveau": 6,
+            "nom": "Amplification pure",
+            "jet_associe": "Mental + Volonte",
+            "effet": "+10 UE gratuites, bouclier arcanique majeur.",
+            "cout": "Tres dangereux en cas d echec.",
+            "actif": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "catalog-armes",
+      "key": "armes",
+      "label": "Armes",
+      "columns": [
+        { "id": "col-a-nom", "key": "nom", "label": "Nom", "type": "text" },
+        { "id": "col-a-categorie", "key": "categorie", "label": "Categorie", "type": "text" },
+        { "id": "col-a-portee", "key": "portee", "label": "Portee", "type": "text" },
+        { "id": "col-a-carac", "key": "caracteristique_degats", "label": "Carac degats", "type": "text" },
+        { "id": "col-a-skill", "key": "competence", "label": "Competence", "type": "text" },
+        { "id": "col-a-degats", "key": "degats", "label": "Degats", "type": "text" },
+        { "id": "col-a-esquive", "key": "malus_esquive", "label": "Malus esquive", "type": "number" },
+        { "id": "col-a-notes", "key": "notes", "label": "Notes", "type": "textarea" }
+      ],
+      "entries": [
+        {
+          "id": "arme-pistolet",
+          "values": {
+            "nom": "Pistolet",
+            "categorie": "arme_de_poing",
+            "portee": "courte",
+            "caracteristique_degats": "dexterite",
+            "competence": "arme_de_poing",
+            "degats": "1d10",
+            "malus_esquive": -30,
+            "notes": "Arme legere, tire de precision a courte portee."
+          }
+        },
+        {
+          "id": "arme-fusil-assaut",
+          "values": {
+            "nom": "Fusil d assaut",
+            "categorie": "fusil_d_assaut",
+            "portee": "moyenne",
+            "caracteristique_degats": "dexterite",
+            "competence": "fusil_d_assaut",
+            "degats": "2d8",
+            "malus_esquive": -50,
+            "notes": "Rafales, usage militaire."
+          }
+        },
+        {
+          "id": "arme-fusil-longue-portee",
+          "values": {
+            "nom": "Fusil longue portee",
+            "categorie": "fusil_longue_portee",
+            "portee": "longue",
+            "caracteristique_degats": "dexterite",
+            "competence": "fusil_longue_portee",
+            "degats": "2d10",
+            "malus_esquive": -50,
+            "notes": "Precision a longue distance."
+          }
+        },
+        {
+          "id": "arme-couteau",
+          "values": {
+            "nom": "Couteau",
+            "categorie": "arme_blanche",
+            "portee": "corps_a_corps",
+            "caracteristique_degats": "dexterite",
+            "competence": "arme_blanche",
+            "degats": "1d6",
+            "malus_esquive": 0,
+            "notes": "Arme precise, facile a cacher."
+          }
+        }
+      ]
+    }
+  ],
+  "studioSchemaV2": {
+    "version": 2,
+    "views": [
+      {
+        "id": "view-earth2569-root",
+        "name": "Fiche Earth 2569",
+        "reference": "earth2569_fiche",
+        "description": "Vue racine a onglets.",
+        "gridColumns": 12,
+        "visibleInSelectors": true,
+        "isDefaultForPlayer": true,
+        "isCharacterSheet": true,
+        "characterSheetKind": "pc",
+        "defaultSheetNameTemplate": "{{nompj}}",
+        "initiativeMode": "combat_once",
+        "initiativeFormula": "@sens + @raisonnement",
+        "theme": {
+          "backgroundColor": "#1b1d24",
+          "inputBackgroundColor": "#11131a",
+          "inputTextColor": "#f5f1e8",
+          "inputBorderColor": "#4a5c68",
+          "textColor": "#f5f1e8",
+          "borderColor": "#4a5c68"
+        },
+        "nodes": [
+          {
+            "id": "node-root-tabs",
+            "type": "tabs",
+            "label": "Navigation",
+            "key": "navigation",
+            "layout": { "x": 0, "y": 0, "w": 12, "h": 10 },
+            "showTitle": false,
+            "tabs": [
+              { "id": "tab-identite", "label": "Identite", "viewId": "view-earth2569-identite" },
+              { "id": "tab-attributs", "label": "Attributs", "viewId": "view-earth2569-attributs" },
+              { "id": "tab-competences", "label": "Competences", "viewId": "view-earth2569-competences" },
+              { "id": "tab-combat", "label": "Combat", "viewId": "view-earth2569-combat" },
+              { "id": "tab-magie", "label": "Magie", "viewId": "view-earth2569-magie" },
+              { "id": "tab-aug", "label": "Augmentations", "viewId": "view-earth2569-augmentations" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "view-earth2569-identite",
+        "name": "Identite",
+        "reference": "identite",
+        "description": "Informations de base du personnage.",
+        "gridColumns": 12,
+        "visibleInSelectors": true,
+        "isDefaultForPlayer": false,
+        "isCharacterSheet": false,
+        "characterSheetKind": "pc",
+        "defaultSheetNameTemplate": "{{nompj}}",
+        "initiativeMode": "combat_once",
+        "initiativeFormula": "",
+        "theme": {},
+        "nodes": [
+          { "id": "id-nom", "type": "text", "label": "Nom du personnage", "key": "nompj", "layout": { "x": 0, "y": 0, "w": 6, "h": 2 } },
+          { "id": "id-joueur", "type": "text", "label": "Joueur", "key": "joueur", "layout": { "x": 6, "y": 0, "w": 6, "h": 2 } },
+          { "id": "id-concept", "type": "textarea", "label": "Concept", "key": "concept", "layout": { "x": 0, "y": 2, "w": 12, "h": 3 } },
+          { "id": "id-origine", "type": "text", "label": "Origine", "key": "origine", "layout": { "x": 0, "y": 5, "w": 4, "h": 2 } },
+          { "id": "id-clan", "type": "text", "label": "Clan ou faction", "key": "clan", "layout": { "x": 4, "y": 5, "w": 4, "h": 2 } },
+          { "id": "id-role", "type": "text", "label": "Role", "key": "role", "layout": { "x": 8, "y": 5, "w": 4, "h": 2 } },
+          { "id": "id-notes", "type": "textarea", "label": "Notes", "key": "notes_identite", "layout": { "x": 0, "y": 7, "w": 12, "h": 3 } }
+        ]
+      },
+      {
+        "id": "view-earth2569-attributs",
+        "name": "Attributs",
+        "reference": "attributs",
+        "description": "CarP, CarS et valeurs derivees.",
+        "gridColumns": 12,
+        "visibleInSelectors": true,
+        "isDefaultForPlayer": false,
+        "isCharacterSheet": false,
+        "characterSheetKind": "pc",
+        "defaultSheetNameTemplate": "{{nompj}}",
+        "initiativeMode": "combat_once",
+        "initiativeFormula": "",
+        "theme": {},
+        "nodes": [
+          { "id": "attr-t1", "type": "static_text", "label": "titre", "key": "titre_attributs_1", "layout": { "x": 0, "y": 0, "w": 12, "h": 1 }, "defaultValue": "Caracteristiques principales et secondaires" },
+          { "id": "attr-physique", "type": "number", "label": "Physique", "key": "physique", "layout": { "x": 0, "y": 1, "w": 2, "h": 2 }, "defaultValue": 35, "min": 0 },
+          { "id": "attr-mental", "type": "number", "label": "Mental", "key": "mental", "layout": { "x": 2, "y": 1, "w": 2, "h": 2 }, "defaultValue": 35, "min": 0 },
+          { "id": "attr-social", "type": "number", "label": "Social", "key": "social", "layout": { "x": 4, "y": 1, "w": 2, "h": 2 }, "defaultValue": 30, "min": -100 },
+          { "id": "attr-pa", "type": "number", "label": "PA", "key": "pa", "layout": { "x": 6, "y": 1, "w": 2, "h": 2 }, "defaultValue": 0, "min": 0 },
+          { "id": "attr-in-total", "type": "number", "label": "IN total", "key": "in_total", "layout": { "x": 8, "y": 1, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-in-magie", "type": "number", "label": "IN magie", "key": "in_magie", "layout": { "x": 10, "y": 1, "w": 2, "h": 2 }, "defaultValue": 0, "min": 0, "max": 6 },
+
+          { "id": "attr-force", "type": "number", "label": "Force", "key": "force", "layout": { "x": 0, "y": 3, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-agilite", "type": "number", "label": "Agilite", "key": "agilite", "layout": { "x": 2, "y": 3, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-dexterite", "type": "number", "label": "Dexterite", "key": "dexterite", "layout": { "x": 4, "y": 3, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-sens", "type": "number", "label": "Sens", "key": "sens", "layout": { "x": 6, "y": 3, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-constitution", "type": "number", "label": "Constitution", "key": "constitution", "layout": { "x": 8, "y": 3, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+
+          { "id": "attr-intelligence", "type": "number", "label": "Intelligence", "key": "intelligence", "layout": { "x": 0, "y": 5, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-memoire", "type": "number", "label": "Memoire", "key": "memoire", "layout": { "x": 2, "y": 5, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-raisonnement", "type": "number", "label": "Raisonnement", "key": "raisonnement", "layout": { "x": 4, "y": 5, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-volonte", "type": "number", "label": "Volonte", "key": "volonte", "layout": { "x": 6, "y": 5, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-creativite", "type": "number", "label": "Creativite", "key": "creativite", "layout": { "x": 8, "y": 5, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+
+          { "id": "attr-communication", "type": "number", "label": "Communication", "key": "communication", "layout": { "x": 0, "y": 7, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-persuasion", "type": "number", "label": "Persuasion", "key": "persuasion", "layout": { "x": 2, "y": 7, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-intimidation", "type": "number", "label": "Intimidation", "key": "intimidation", "layout": { "x": 4, "y": 7, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-diplomatie", "type": "number", "label": "Diplomatie", "key": "diplomatie", "layout": { "x": 6, "y": 7, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+          { "id": "attr-charme", "type": "number", "label": "Charme", "key": "charme", "layout": { "x": 8, "y": 7, "w": 2, "h": 2 }, "defaultValue": 10, "min": 0 },
+
+          { "id": "attr-reduc", "type": "number", "label": "Reduction auto", "key": "reduction_auto", "layout": { "x": 10, "y": 3, "w": 2, "h": 2 }, "formula": "floor((@physique + @constitution) / 10)" },
+          { "id": "attr-init-base", "type": "number", "label": "Base initiative", "key": "initiative_base", "layout": { "x": 10, "y": 5, "w": 2, "h": 2 }, "formula": "@sens + @raisonnement" },
+          { "id": "attr-vol-max", "type": "number", "label": "Volonte active", "key": "volonte_active", "layout": { "x": 10, "y": 7, "w": 2, "h": 2 }, "formula": "@volonte" }
+        ]
+      },
+      {
+        "id": "view-earth2569-competences",
+        "name": "Competences",
+        "reference": "competences",
+        "description": "Domaines, points, bonus d expertise et totaux.",
+        "gridColumns": 12,
+        "visibleInSelectors": true,
+        "isDefaultForPlayer": false,
+        "isCharacterSheet": false,
+        "characterSheetKind": "pc",
+        "defaultSheetNameTemplate": "{{nompj}}",
+        "initiativeMode": "combat_once",
+        "initiativeFormula": "",
+        "theme": {},
+        "nodes": [
+          { "id": "cmp-title-dom", "type": "static_text", "label": "titre", "key": "cmp_title_dom", "layout": { "x": 0, "y": 0, "w": 12, "h": 1 }, "defaultValue": "Domaines" },
+          { "id": "dom-dev-phys", "type": "number", "label": "Domaine Dev. Physique", "key": "domaine_dev_physique", "layout": { "x": 0, "y": 1, "w": 3, "h": 2 }, "defaultValue": 0 },
+          { "id": "dom-armes", "type": "number", "label": "Domaine Armes", "key": "domaine_armes", "layout": { "x": 3, "y": 1, "w": 3, "h": 2 }, "defaultValue": 0 },
+          { "id": "dom-tech", "type": "number", "label": "Domaine Technologie", "key": "domaine_technologie", "layout": { "x": 6, "y": 1, "w": 3, "h": 2 }, "defaultValue": 0 },
+          { "id": "dom-art", "type": "number", "label": "Domaine Artistique", "key": "domaine_artistique", "layout": { "x": 9, "y": 1, "w": 3, "h": 2 }, "defaultValue": 0 },
+          { "id": "dom-nature", "type": "number", "label": "Domaine Nature", "key": "domaine_nature", "layout": { "x": 0, "y": 3, "w": 3, "h": 2 }, "defaultValue": 0 },
+          { "id": "dom-deplacement", "type": "number", "label": "Domaine Deplacement", "key": "domaine_deplacement", "layout": { "x": 3, "y": 3, "w": 3, "h": 2 }, "defaultValue": 0 },
+          { "id": "dom-subterfuge", "type": "number", "label": "Domaine Subterfuge", "key": "domaine_subterfuge", "layout": { "x": 6, "y": 3, "w": 3, "h": 2 }, "defaultValue": 0 },
+          { "id": "dom-specialisee", "type": "number", "label": "Domaine Specialisee", "key": "domaine_specialisee", "layout": { "x": 9, "y": 3, "w": 3, "h": 2 }, "defaultValue": 0 },
+
+          { "id": "cmp-dev-title", "type": "static_text", "label": "titre", "key": "cmp_dev_title", "layout": { "x": 0, "y": 5, "w": 12, "h": 1 }, "defaultValue": "Developpement physique" },
+          { "id": "cmp-acrobatie", "type": "number", "label": "Acrobatie points", "key": "acrobatie_points", "layout": { "x": 0, "y": 6, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-acrobatie-bonus", "type": "number", "label": "Acrobatie bonus", "key": "acrobatie_bonus", "layout": { "x": 2, "y": 6, "w": 1, "h": 2 }, "formula": "ifGte(@acrobatie_points,40,20,ifGte(@acrobatie_points,30,15,ifGte(@acrobatie_points,20,10,ifGte(@acrobatie_points,10,5,0))))" },
+          { "id": "cmp-contorsion", "type": "number", "label": "Contorsionnisme points", "key": "contorsionnisme_points", "layout": { "x": 3, "y": 6, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-contorsion-bonus", "type": "number", "label": "Contorsion bonus", "key": "contorsionnisme_bonus", "layout": { "x": 5, "y": 6, "w": 1, "h": 2 }, "formula": "ifGte(@contorsionnisme_points,40,20,ifGte(@contorsionnisme_points,30,15,ifGte(@contorsionnisme_points,20,10,ifGte(@contorsionnisme_points,10,5,0))))" },
+          { "id": "cmp-motricite", "type": "number", "label": "Motricite points", "key": "motricite_points", "layout": { "x": 6, "y": 6, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-motricite-bonus", "type": "number", "label": "Motricite bonus", "key": "motricite_bonus", "layout": { "x": 8, "y": 6, "w": 1, "h": 2 }, "formula": "ifGte(@motricite_points,40,20,ifGte(@motricite_points,30,15,ifGte(@motricite_points,20,10,ifGte(@motricite_points,10,5,0))))" },
+          { "id": "cmp-lancee", "type": "number", "label": "Lancee points", "key": "lancee_points", "layout": { "x": 9, "y": 6, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-lancee-bonus", "type": "number", "label": "Lancee bonus", "key": "lancee_bonus", "layout": { "x": 11, "y": 6, "w": 1, "h": 2 }, "formula": "ifGte(@lancee_points,40,20,ifGte(@lancee_points,30,15,ifGte(@lancee_points,20,10,ifGte(@lancee_points,10,5,0))))" },
+          { "id": "cmp-camains", "type": "number", "label": "Combat mains nues points", "key": "combat_mains_nues_points", "layout": { "x": 0, "y": 8, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-camains-bonus", "type": "number", "label": "Combat mains nues bonus", "key": "combat_mains_nues_bonus", "layout": { "x": 2, "y": 8, "w": 1, "h": 2 }, "formula": "ifGte(@combat_mains_nues_points,40,20,ifGte(@combat_mains_nues_points,30,15,ifGte(@combat_mains_nues_points,20,10,ifGte(@combat_mains_nues_points,10,5,0))))" },
+
+          { "id": "cmp-armes-title", "type": "static_text", "label": "titre", "key": "cmp_armes_title", "layout": { "x": 0, "y": 10, "w": 12, "h": 1 }, "defaultValue": "Armes" },
+          { "id": "cmp-armedepoing", "type": "number", "label": "Arme de poing points", "key": "arme_de_poing_points", "layout": { "x": 0, "y": 11, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-armedepoing-bonus", "type": "number", "label": "Arme de poing bonus", "key": "arme_de_poing_bonus", "layout": { "x": 2, "y": 11, "w": 1, "h": 2 }, "formula": "ifGte(@arme_de_poing_points,40,20,ifGte(@arme_de_poing_points,30,15,ifGte(@arme_de_poing_points,20,10,ifGte(@arme_de_poing_points,10,5,0))))" },
+          { "id": "cmp-fa", "type": "number", "label": "Fusil d assaut points", "key": "fusil_d_assaut_points", "layout": { "x": 3, "y": 11, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-fa-bonus", "type": "number", "label": "Fusil d assaut bonus", "key": "fusil_d_assaut_bonus", "layout": { "x": 5, "y": 11, "w": 1, "h": 2 }, "formula": "ifGte(@fusil_d_assaut_points,40,20,ifGte(@fusil_d_assaut_points,30,15,ifGte(@fusil_d_assaut_points,20,10,ifGte(@fusil_d_assaut_points,10,5,0))))" },
+          { "id": "cmp-flp", "type": "number", "label": "Fusil longue portee points", "key": "fusil_longue_portee_points", "layout": { "x": 6, "y": 11, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-flp-bonus", "type": "number", "label": "Fusil longue portee bonus", "key": "fusil_longue_portee_bonus", "layout": { "x": 8, "y": 11, "w": 1, "h": 2 }, "formula": "ifGte(@fusil_longue_portee_points,40,20,ifGte(@fusil_longue_portee_points,30,15,ifGte(@fusil_longue_portee_points,20,10,ifGte(@fusil_longue_portee_points,10,5,0))))" },
+          { "id": "cmp-fapompe", "type": "number", "label": "Fusil a pompe points", "key": "fusil_a_pompe_points", "layout": { "x": 9, "y": 11, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-fapompe-bonus", "type": "number", "label": "Fusil a pompe bonus", "key": "fusil_a_pompe_bonus", "layout": { "x": 11, "y": 11, "w": 1, "h": 2 }, "formula": "ifGte(@fusil_a_pompe_points,40,20,ifGte(@fusil_a_pompe_points,30,15,ifGte(@fusil_a_pompe_points,20,10,ifGte(@fusil_a_pompe_points,10,5,0))))" },
+          { "id": "cmp-ab", "type": "number", "label": "Arme blanche points", "key": "arme_blanche_points", "layout": { "x": 0, "y": 13, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-ab-bonus", "type": "number", "label": "Arme blanche bonus", "key": "arme_blanche_bonus", "layout": { "x": 2, "y": 13, "w": 1, "h": 2 }, "formula": "ifGte(@arme_blanche_points,40,20,ifGte(@arme_blanche_points,30,15,ifGte(@arme_blanche_points,20,10,ifGte(@arme_blanche_points,10,5,0))))" },
+          { "id": "cmp-adt", "type": "number", "label": "Arme de trait points", "key": "arme_de_trait_points", "layout": { "x": 3, "y": 13, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-adt-bonus", "type": "number", "label": "Arme de trait bonus", "key": "arme_de_trait_bonus", "layout": { "x": 5, "y": 13, "w": 1, "h": 2 }, "formula": "ifGte(@arme_de_trait_points,40,20,ifGte(@arme_de_trait_points,30,15,ifGte(@arme_de_trait_points,20,10,ifGte(@arme_de_trait_points,10,5,0))))" },
+
+          { "id": "cmp-tech-title", "type": "static_text", "label": "titre", "key": "cmp_tech_title", "layout": { "x": 0, "y": 15, "w": 12, "h": 1 }, "defaultValue": "Technologie" },
+          { "id": "cmp-cyber", "type": "number", "label": "Cybernetique points", "key": "cybernetique_points", "layout": { "x": 0, "y": 16, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-cyber-bonus", "type": "number", "label": "Cybernetique bonus", "key": "cybernetique_bonus", "layout": { "x": 2, "y": 16, "w": 1, "h": 2 }, "formula": "ifGte(@cybernetique_points,40,20,ifGte(@cybernetique_points,30,15,ifGte(@cybernetique_points,20,10,ifGte(@cybernetique_points,10,5,0))))" },
+          { "id": "cmp-info", "type": "number", "label": "Informatique points", "key": "informatique_points", "layout": { "x": 3, "y": 16, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-info-bonus", "type": "number", "label": "Informatique bonus", "key": "informatique_bonus", "layout": { "x": 5, "y": 16, "w": 1, "h": 2 }, "formula": "ifGte(@informatique_points,40,20,ifGte(@informatique_points,30,15,ifGte(@informatique_points,20,10,ifGte(@informatique_points,10,5,0))))" },
+          { "id": "cmp-elec", "type": "number", "label": "Electronique points", "key": "electronique_points", "layout": { "x": 6, "y": 16, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-elec-bonus", "type": "number", "label": "Electronique bonus", "key": "electronique_bonus", "layout": { "x": 8, "y": 16, "w": 1, "h": 2 }, "formula": "ifGte(@electronique_points,40,20,ifGte(@electronique_points,30,15,ifGte(@electronique_points,20,10,ifGte(@electronique_points,10,5,0))))" },
+          { "id": "cmp-meca", "type": "number", "label": "Mecanique points", "key": "mecanique_points", "layout": { "x": 9, "y": 16, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-meca-bonus", "type": "number", "label": "Mecanique bonus", "key": "mecanique_bonus", "layout": { "x": 11, "y": 16, "w": 1, "h": 2 }, "formula": "ifGte(@mecanique_points,40,20,ifGte(@mecanique_points,30,15,ifGte(@mecanique_points,20,10,ifGte(@mecanique_points,10,5,0))))" },
+          { "id": "cmp-gcivil", "type": "number", "label": "Genie civil points", "key": "genie_civil_points", "layout": { "x": 0, "y": 18, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-gcivil-bonus", "type": "number", "label": "Genie civil bonus", "key": "genie_civil_bonus", "layout": { "x": 2, "y": 18, "w": 1, "h": 2 }, "formula": "ifGte(@genie_civil_points,40,20,ifGte(@genie_civil_points,30,15,ifGte(@genie_civil_points,20,10,ifGte(@genie_civil_points,10,5,0))))" },
+          { "id": "cmp-telecom", "type": "number", "label": "Telecom points", "key": "telecom_points", "layout": { "x": 3, "y": 18, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-telecom-bonus", "type": "number", "label": "Telecom bonus", "key": "telecom_bonus", "layout": { "x": 5, "y": 18, "w": 1, "h": 2 }, "formula": "ifGte(@telecom_points,40,20,ifGte(@telecom_points,30,15,ifGte(@telecom_points,20,10,ifGte(@telecom_points,10,5,0))))" },
+
+          { "id": "cmp-art-title", "type": "static_text", "label": "titre", "key": "cmp_art_title", "layout": { "x": 0, "y": 20, "w": 12, "h": 1 }, "defaultValue": "Artistique" },
+          { "id": "cmp-dessin", "type": "number", "label": "Dessin/Peinture points", "key": "dessin_peinture_points", "layout": { "x": 0, "y": 21, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-dessin-bonus", "type": "number", "label": "Dessin/Peinture bonus", "key": "dessin_peinture_bonus", "layout": { "x": 2, "y": 21, "w": 1, "h": 2 }, "formula": "ifGte(@dessin_peinture_points,40,20,ifGte(@dessin_peinture_points,30,15,ifGte(@dessin_peinture_points,20,10,ifGte(@dessin_peinture_points,10,5,0))))" },
+          { "id": "cmp-theatre", "type": "number", "label": "Theatre points", "key": "theatre_points", "layout": { "x": 3, "y": 21, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-theatre-bonus", "type": "number", "label": "Theatre bonus", "key": "theatre_bonus", "layout": { "x": 5, "y": 21, "w": 1, "h": 2 }, "formula": "ifGte(@theatre_points,40,20,ifGte(@theatre_points,30,15,ifGte(@theatre_points,20,10,ifGte(@theatre_points,10,5,0))))" },
+          { "id": "cmp-musique", "type": "number", "label": "Musique points", "key": "musique_points", "layout": { "x": 6, "y": 21, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-musique-bonus", "type": "number", "label": "Musique bonus", "key": "musique_bonus", "layout": { "x": 8, "y": 21, "w": 1, "h": 2 }, "formula": "ifGte(@musique_points,40,20,ifGte(@musique_points,30,15,ifGte(@musique_points,20,10,ifGte(@musique_points,10,5,0))))" },
+          { "id": "cmp-ecriture", "type": "number", "label": "Ecriture points", "key": "ecriture_points", "layout": { "x": 9, "y": 21, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-ecriture-bonus", "type": "number", "label": "Ecriture bonus", "key": "ecriture_bonus", "layout": { "x": 11, "y": 21, "w": 1, "h": 2 }, "formula": "ifGte(@ecriture_points,40,20,ifGte(@ecriture_points,30,15,ifGte(@ecriture_points,20,10,ifGte(@ecriture_points,10,5,0))))" },
+          { "id": "cmp-sculpture", "type": "number", "label": "Sculpture points", "key": "sculpture_points", "layout": { "x": 0, "y": 23, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-sculpture-bonus", "type": "number", "label": "Sculpture bonus", "key": "sculpture_bonus", "layout": { "x": 2, "y": 23, "w": 1, "h": 2 }, "formula": "ifGte(@sculpture_points,40,20,ifGte(@sculpture_points,30,15,ifGte(@sculpture_points,20,10,ifGte(@sculpture_points,10,5,0))))" },
+
+          { "id": "cmp-nature-title", "type": "static_text", "label": "titre", "key": "cmp_nature_title", "layout": { "x": 0, "y": 25, "w": 12, "h": 1 }, "defaultValue": "Nature" },
+          { "id": "cmp-survie", "type": "number", "label": "Survie points", "key": "survie_points", "layout": { "x": 0, "y": 26, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-survie-bonus", "type": "number", "label": "Survie bonus", "key": "survie_bonus", "layout": { "x": 2, "y": 26, "w": 1, "h": 2 }, "formula": "ifGte(@survie_points,40,20,ifGte(@survie_points,30,15,ifGte(@survie_points,20,10,ifGte(@survie_points,10,5,0))))" },
+          { "id": "cmp-botanique", "type": "number", "label": "Botanique points", "key": "botanique_points", "layout": { "x": 3, "y": 26, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-botanique-bonus", "type": "number", "label": "Botanique bonus", "key": "botanique_bonus", "layout": { "x": 5, "y": 26, "w": 1, "h": 2 }, "formula": "ifGte(@botanique_points,40,20,ifGte(@botanique_points,30,15,ifGte(@botanique_points,20,10,ifGte(@botanique_points,10,5,0))))" },
+          { "id": "cmp-zoologie", "type": "number", "label": "Zoologie points", "key": "zoologie_points", "layout": { "x": 6, "y": 26, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-zoologie-bonus", "type": "number", "label": "Zoologie bonus", "key": "zoologie_bonus", "layout": { "x": 8, "y": 26, "w": 1, "h": 2 }, "formula": "ifGte(@zoologie_points,40,20,ifGte(@zoologie_points,30,15,ifGte(@zoologie_points,20,10,ifGte(@zoologie_points,10,5,0))))" },
+          { "id": "cmp-pistage", "type": "number", "label": "Pistage points", "key": "pistage_points", "layout": { "x": 9, "y": 26, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-pistage-bonus", "type": "number", "label": "Pistage bonus", "key": "pistage_bonus", "layout": { "x": 11, "y": 26, "w": 1, "h": 2 }, "formula": "ifGte(@pistage_points,40,20,ifGte(@pistage_points,30,15,ifGte(@pistage_points,20,10,ifGte(@pistage_points,10,5,0))))" },
+          { "id": "cmp-thostiles", "type": "number", "label": "Terrains hostiles points", "key": "terrains_hostiles_points", "layout": { "x": 0, "y": 28, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-thostiles-bonus", "type": "number", "label": "Terrains hostiles bonus", "key": "terrains_hostiles_bonus", "layout": { "x": 2, "y": 28, "w": 1, "h": 2 }, "formula": "ifGte(@terrains_hostiles_points,40,20,ifGte(@terrains_hostiles_points,30,15,ifGte(@terrains_hostiles_points,20,10,ifGte(@terrains_hostiles_points,10,5,0))))" },
+
+          { "id": "cmp-depl-title", "type": "static_text", "label": "titre", "key": "cmp_depl_title", "layout": { "x": 0, "y": 30, "w": 12, "h": 1 }, "defaultValue": "Deplacement" },
+          { "id": "cmp-conduite", "type": "number", "label": "Conduite points", "key": "conduite_points", "layout": { "x": 0, "y": 31, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-conduite-bonus", "type": "number", "label": "Conduite bonus", "key": "conduite_bonus", "layout": { "x": 2, "y": 31, "w": 1, "h": 2 }, "formula": "ifGte(@conduite_points,40,20,ifGte(@conduite_points,30,15,ifGte(@conduite_points,20,10,ifGte(@conduite_points,10,5,0))))" },
+          { "id": "cmp-pilotage", "type": "number", "label": "Pilotage points", "key": "pilotage_points", "layout": { "x": 3, "y": 31, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-pilotage-bonus", "type": "number", "label": "Pilotage bonus", "key": "pilotage_bonus", "layout": { "x": 5, "y": 31, "w": 1, "h": 2 }, "formula": "ifGte(@pilotage_points,40,20,ifGte(@pilotage_points,30,15,ifGte(@pilotage_points,20,10,ifGte(@pilotage_points,10,5,0))))" },
+          { "id": "cmp-navigation", "type": "number", "label": "Navigation points", "key": "navigation_points", "layout": { "x": 6, "y": 31, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-navigation-bonus", "type": "number", "label": "Navigation bonus", "key": "navigation_bonus", "layout": { "x": 8, "y": 31, "w": 1, "h": 2 }, "formula": "ifGte(@navigation_points,40,20,ifGte(@navigation_points,30,15,ifGte(@navigation_points,20,10,ifGte(@navigation_points,10,5,0))))" },
+          { "id": "cmp-equitation", "type": "number", "label": "Equitation points", "key": "equitation_points", "layout": { "x": 9, "y": 31, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-equitation-bonus", "type": "number", "label": "Equitation bonus", "key": "equitation_bonus", "layout": { "x": 11, "y": 31, "w": 1, "h": 2 }, "formula": "ifGte(@equitation_points,40,20,ifGte(@equitation_points,30,15,ifGte(@equitation_points,20,10,ifGte(@equitation_points,10,5,0))))" },
+
+          { "id": "cmp-sub-title", "type": "static_text", "label": "titre", "key": "cmp_sub_title", "layout": { "x": 0, "y": 33, "w": 12, "h": 1 }, "defaultValue": "Subterfuge" },
+          { "id": "cmp-discretion", "type": "number", "label": "Discretion points", "key": "discretion_points", "layout": { "x": 0, "y": 34, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-discretion-bonus", "type": "number", "label": "Discretion bonus", "key": "discretion_bonus", "layout": { "x": 2, "y": 34, "w": 1, "h": 2 }, "formula": "ifGte(@discretion_points,40,20,ifGte(@discretion_points,30,15,ifGte(@discretion_points,20,10,ifGte(@discretion_points,10,5,0))))" },
+          { "id": "cmp-deguisement", "type": "number", "label": "Deguisement points", "key": "deguisement_points", "layout": { "x": 3, "y": 34, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-deguisement-bonus", "type": "number", "label": "Deguisement bonus", "key": "deguisement_bonus", "layout": { "x": 5, "y": 34, "w": 1, "h": 2 }, "formula": "ifGte(@deguisement_points,40,20,ifGte(@deguisement_points,30,15,ifGte(@deguisement_points,20,10,ifGte(@deguisement_points,10,5,0))))" },
+          { "id": "cmp-pickpocket", "type": "number", "label": "Pickpocket points", "key": "pickpocket_points", "layout": { "x": 6, "y": 34, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-pickpocket-bonus", "type": "number", "label": "Pickpocket bonus", "key": "pickpocket_bonus", "layout": { "x": 8, "y": 34, "w": 1, "h": 2 }, "formula": "ifGte(@pickpocket_points,40,20,ifGte(@pickpocket_points,30,15,ifGte(@pickpocket_points,20,10,ifGte(@pickpocket_points,10,5,0))))" },
+          { "id": "cmp-dissimulation", "type": "number", "label": "Dissimulation points", "key": "dissimulation_points", "layout": { "x": 9, "y": 34, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-dissimulation-bonus", "type": "number", "label": "Dissimulation bonus", "key": "dissimulation_bonus", "layout": { "x": 11, "y": 34, "w": 1, "h": 2 }, "formula": "ifGte(@dissimulation_points,40,20,ifGte(@dissimulation_points,30,15,ifGte(@dissimulation_points,20,10,ifGte(@dissimulation_points,10,5,0))))" },
+          { "id": "cmp-crochetage", "type": "number", "label": "Crochetage points", "key": "crochetage_points", "layout": { "x": 0, "y": 36, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-crochetage-bonus", "type": "number", "label": "Crochetage bonus", "key": "crochetage_bonus", "layout": { "x": 2, "y": 36, "w": 1, "h": 2 }, "formula": "ifGte(@crochetage_points,40,20,ifGte(@crochetage_points,30,15,ifGte(@crochetage_points,20,10,ifGte(@crochetage_points,10,5,0))))" },
+
+          { "id": "cmp-spe-title", "type": "static_text", "label": "titre", "key": "cmp_spe_title", "layout": { "x": 0, "y": 38, "w": 12, "h": 1 }, "defaultValue": "Connaissance specialisee" },
+          { "id": "cmp-medecine", "type": "number", "label": "Medecine points", "key": "medecine_points", "layout": { "x": 0, "y": 39, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-medecine-bonus", "type": "number", "label": "Medecine bonus", "key": "medecine_bonus", "layout": { "x": 2, "y": 39, "w": 1, "h": 2 }, "formula": "ifGte(@medecine_points,40,20,ifGte(@medecine_points,30,15,ifGte(@medecine_points,20,10,ifGte(@medecine_points,10,5,0))))" },
+          { "id": "cmp-genomique", "type": "number", "label": "Genomique points", "key": "genomique_points", "layout": { "x": 3, "y": 39, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-genomique-bonus", "type": "number", "label": "Genomique bonus", "key": "genomique_bonus", "layout": { "x": 5, "y": 39, "w": 1, "h": 2 }, "formula": "ifGte(@genomique_points,40,20,ifGte(@genomique_points,30,15,ifGte(@genomique_points,20,10,ifGte(@genomique_points,10,5,0))))" },
+          { "id": "cmp-analyse", "type": "number", "label": "Analyse points", "key": "analyse_points", "layout": { "x": 6, "y": 39, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-analyse-bonus", "type": "number", "label": "Analyse bonus", "key": "analyse_bonus", "layout": { "x": 8, "y": 39, "w": 1, "h": 2 }, "formula": "ifGte(@analyse_points,40,20,ifGte(@analyse_points,30,15,ifGte(@analyse_points,20,10,ifGte(@analyse_points,10,5,0))))" },
+          { "id": "cmp-chimie", "type": "number", "label": "Chimie points", "key": "chimie_points", "layout": { "x": 9, "y": 39, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-chimie-bonus", "type": "number", "label": "Chimie bonus", "key": "chimie_bonus", "layout": { "x": 11, "y": 39, "w": 1, "h": 2 }, "formula": "ifGte(@chimie_points,40,20,ifGte(@chimie_points,30,15,ifGte(@chimie_points,20,10,ifGte(@chimie_points,10,5,0))))" },
+          { "id": "cmp-consortium", "type": "number", "label": "Consortium points", "key": "consortium_points", "layout": { "x": 0, "y": 41, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-consortium-bonus", "type": "number", "label": "Consortium bonus", "key": "consortium_bonus", "layout": { "x": 2, "y": 41, "w": 1, "h": 2 }, "formula": "ifGte(@consortium_points,40,20,ifGte(@consortium_points,30,15,ifGte(@consortium_points,20,10,ifGte(@consortium_points,10,5,0))))" },
+          { "id": "cmp-orga", "type": "number", "label": "Organisation tribale points", "key": "organisation_tribale_points", "layout": { "x": 3, "y": 41, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmp-orga-bonus", "type": "number", "label": "Organisation tribale bonus", "key": "organisation_tribale_bonus", "layout": { "x": 5, "y": 41, "w": 1, "h": 2 }, "formula": "ifGte(@organisation_tribale_points,40,20,ifGte(@organisation_tribale_points,30,15,ifGte(@organisation_tribale_points,20,10,ifGte(@organisation_tribale_points,10,5,0))))" }
+        ]
+      },
+      {
+        "id": "view-earth2569-combat",
+        "name": "Combat",
+        "reference": "combat",
+        "description": "Initiative, mouvements, attaque, esquive et reduction.",
+        "gridColumns": 12,
+        "visibleInSelectors": true,
+        "isDefaultForPlayer": false,
+        "isCharacterSheet": false,
+        "characterSheetKind": "pc",
+        "defaultSheetNameTemplate": "{{nompj}}",
+        "initiativeMode": "combat_once",
+        "initiativeFormula": "@sens + @raisonnement",
+        "theme": {},
+        "nodes": [
+          { "id": "cmb-title-1", "type": "static_text", "label": "titre", "key": "cmb_title_1", "layout": { "x": 0, "y": 0, "w": 12, "h": 1 }, "defaultValue": "Combat et resolution d100" },
+          { "id": "cmb-init-d100", "type": "number", "label": "Initiative d100 manuel", "key": "initiative_d100", "layout": { "x": 0, "y": 1, "w": 2, "h": 2 }, "defaultValue": 50, "min": 1, "max": 100 },
+          { "id": "cmb-init-finale", "type": "number", "label": "Initiative finale", "key": "initiative_finale", "layout": { "x": 2, "y": 1, "w": 2, "h": 2 }, "formula": "(@sens + @raisonnement) - @initiative_d100" },
+          { "id": "cmb-init-roll", "type": "button", "label": "Lancer initiative", "key": "initiative_roll_button", "layout": { "x": 4, "y": 1, "w": 2, "h": 2 }, "defaultValue": "Lancer 1d100 - base init", "buttonAction": "lancer_jet", "buttonRollFormula": "1d100 - (@sens + @raisonnement)" },
+          { "id": "cmb-depl-simple", "type": "number", "label": "Deplacement simple", "key": "deplacement_simple", "layout": { "x": 6, "y": 1, "w": 2, "h": 2 }, "formula": "floor((@pa + @agilite + @domaine_dev_physique + @motricite_bonus) / 20)" },
+          { "id": "cmb-depl-etendu", "type": "number", "label": "Deplacement etendu", "key": "deplacement_etendu", "layout": { "x": 8, "y": 1, "w": 2, "h": 2 }, "formula": "floor((@pa + @agilite + @domaine_dev_physique + @motricite_bonus) / 5)" },
+          { "id": "cmb-reduc", "type": "number", "label": "Reduction auto", "key": "combat_reduction_auto", "layout": { "x": 10, "y": 1, "w": 2, "h": 2 }, "formula": "floor((@physique + @constitution) / 10)" },
+
+          { "id": "cmb-title-builder", "type": "static_text", "label": "titre", "key": "cmb_title_builder", "layout": { "x": 0, "y": 3, "w": 12, "h": 1 }, "defaultValue": "Preparateur de jet" },
+          {
+            "id": "cmb-carp-ref",
+            "type": "select",
+            "label": "CarP",
+            "key": "jet_carp_ref",
+            "layout": { "x": 0, "y": 4, "w": 3, "h": 2 },
+            "defaultValue": "1",
+            "options": ["1 => Physique", "2 => Mental", "3 => Social"]
+          },
+          {
+            "id": "cmb-cars-ref",
+            "type": "select",
+            "label": "CarS",
+            "key": "jet_cars_ref",
+            "layout": { "x": 3, "y": 4, "w": 3, "h": 2 },
+            "defaultValue": "3",
+            "options": [
+              "1 => Force",
+              "2 => Agilite",
+              "3 => Dexterite",
+              "4 => Sens",
+              "5 => Constitution",
+              "6 => Intelligence",
+              "7 => Memoire",
+              "8 => Raisonnement",
+              "9 => Volonte",
+              "10 => Creativite",
+              "11 => Communication",
+              "12 => Persuasion",
+              "13 => Intimidation",
+              "14 => Diplomatie",
+              "15 => Charme"
+            ]
+          },
+          {
+            "id": "cmb-dom-ref",
+            "type": "select",
+            "label": "Domaine",
+            "key": "jet_domaine_ref",
+            "layout": { "x": 6, "y": 4, "w": 3, "h": 2 },
+            "defaultValue": "2",
+            "options": [
+              "1 => Dev. Physique",
+              "2 => Armes",
+              "3 => Technologie",
+              "4 => Artistique",
+              "5 => Nature",
+              "6 => Deplacement",
+              "7 => Subterfuge",
+              "8 => Specialisee"
+            ]
+          },
+          {
+            "id": "cmb-skill-ref",
+            "type": "select",
+            "label": "Competence",
+            "key": "jet_skill_ref",
+            "layout": { "x": 9, "y": 4, "w": 3, "h": 2 },
+            "defaultValue": "6",
+            "options": [
+              "1 => Acrobatie",
+              "2 => Contorsionnisme",
+              "3 => Motricite",
+              "4 => Lancee",
+              "5 => Combat mains nues",
+              "6 => Arme de poing",
+              "7 => Fusil d assaut",
+              "8 => Fusil longue portee",
+              "9 => Fusil a pompe",
+              "10 => Arme blanche",
+              "11 => Arme de trait",
+              "12 => Cybernetique",
+              "13 => Informatique",
+              "14 => Electronique",
+              "15 => Mecanique",
+              "16 => Genie civil",
+              "17 => Telecom",
+              "18 => Dessin/Peinture",
+              "19 => Theatre",
+              "20 => Musique",
+              "21 => Ecriture",
+              "22 => Sculpture",
+              "23 => Survie",
+              "24 => Botanique",
+              "25 => Zoologie",
+              "26 => Pistage",
+              "27 => Terrains hostiles",
+              "28 => Conduite",
+              "29 => Pilotage",
+              "30 => Navigation",
+              "31 => Equitation",
+              "32 => Discretion",
+              "33 => Deguisement",
+              "34 => Pickpocket",
+              "35 => Dissimulation",
+              "36 => Crochetage",
+              "37 => Medecine",
+              "38 => Genomique",
+              "39 => Analyse",
+              "40 => Chimie",
+              "41 => Consortium",
+              "42 => Organisation tribale"
+            ]
+          },
+
+          { "id": "cmb-carp-val", "type": "number", "label": "Valeur CarP", "key": "jet_carp_valeur", "layout": { "x": 0, "y": 6, "w": 2, "h": 2 }, "formula": "ifEq(@jet_carp_ref,1,@physique,ifEq(@jet_carp_ref,2,@mental,@social))" },
+          { "id": "cmb-cars-val", "type": "number", "label": "Valeur CarS", "key": "jet_cars_valeur", "layout": { "x": 2, "y": 6, "w": 2, "h": 2 }, "formula": "ifEq(@jet_cars_ref,1,@force,ifEq(@jet_cars_ref,2,@agilite,ifEq(@jet_cars_ref,3,@dexterite,ifEq(@jet_cars_ref,4,@sens,ifEq(@jet_cars_ref,5,@constitution,ifEq(@jet_cars_ref,6,@intelligence,ifEq(@jet_cars_ref,7,@memoire,ifEq(@jet_cars_ref,8,@raisonnement,ifEq(@jet_cars_ref,9,@volonte,ifEq(@jet_cars_ref,10,@creativite,ifEq(@jet_cars_ref,11,@communication,ifEq(@jet_cars_ref,12,@persuasion,ifEq(@jet_cars_ref,13,@intimidation,ifEq(@jet_cars_ref,14,@diplomatie,@charme))))))))))))))" },
+          { "id": "cmb-dom-val", "type": "number", "label": "Bonus domaine", "key": "jet_domaine_valeur", "layout": { "x": 4, "y": 6, "w": 2, "h": 2 }, "formula": "ifEq(@jet_domaine_ref,1,@domaine_dev_physique,ifEq(@jet_domaine_ref,2,@domaine_armes,ifEq(@jet_domaine_ref,3,@domaine_technologie,ifEq(@jet_domaine_ref,4,@domaine_artistique,ifEq(@jet_domaine_ref,5,@domaine_nature,ifEq(@jet_domaine_ref,6,@domaine_deplacement,ifEq(@jet_domaine_ref,7,@domaine_subterfuge,@domaine_specialisee)))))))" },
+          { "id": "cmb-skill-bonus", "type": "number", "label": "Bonus competence", "key": "jet_skill_valeur", "layout": { "x": 6, "y": 6, "w": 2, "h": 2 }, "formula": "ifEq(@jet_skill_ref,1,@acrobatie_bonus,ifEq(@jet_skill_ref,2,@contorsionnisme_bonus,ifEq(@jet_skill_ref,3,@motricite_bonus,ifEq(@jet_skill_ref,4,@lancee_bonus,ifEq(@jet_skill_ref,5,@combat_mains_nues_bonus,ifEq(@jet_skill_ref,6,@arme_de_poing_bonus,ifEq(@jet_skill_ref,7,@fusil_d_assaut_bonus,ifEq(@jet_skill_ref,8,@fusil_longue_portee_bonus,ifEq(@jet_skill_ref,9,@fusil_a_pompe_bonus,ifEq(@jet_skill_ref,10,@arme_blanche_bonus,ifEq(@jet_skill_ref,11,@arme_de_trait_bonus,ifEq(@jet_skill_ref,12,@cybernetique_bonus,ifEq(@jet_skill_ref,13,@informatique_bonus,ifEq(@jet_skill_ref,14,@electronique_bonus,ifEq(@jet_skill_ref,15,@mecanique_bonus,ifEq(@jet_skill_ref,16,@genie_civil_bonus,ifEq(@jet_skill_ref,17,@telecom_bonus,ifEq(@jet_skill_ref,18,@dessin_peinture_bonus,ifEq(@jet_skill_ref,19,@theatre_bonus,ifEq(@jet_skill_ref,20,@musique_bonus,ifEq(@jet_skill_ref,21,@ecriture_bonus,ifEq(@jet_skill_ref,22,@sculpture_bonus,ifEq(@jet_skill_ref,23,@survie_bonus,ifEq(@jet_skill_ref,24,@botanique_bonus,ifEq(@jet_skill_ref,25,@zoologie_bonus,ifEq(@jet_skill_ref,26,@pistage_bonus,ifEq(@jet_skill_ref,27,@terrains_hostiles_bonus,ifEq(@jet_skill_ref,28,@conduite_bonus,ifEq(@jet_skill_ref,29,@pilotage_bonus,ifEq(@jet_skill_ref,30,@navigation_bonus,ifEq(@jet_skill_ref,31,@equitation_bonus,ifEq(@jet_skill_ref,32,@discretion_bonus,ifEq(@jet_skill_ref,33,@deguisement_bonus,ifEq(@jet_skill_ref,34,@pickpocket_bonus,ifEq(@jet_skill_ref,35,@dissimulation_bonus,ifEq(@jet_skill_ref,36,@crochetage_bonus,ifEq(@jet_skill_ref,37,@medecine_bonus,ifEq(@jet_skill_ref,38,@genomique_bonus,ifEq(@jet_skill_ref,39,@analyse_bonus,ifEq(@jet_skill_ref,40,@chimie_bonus,ifEq(@jet_skill_ref,41,@consortium_bonus,@organisation_tribale_bonus)))))))))))))))))))))))))))))))))))))))))))))" },
+          { "id": "cmb-skill-points", "type": "number", "label": "Points competence", "key": "jet_skill_points", "layout": { "x": 8, "y": 6, "w": 2, "h": 2 }, "formula": "ifEq(@jet_skill_ref,1,@acrobatie_points,ifEq(@jet_skill_ref,2,@contorsionnisme_points,ifEq(@jet_skill_ref,3,@motricite_points,ifEq(@jet_skill_ref,4,@lancee_points,ifEq(@jet_skill_ref,5,@combat_mains_nues_points,ifEq(@jet_skill_ref,6,@arme_de_poing_points,ifEq(@jet_skill_ref,7,@fusil_d_assaut_points,ifEq(@jet_skill_ref,8,@fusil_longue_portee_points,ifEq(@jet_skill_ref,9,@fusil_a_pompe_points,ifEq(@jet_skill_ref,10,@arme_blanche_points,ifEq(@jet_skill_ref,11,@arme_de_trait_points,ifEq(@jet_skill_ref,12,@cybernetique_points,ifEq(@jet_skill_ref,13,@informatique_points,ifEq(@jet_skill_ref,14,@electronique_points,ifEq(@jet_skill_ref,15,@mecanique_points,ifEq(@jet_skill_ref,16,@genie_civil_points,ifEq(@jet_skill_ref,17,@telecom_points,ifEq(@jet_skill_ref,18,@dessin_peinture_points,ifEq(@jet_skill_ref,19,@theatre_points,ifEq(@jet_skill_ref,20,@musique_points,ifEq(@jet_skill_ref,21,@ecriture_points,ifEq(@jet_skill_ref,22,@sculpture_points,ifEq(@jet_skill_ref,23,@survie_points,ifEq(@jet_skill_ref,24,@botanique_points,ifEq(@jet_skill_ref,25,@zoologie_points,ifEq(@jet_skill_ref,26,@pistage_points,ifEq(@jet_skill_ref,27,@terrains_hostiles_points,ifEq(@jet_skill_ref,28,@conduite_points,ifEq(@jet_skill_ref,29,@pilotage_points,ifEq(@jet_skill_ref,30,@navigation_points,ifEq(@jet_skill_ref,31,@equitation_points,ifEq(@jet_skill_ref,32,@discretion_points,ifEq(@jet_skill_ref,33,@deguisement_points,ifEq(@jet_skill_ref,34,@pickpocket_points,ifEq(@jet_skill_ref,35,@dissimulation_points,ifEq(@jet_skill_ref,36,@crochetage_points,ifEq(@jet_skill_ref,37,@medecine_points,ifEq(@jet_skill_ref,38,@genomique_points,ifEq(@jet_skill_ref,39,@analyse_points,ifEq(@jet_skill_ref,40,@chimie_points,ifEq(@jet_skill_ref,41,@consortium_points,@organisation_tribale_points)))))))))))))))))))))))))))))))))))))))))))))" },
+          { "id": "cmb-modif", "type": "number", "label": "Modificateur de scene", "key": "jet_modificateur_scene", "layout": { "x": 10, "y": 6, "w": 2, "h": 2 }, "defaultValue": 0 },
+
+          { "id": "cmb-capacite", "type": "number", "label": "Capacite totale", "key": "jet_capacite", "layout": { "x": 0, "y": 8, "w": 2, "h": 2 }, "formula": "@jet_carp_valeur + @jet_cars_valeur + @jet_domaine_valeur + @jet_skill_valeur + @jet_modificateur_scene" },
+          { "id": "cmb-crit-success", "type": "number", "label": "Critique reussite max", "key": "jet_crit_success_max", "layout": { "x": 2, "y": 8, "w": 2, "h": 2 }, "formula": "ifGte(@jet_skill_points,40,5,ifGte(@jet_skill_points,30,4,ifGte(@jet_skill_points,20,3,ifGte(@jet_skill_points,10,2,1))))" },
+          { "id": "cmb-crit-fail", "type": "number", "label": "Critique echec min", "key": "jet_crit_fail_min", "layout": { "x": 4, "y": 8, "w": 2, "h": 2 }, "formula": "ifGte(@jet_skill_points,40,100,ifGte(@jet_skill_points,30,99,ifGte(@jet_skill_points,20,98,ifGte(@jet_skill_points,10,97,96))))" },
+          { "id": "cmb-d100", "type": "number", "label": "d100 manuel", "key": "jet_d100_manuel", "layout": { "x": 6, "y": 8, "w": 2, "h": 2 }, "defaultValue": 50, "min": 1, "max": 100 },
+          { "id": "cmb-marge", "type": "number", "label": "Marge", "key": "jet_marge_manuelle", "layout": { "x": 8, "y": 8, "w": 2, "h": 2 }, "formula": "@jet_capacite - @jet_d100_manuel" },
+          { "id": "cmb-degres", "type": "number", "label": "Tranches de reussite", "key": "jet_tranches_reussite", "layout": { "x": 10, "y": 8, "w": 2, "h": 2 }, "formula": "max(0, floor((@jet_capacite - @jet_d100_manuel) / 10))" },
+
+          { "id": "cmb-success-text", "type": "static_text", "label": "Succes", "key": "jet_success_text", "layout": { "x": 0, "y": 10, "w": 3, "h": 1 }, "defaultValue": "Resultat : reussite", "showIf": "@jet_marge_manuelle >= 0" },
+          { "id": "cmb-fail-text", "type": "static_text", "label": "Echec", "key": "jet_fail_text", "layout": { "x": 0, "y": 10, "w": 3, "h": 1 }, "defaultValue": "Resultat : echec", "showIf": "@jet_marge_manuelle < 0" },
+          { "id": "cmb-crit-ok", "type": "static_text", "label": "Crit OK", "key": "jet_crit_ok_text", "layout": { "x": 3, "y": 10, "w": 3, "h": 1 }, "defaultValue": "Coup d eclat", "showIf": "@jet_d100_manuel <= @jet_crit_success_max" },
+          { "id": "cmb-crit-ko", "type": "static_text", "label": "Crit KO", "key": "jet_crit_ko_text", "layout": { "x": 6, "y": 10, "w": 3, "h": 1 }, "defaultValue": "Desastre", "showIf": "@jet_d100_manuel >= @jet_crit_fail_min" },
+          { "id": "cmb-roll-button", "type": "button", "label": "Lancer d100", "key": "jet_roll_button", "layout": { "x": 9, "y": 10, "w": 3, "h": 2 }, "defaultValue": "Lancer 1d100 - capacite", "buttonAction": "lancer_jet", "buttonRollFormula": "1d100 - @jet_capacite" },
+
+          { "id": "cmb-title-esquive", "type": "static_text", "label": "titre", "key": "cmb_title_esquive", "layout": { "x": 0, "y": 12, "w": 12, "h": 1 }, "defaultValue": "Esquive et reduction des degats" },
+          { "id": "cmb-esq-arme", "type": "number", "label": "Malus arme esquive", "key": "esquive_malus_arme", "layout": { "x": 0, "y": 13, "w": 2, "h": 2 }, "defaultValue": -30 },
+          { "id": "cmb-esq-modif", "type": "number", "label": "Modif esquive", "key": "esquive_modificateur", "layout": { "x": 2, "y": 13, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "cmb-esq-cap", "type": "number", "label": "Capacite esquive", "key": "esquive_capacite", "layout": { "x": 4, "y": 13, "w": 2, "h": 2 }, "formula": "@physique + @dexterite + @domaine_dev_physique + @motricite_bonus + @esquive_malus_arme + @esquive_modificateur" },
+          { "id": "cmb-esq-d100", "type": "number", "label": "d100 esquive", "key": "esquive_d100", "layout": { "x": 6, "y": 13, "w": 2, "h": 2 }, "defaultValue": 50, "min": 1, "max": 100 },
+          { "id": "cmb-esq-marge", "type": "number", "label": "Marge esquive", "key": "esquive_marge", "layout": { "x": 8, "y": 13, "w": 2, "h": 2 }, "formula": "@esquive_capacite - @esquive_d100" },
+          { "id": "cmb-esq-roll", "type": "button", "label": "Lancer esquive", "key": "esquive_roll_button", "layout": { "x": 10, "y": 13, "w": 2, "h": 2 }, "defaultValue": "Lancer", "buttonAction": "lancer_jet", "buttonRollFormula": "1d100 - @esquive_capacite" },
+          { "id": "cmb-degats", "type": "number", "label": "Degats subis", "key": "degats_subis", "layout": { "x": 0, "y": 15, "w": 2, "h": 2 }, "defaultValue": 0, "min": 0 },
+          { "id": "cmb-reduc-appliquee", "type": "number", "label": "Reduction appliquee", "key": "reduction_appliquee", "layout": { "x": 2, "y": 15, "w": 2, "h": 2 }, "formula": "min(@reduction_auto, floor(@degats_subis / 2))" },
+          { "id": "cmb-degats-finaux", "type": "number", "label": "Degats finaux", "key": "degats_finaux", "layout": { "x": 4, "y": 15, "w": 2, "h": 2 }, "formula": "max(0, @degats_subis - @reduction_appliquee)" }
+        ]
+      },
+      {
+        "id": "view-earth2569-magie",
+        "name": "Magie",
+        "reference": "magie",
+        "description": "Construction de sorts, difficulte et cout en volonte.",
+        "gridColumns": 12,
+        "visibleInSelectors": true,
+        "isDefaultForPlayer": false,
+        "isCharacterSheet": false,
+        "characterSheetKind": "pc",
+        "defaultSheetNameTemplate": "{{nompj}}",
+        "initiativeMode": "combat_once",
+        "initiativeFormula": "",
+        "theme": {},
+        "nodes": [
+          { "id": "mag-title-1", "type": "static_text", "label": "titre", "key": "mag_title_1", "layout": { "x": 0, "y": 0, "w": 12, "h": 1 }, "defaultValue": "Construction de sort" },
+          { "id": "mag-in", "type": "number", "label": "IN magie", "key": "magie_in", "layout": { "x": 0, "y": 1, "w": 2, "h": 2 }, "formula": "@in_magie" },
+          { "id": "mag-base", "type": "number", "label": "Base avant modifs", "key": "magie_base_difficulte", "layout": { "x": 2, "y": 1, "w": 2, "h": 2 }, "formula": "50 - (10 * @in_magie)" },
+          {
+            "id": "mag-corps-ou-mental",
+            "type": "select",
+            "label": "Jet du sort",
+            "key": "magie_type_jet",
+            "layout": { "x": 4, "y": 1, "w": 3, "h": 2 },
+            "defaultValue": "1",
+            "options": ["1 => Mental + Volonte", "2 => Physique + Constitution"]
+          },
+          { "id": "mag-bonus-associe", "type": "number", "label": "Bonus associe", "key": "magie_bonus_associe", "layout": { "x": 7, "y": 1, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "mag-volonte-restante", "type": "number", "label": "Volonte actuelle", "key": "magie_volonte_actuelle", "layout": { "x": 9, "y": 1, "w": 3, "h": 2 }, "formula": "@volonte_active" },
+
+          { "id": "mag-flux-count", "type": "number", "label": "Nombre de flux", "key": "sort_flux_count", "layout": { "x": 0, "y": 3, "w": 2, "h": 2 }, "defaultValue": 1, "min": 1 },
+          {
+            "id": "mag-temps",
+            "type": "select",
+            "label": "Temps",
+            "key": "sort_temps_mod",
+            "layout": { "x": 2, "y": 3, "w": 2, "h": 2 },
+            "defaultValue": "15",
+            "options": ["30 => Instantane", "15 => Action simple", "0 => Action complexe", "-15 => Concentration 3 rounds", "-30 => Concentration 4+ rounds"]
+          },
+          {
+            "id": "mag-puissance",
+            "type": "select",
+            "label": "Puissance",
+            "key": "sort_puissance_mod",
+            "layout": { "x": 4, "y": 3, "w": 2, "h": 2 },
+            "defaultValue": "0",
+            "options": ["0 => Mineure", "15 => Moderee", "30 => Puissante", "45 => Massive"]
+          },
+          {
+            "id": "mag-cible",
+            "type": "select",
+            "label": "Cible",
+            "key": "sort_cible_mod",
+            "layout": { "x": 6, "y": 3, "w": 2, "h": 2 },
+            "defaultValue": "0",
+            "options": ["0 => Soi-meme", "10 => Cible identifiee", "20 => Cible connue hors de vue", "15 => Zone generale", "30 => Cible inconnue"]
+          },
+          {
+            "id": "mag-distance",
+            "type": "select",
+            "label": "Distance",
+            "key": "sort_distance_mod",
+            "layout": { "x": 8, "y": 3, "w": 2, "h": 2 },
+            "defaultValue": "0",
+            "options": ["0 => Contact", "10 => Vue directe", "20 => Vue longue", "30 => Hors de vue"]
+          },
+          {
+            "id": "mag-environnement",
+            "type": "select",
+            "label": "Environnement",
+            "key": "sort_environnement_mod",
+            "layout": { "x": 10, "y": 3, "w": 2, "h": 2 },
+            "defaultValue": "0",
+            "options": ["-15 => Lieu charge en energie", "0 => Environnement neutre", "15 => Environnement perturbe", "30 => Environnement hostile"]
+          },
+          { "id": "mag-cibles-supp", "type": "number", "label": "Cibles supp.", "key": "sort_cibles_supplementaires", "layout": { "x": 0, "y": 5, "w": 2, "h": 2 }, "defaultValue": 0, "min": 0 },
+          { "id": "mag-obstacle", "type": "number", "label": "Obstacle/interference", "key": "sort_obstacle_mod", "layout": { "x": 2, "y": 5, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "mag-entrainement", "type": "number", "label": "Bonus entrainement", "key": "sort_entrainement_mod", "layout": { "x": 4, "y": 5, "w": 2, "h": 2 }, "defaultValue": 0 },
+          { "id": "mag-ue", "type": "number", "label": "UE", "key": "sort_ue", "layout": { "x": 6, "y": 5, "w": 2, "h": 2 }, "defaultValue": 1, "min": 1 },
+          { "id": "mag-flux-mod", "type": "number", "label": "Modif flux supp.", "key": "sort_flux_mod", "layout": { "x": 8, "y": 5, "w": 2, "h": 2 }, "formula": "max(0, (@sort_flux_count - 1) * 10)" },
+          { "id": "mag-cibles-mod", "type": "number", "label": "Modif cibles supp.", "key": "sort_cibles_mod", "layout": { "x": 10, "y": 5, "w": 2, "h": 2 }, "formula": "@sort_cibles_supplementaires * 10" },
+
+          { "id": "mag-diff", "type": "number", "label": "Difficulte totale", "key": "sort_difficulte_totale", "layout": { "x": 0, "y": 7, "w": 3, "h": 2 }, "formula": "(50 - (10 * @in_magie)) + @sort_flux_mod + @sort_temps_mod + @sort_puissance_mod + @sort_cible_mod + @sort_distance_mod + @sort_environnement_mod + @sort_cibles_mod + @sort_obstacle_mod - @sort_entrainement_mod" },
+          { "id": "mag-cap", "type": "number", "label": "Capacite de lancement", "key": "sort_capacite", "layout": { "x": 3, "y": 7, "w": 3, "h": 2 }, "formula": "ifEq(@magie_type_jet,1,(@mental + @volonte + @magie_bonus_associe),(@physique + @constitution + @magie_bonus_associe))" },
+          { "id": "mag-d100", "type": "number", "label": "d100 manuel", "key": "sort_d100_manuel", "layout": { "x": 6, "y": 7, "w": 2, "h": 2 }, "defaultValue": 50, "min": 1, "max": 100 },
+          { "id": "mag-marge", "type": "number", "label": "Marge de sort", "key": "sort_marge", "layout": { "x": 8, "y": 7, "w": 2, "h": 2 }, "formula": "@sort_difficulte_totale - @sort_d100_manuel" },
+          { "id": "mag-roll", "type": "button", "label": "Lancer sort", "key": "sort_roll_button", "layout": { "x": 10, "y": 7, "w": 2, "h": 2 }, "defaultValue": "Lancer 1d100 vs difficulte", "buttonAction": "lancer_jet", "buttonRollFormula": "1d100 - @sort_difficulte_totale" },
+
+          { "id": "mag-title-fatigue", "type": "static_text", "label": "titre", "key": "mag_title_fatigue", "layout": { "x": 0, "y": 9, "w": 12, "h": 1 }, "defaultValue": "Fatigue et couts" },
+          { "id": "mag-cout-vol", "type": "number", "label": "Cout en Volonte", "key": "sort_cout_volonte", "layout": { "x": 0, "y": 10, "w": 2, "h": 2 }, "formula": "ifGte(@sort_ue,10,5,ifGte(@sort_ue,6,3,ifGte(@sort_ue,3,2,1)))" },
+          { "id": "mag-vol-apres", "type": "number", "label": "Volonte apres sort", "key": "sort_volonte_apres", "layout": { "x": 2, "y": 10, "w": 2, "h": 2 }, "formula": "max(0, @volonte_active - @sort_cout_volonte)" },
+          { "id": "mag-warning", "type": "static_text", "label": "alerte", "key": "sort_warning", "layout": { "x": 4, "y": 10, "w": 4, "h": 1 }, "defaultValue": "Volonte a 0 : plus de sorts et -20 aux jets mentaux.", "showIf": "@sort_volonte_apres <= 0" },
+          { "id": "mag-source-note", "type": "textarea", "label": "Source d energie", "key": "sort_source_energie", "layout": { "x": 8, "y": 10, "w": 4, "h": 2 }, "defaultValue": "Soi-meme, environnement, autre personne, receptacle ou creature magique." }
+        ]
+      },
+      {
+        "id": "view-earth2569-augmentations",
+        "name": "Augmentations",
+        "reference": "augmentations",
+        "description": "Catalogues d augmentations et collections runtime.",
+        "gridColumns": 12,
+        "visibleInSelectors": true,
+        "isDefaultForPlayer": false,
+        "isCharacterSheet": false,
+        "characterSheetKind": "pc",
+        "defaultSheetNameTemplate": "{{nompj}}",
+        "initiativeMode": "combat_once",
+        "initiativeFormula": "",
+        "theme": {},
+        "nodes": [
+          { "id": "aug-title", "type": "static_text", "label": "titre", "key": "aug_title", "layout": { "x": 0, "y": 0, "w": 12, "h": 1 }, "defaultValue": "Ajout depuis catalogues" },
+          { "id": "aug-btn-gen", "type": "button", "label": "Ajouter genomique", "key": "aug_btn_gen", "layout": { "x": 0, "y": 1, "w": 4, "h": 2 }, "defaultValue": "Ajouter genomique", "buttonAction": "ajouter_depuis_catalogue", "buttonCatalogKey": "augmentations_genomiques", "buttonTargetCollectionKey": "collection_aug_genomiques" },
+          { "id": "aug-btn-cyb", "type": "button", "label": "Ajouter cyber", "key": "aug_btn_cyb", "layout": { "x": 4, "y": 1, "w": 4, "h": 2 }, "defaultValue": "Ajouter cybernetique", "buttonAction": "ajouter_depuis_catalogue", "buttonCatalogKey": "augmentations_cybernetiques", "buttonTargetCollectionKey": "collection_aug_cybernetiques" },
+          { "id": "aug-btn-mag", "type": "button", "label": "Ajouter magique", "key": "aug_btn_mag", "layout": { "x": 8, "y": 1, "w": 4, "h": 2 }, "defaultValue": "Ajouter magique", "buttonAction": "ajouter_depuis_catalogue", "buttonCatalogKey": "augmentations_magiques", "buttonTargetCollectionKey": "collection_aug_magiques" },
+
+          {
+            "id": "aug-container-gen",
+            "type": "container",
+            "label": "Genomiques",
+            "key": "genomiques_runtime",
+            "layout": { "x": 0, "y": 3, "w": 4, "h": 5 },
+            "showTitle": true,
+            "showBorder": true,
+            "repeat": { "mode": "binding", "source": "@collection_aug_genomiques", "flow": "vertical", "itemWidth": 4, "itemHeight": 2.5, "gapX": 0.5, "gapY": 0.5, "showItemHeader": true, "itemLabelTemplate": "{{item.nom}}" }
+          },
+          { "id": "aug-gen-nom", "type": "static_text", "label": "Nom", "key": "aug_gen_nom", "parentId": "aug-container-gen", "slotKey": null, "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "defaultValue": "{{item.nom}} (Niv. {{item.niveau}})" },
+          { "id": "aug-gen-effet", "type": "static_text", "label": "Effet", "key": "aug_gen_effet", "parentId": "aug-container-gen", "slotKey": null, "layout": { "x": 0, "y": 1, "w": 4, "h": 1 }, "defaultValue": "{{item.effet}}" },
+
+          {
+            "id": "aug-container-cyb",
+            "type": "container",
+            "label": "Cybernetiques",
+            "key": "cyber_runtime",
+            "layout": { "x": 4, "y": 3, "w": 4, "h": 5 },
+            "showTitle": true,
+            "showBorder": true,
+            "repeat": { "mode": "binding", "source": "@collection_aug_cybernetiques", "flow": "vertical", "itemWidth": 4, "itemHeight": 2.5, "gapX": 0.5, "gapY": 0.5, "showItemHeader": true, "itemLabelTemplate": "{{item.nom}}" }
+          },
+          { "id": "aug-cyb-nom", "type": "static_text", "label": "Nom", "key": "aug_cyb_nom", "parentId": "aug-container-cyb", "slotKey": null, "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "defaultValue": "{{item.nom}} (Niv. {{item.niveau}})" },
+          { "id": "aug-cyb-effet", "type": "static_text", "label": "Effet", "key": "aug_cyb_effet", "parentId": "aug-container-cyb", "slotKey": null, "layout": { "x": 0, "y": 1, "w": 4, "h": 1 }, "defaultValue": "{{item.effet}}" },
+
+          {
+            "id": "aug-container-mag",
+            "type": "container",
+            "label": "Magiques",
+            "key": "magiques_runtime",
+            "layout": { "x": 8, "y": 3, "w": 4, "h": 5 },
+            "showTitle": true,
+            "showBorder": true,
+            "repeat": { "mode": "binding", "source": "@collection_aug_magiques", "flow": "vertical", "itemWidth": 4, "itemHeight": 2.5, "gapX": 0.5, "gapY": 0.5, "showItemHeader": true, "itemLabelTemplate": "{{item.nom}}" }
+          },
+          { "id": "aug-mag-nom", "type": "static_text", "label": "Nom", "key": "aug_mag_nom", "parentId": "aug-container-mag", "slotKey": null, "layout": { "x": 0, "y": 0, "w": 4, "h": 1 }, "defaultValue": "{{item.nom}} ({{item.flux}})" },
+          { "id": "aug-mag-effet", "type": "static_text", "label": "Effet", "key": "aug_mag_effet", "parentId": "aug-container-mag", "slotKey": null, "layout": { "x": 0, "y": 1, "w": 4, "h": 1 }, "defaultValue": "{{item.effet}}" }
+        ]
+      }
+    ]
+  },
+  "createdAt": "2026-03-24T15:00:00.000Z",
+  "updatedAt": "2026-03-24T15:00:00.000Z"
+}

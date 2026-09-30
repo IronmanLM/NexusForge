@@ -21,6 +21,16 @@ npm start
 - `CORS_ORIGIN` (ex: `https://nexusforge.en-ligne.fr`)
 - `APP_BASE_URL` (URL frontend, utilisée dans les emails)
 - `API_BASE_URL` (URL API publique)
+- `DISCORD_BOT_SHARED_SECRET` (secret partagé pour le bot Discord)
+- `BACKUP_TRIGGER_SECRET` (secret partagé pour déclencher un backup via URL)
+- `BACKUP_REMOTE_HOST`
+- `BACKUP_REMOTE_USER`
+- `BACKUP_REMOTE_DIR`
+- `BACKUP_REMOTE_HISTORY_DIR`
+- `BACKUP_SSH_KEY`
+- `DISCORD_OAUTH_CLIENT_ID`
+- `DISCORD_OAUTH_CLIENT_SECRET`
+- `DISCORD_OAUTH_REDIRECT_URI`
 - `ENABLE_DEMO_SEED` (`false` recommandé en prod)
 - `DATA_DIR` / `DATA_FILE` (persistance JSON backend)
 - `JWT_SECRET`, `JWT_REFRESH_SECRET`
@@ -49,6 +59,8 @@ Règles minimales:
 
 - backup de `backend/data/state.json` avant chaque déploiement,
 - récupération du backup en local hors git,
+- le code doit être restauré depuis git, pas depuis l archive de backup,
+- les fichiers dérivés régénérables ne doivent pas alourdir le backup,
 - déploiement backend sans écraser `data/` et `.env`,
 - redémarrage contrôlé de l'app Node.
 
@@ -70,5 +82,16 @@ Règles minimales:
 - `POST /api/auth/totp/disable`
 - `GET /api/admin/users/pending`
 - `POST /api/admin/users/:userId/approve`
+- `POST /api/admin/integrations/discord/releases`
+- `GET /api/integrations/discord/events` (secret bot requis)
+- `GET /api/internal/ops/backup` (secret backup requis)
+
+Le backup prod est maintenant hybride :
+
+- archive distante minimale pour `.env`, `state.json`, `persist-log.jsonl`, `resources/` et `.htaccess` ;
+- synchronisation `rsync` separee de `backend/data/history/` vers le dossier distant d historique.
+- `POST /api/auth/discord/link/start`
+- `POST /api/auth/discord/link/callback`
+- `DELETE /api/auth/discord/link`
 
 Les endpoints sessions/systems/sync du MVP restent disponibles.
