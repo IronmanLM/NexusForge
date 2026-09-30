@@ -231,7 +231,7 @@ function parseUnary(stream: TokenStream, helpers: HelperMap): SafeExpressionValu
 
   const value = parseUnary(stream, helpers);
   if (operator.value === '!') {
-    return !Boolean(value);
+    return !value;
   }
   return -toNumber(value);
 }

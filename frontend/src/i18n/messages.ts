@@ -1,6 +1,6 @@
 export type SupportedLocale = 'fr' | 'en' | 'de' | 'es';
 
-export type TranslationKey = string;
+export type TranslationKey = keyof typeof messages[typeof DEFAULT_LOCALE];
 
 type Messages = Record<SupportedLocale, Record<TranslationKey, string>>;
 
@@ -21,9 +21,14 @@ export const messages: Messages = {
     'nav.screens': 'Studio Ecrans',
     'nav.admin': 'Admin',
     'nav.login': 'Connexion',
-    'nav.register': 'Inscription',
-    'nav.logout': 'Déconnexion',
-    'parties.title': 'Parties',
+         'nav.register': 'Inscription',
+                 'nav.logout': 'Déconnexion',
+                 'nav.profile': 'Profil',
+                 'nav.settings': 'Paramètres',
+                 'nav.announcements': 'Annonces',
+                 'nav.admin.accounts': 'Admin comptes',
+                 'nav.admin.content': 'Admin contenu',
+                  'parties.title': 'Parties',
     'parties.connectedAs': 'Connecté en tant que',
     'parties.create.title': 'Créer une nouvelle partie',
     'parties.create.name': 'Nom de la partie',

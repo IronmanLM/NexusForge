@@ -249,21 +249,21 @@ export default function Layout({ children, wide = false, hideNavigation = false 
                 <div className="top-nav__mobile-user-links">
                   <Link to="/messages">
                     <span className="top-nav__link-label">
-                      Messagerie
+                      {t('nav.messages')}
                       {unreadMessageCount > 0 ? <span className="home-pill home-pill--accent">{unreadMessageCount}</span> : null}
                     </span>
                   </Link>
                   <Link to="/network">
                     <span className="top-nav__link-label">
-                      Mes contacts
+                      {t("nav.network")}
                       {pendingFriendRequestCount > 0 ? <span className="home-pill home-pill--success">{pendingFriendRequestCount}</span> : null}
                     </span>
                   </Link>
-                  <Link to="/profile">Profil</Link>
-                  <Link to="/settings">Paramètres</Link>
-                  <Link to="/announcements">Annonces</Link>
-                  {isAdmin ? <Link to="/admin/users/pending">Admin comptes</Link> : null}
-                  {isAdmin ? <Link to="/admin/content">Admin contenu</Link> : null}
+                  <Link to="/profile">{t("nav.profile")}</Link>
+                  <Link to="/settings">{t("nav.settings")}</Link>
+                  <Link to="/announcements">{t("nav.announcements")}</Link>
+                  {isAdmin ? <Link to="/admin/users/pending">{t("nav.admin.accounts")}</Link> : null}
+                  {isAdmin ? <Link to="/admin/content">{t("nav.admin.content")}</Link> : null}
                   <button type="button" className="top-nav__mobile-logout" onClick={() => logout()}>
                     {t('nav.logout')}
                   </button>
@@ -323,7 +323,7 @@ export default function Layout({ children, wide = false, hideNavigation = false 
                     </Link>
                     <Link to="/network" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
                       <span className="top-nav__menu-item-label">
-                        Mes contacts
+                        {t("nav.network")}
                         {pendingFriendRequestCount > 0 ? <span className="home-pill home-pill--success">{pendingFriendRequestCount}</span> : null}
                       </span>
                     </Link>

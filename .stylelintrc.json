@@ -1,0 +1,38 @@
+{
+  "rules": {
+    "block-no-empty": null,
+    "color-no-invalid-hex": true,
+    "declaration-block-no-duplicate-properties": [true, { "ignore": ["consecutive-duplicates"] }],
+    "font-family-no-duplicate-values": true,
+    "font-family-no-missing-generic-family-keyword": true,
+    "function-no-unknown": true,
+    "function-url-no-scheme-relative": true,
+    "media-feature-name-no-unknown": true,
+    "no-descending-specificity": null,
+    "no-empty-source": null,
+    "no-eol-whitespace": true,
+    "no-empty-first-line": true,
+    "no-font-face-with-invalid-src": [true, { "checkAllFontFaceDescriptors": false }],
+    "no-invalid-double-slash-comments": true,
+    "no-invalid-hex": true,
+    "no-missing-end-of-source-newline": true,
+    "no-unknown-animations": true,
+    "number-leading-zero": "never",
+    "number-trailing-zero": "never",
+    "property-no-unknown": true,
+    "selector-no-qualifying-type": [
+      true,
+      {
+        "ignore": ["attribute", "class", "id"]
+      }
+    ],
+    "string-no-newline": true,
+    "value-list-max-empty-lines": 0,
+    "value-list-comma-newline-after": null,
+    "value-list-comma-newline-before": null,
+    "value-list-comma-space-after": "always",
+    "value-list-comma-space-before": "never",
+    "value-list-comma-space-before": "never",
+    "value-list-comma-space-after": "always"
+  }
+}

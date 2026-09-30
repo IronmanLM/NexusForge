@@ -7,7 +7,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . --ext .js,.ts --fix",
+    "format": "prettier --write \"**/*.{js,ts,json,md}\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -18,5 +21,11 @@
     "nodemailer": "^6.9.15",
     "otplib": "^12.0.1",
     "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0"
   }
 }
