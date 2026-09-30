@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Layout from '../../../components/Layout';
 import Button from '../../../components/Button';
 import {
@@ -104,7 +104,7 @@ export default function AdminPendingUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     const [pendingUsers, systemsUsage, allUsers, events] = await Promise.all([
       listPendingUsersService(),
       systemRepository.listUsageForAdmin(),
@@ -140,7 +140,7 @@ export default function AdminPendingUsersPage() {
         return acc;
       }, {})
     );
-  };
+  }, [currentUser]);
 
   const deleteAccount = async (userId: string) => {
     const user = adminUsers.find((item) => item.id === userId);
@@ -200,7 +200,7 @@ export default function AdminPendingUsersPage() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [loadData]);
 
   const ownerOptions = useMemo(() => {
     const owners = Array.from(new Set(usage.map((item) => item.ownerUserId))).sort((a, b) => a.localeCompare(b));

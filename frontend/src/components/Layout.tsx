@@ -249,7 +249,7 @@ export default function Layout({ children, wide = false, hideNavigation = false 
                 <div className="top-nav__mobile-user-links">
                   <Link to="/messages">
                     <span className="top-nav__link-label">
-                      Messagerie
+                      {t('nav.messages')}
                       {unreadMessageCount > 0 ? <span className="home-pill home-pill--accent">{unreadMessageCount}</span> : null}
                     </span>
                   </Link>
