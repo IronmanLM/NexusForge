@@ -27,7 +27,9 @@
   display: grid; gap: 0.45rem;
 }
 .autorisation h2, .contact-admin h2 { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; margin: 0; }
-.autorisation label, .contact-admin label { display: grid; gap: 0.3rem; font-size: 0.82rem; }
+.autorisation label:not(.coche), .contact-admin label:not(.coche) { display: grid; gap: 0.3rem; font-size: 0.82rem; }
+.autorisation .coche { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.82rem; cursor: pointer; }
+.autorisation .coche input { margin-top: 0.15rem; flex: 0 0 auto; }
 .autorisation input[type="text"], .contact-admin input[type="email"], .contact-admin textarea {
   background: rgba(255, 255, 255, 0.06); border: 1px solid var(--filet); border-radius: 8px;
   color: var(--ink); padding: 0.55rem 0.7rem; font-size: 0.88rem; width: 100%; font-family: inherit;
