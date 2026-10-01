@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NexusForge — Inscription</title>
-<link rel="stylesheet" href="../css/commun.css?v=0.4.0">
-<link rel="stylesheet" href="../css/acces.css?v=0.4.0">
-<link rel="stylesheet" href="../css/inscription.css?v=0.4.0">
+<link rel="stylesheet" href="../css/commun.css?v=0.5.0">
+<link rel="stylesheet" href="../css/acces.css?v=0.5.0">
+<link rel="stylesheet" href="../css/inscription.css?v=0.5.0">
 </head>
 <body>
 
@@ -58,15 +58,26 @@
 
       <div class="panneau" data-panneau="accords" hidden>
         <h2>Les règles du jeu</h2>
-        <label class="coche"><input type="checkbox" name="cgu" required /> J’accepte les conditions d’utilisation.</label>
-        <label class="coche"><input type="checkbox" name="confidentialite" required /> J’accepte la politique de confidentialité.</label>
+        <p class="lede-w">Chaque document s’ouvre, se lit, puis se valide explicitement : la case ne se coche qu’après.</p>
+        <div class="doc-cond">
+          <button type="button" data-lire data-doc="cgu.html" data-titre="Conditions d’utilisation" data-case="coche-cgu">Lire les conditions d’utilisation</button>
+          <label class="coche"><input type="checkbox" id="coche-cgu" name="cgu" required disabled /> J’accepte les conditions d’utilisation.</label>
+        </div>
+        <div class="doc-cond">
+          <button type="button" data-lire data-doc="confidentialite.html" data-titre="Politique de confidentialité" data-case="coche-conf">Lire la politique de confidentialité</button>
+          <label class="coche"><input type="checkbox" id="coche-conf" name="confidentialite" required disabled /> J’accepte la politique de confidentialité.</label>
+        </div>
         <div class="bloc-mineur" data-si-mineur hidden>
-          <p><strong>Tu es mineur :</strong> l’accord d’un parent ou responsable légal est requis.</p>
+          <p><strong>Tu es mineur :</strong> l’accord d’un parent ou responsable légal est requis, via un courriel différent du tien.</p>
+          <label>Courriel d’un parent <input type="email" id="courriel-parent" name="courriel-parent" data-requis-mineur autocomplete="email" placeholder="parent@exemple.fr" /></label>
           <label class="coche"><input type="checkbox" name="parental" data-requis-mineur /> Un parent ou responsable légal accepte mon inscription.</label>
         </div>
         <div class="bloc-conteur" data-si-conteur hidden>
           <p><strong>Voie du conteur :</strong> la charte des meneurs s’applique à tes tables.</p>
-          <label class="coche"><input type="checkbox" name="charte" data-requis-conteur /> J’accepte la charte du conteur.</label>
+          <div class="doc-cond">
+            <button type="button" data-lire data-doc="charte-conteur.html" data-titre="Charte du conteur" data-case="coche-charte">Lire la charte du conteur</button>
+            <label class="coche"><input type="checkbox" id="coche-charte" name="charte" data-requis-conteur disabled /> J’accepte la charte du conteur.</label>
+          </div>
         </div>
         <div class="actions"><button type="button" data-precedent>← Retour</button><button type="button" data-suivant>Continuer →</button></div>
       </div>
@@ -110,8 +121,22 @@
 <script>
 window.NF_WIZARD_VOIES = { joueur: 'voie-joueur', conteur: 'voie-conteur' };
 </script>
-<script src="../js/carrousel.js?v=0.4.0" defer></script>
-<script src="../js/wizard.js?v=0.4.0" defer></script>
+<script src="../js/carrousel.js?v=0.5.0" defer></script>
+<script src="../js/wizard.js?v=0.5.0" defer></script>
+
+  <div class="modale" id="modale-doc" hidden>
+    <div class="modale-cadre" role="dialog" aria-modal="true" aria-labelledby="modale-titre">
+      <div class="modale-tete">
+        <h3 id="modale-titre">Document</h3>
+        <button type="button" data-fermer aria-label="Fermer">✕</button>
+      </div>
+      <iframe id="modale-iframe" title="Document à lire" src="about:blank"></iframe>
+      <div class="modale-pied">
+        <label class="coche"><input type="checkbox" id="modale-lu" /> Je reconnais avoir lu l’intégralité de ce document.</label>
+        <button type="button" id="modale-accepter" disabled>J’accepte et m’engage →</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>

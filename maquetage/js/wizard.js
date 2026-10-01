@@ -8,6 +8,11 @@
      window.NF_WIZARD_VOIES         { joueur: 'id-case', conteur: 'id-case' }
      [data-si-mineur] / [data-si-conteur] / [data-si-joueur-seul] blocs conditionnels
      [data-requis-mineur] / [data-requis-conteur] cases requises quand visibles
+   #courriel-parent                doit differer du courriel du compte (si mineur)
+   [data-lire]                    bouton d’ouverture (data-doc, data-titre, data-case)
+   #modale-doc                    modale : iframe + #modale-lu + #modale-accepter ;
+                                  la case data-case reste desactivee tant que le
+                                  document n’est pas lu ET valide explicitement
    Validation : champs [required] visibles du panneau courant + au moins une voie. */
 (function () {
   'use strict';
@@ -78,6 +83,17 @@
       }
       return true;
     }
+    if (panneau.getAttribute('data-panneau') === 'accords' && !estMajeur()) {
+      var mien = document.querySelector('[data-panneau="compte"] [name="courriel"]');
+      var parent = document.getElementById('courriel-parent');
+      if (parent) { parent.setCustomValidity(''); }
+      if (mien && parent && parent.value &&
+          mien.value.trim().toLowerCase() === parent.value.trim().toLowerCase()) {
+        parent.setCustomValidity('Doit être différent de ton adresse d’inscription.');
+        parent.reportValidity();
+        return false;
+      }
+    }
     var champs = Array.prototype.slice.call(panneau.querySelectorAll('[required]'));
     for (var j = 0; j < champs.length; j++) {
       if (champs[j].offsetParent === null) { continue; }
@@ -116,5 +132,53 @@
     if (el) { el.addEventListener('change', rafraichirConditions); }
   });
   if (naissance) { naissance.addEventListener('change', rafraichirConditions); }
+  /* ——— modale documentaire : lire + valider explicitement avant de cocher ——— */
+  var modale = document.getElementById('modale-doc');
+  var modaleTitre = document.getElementById('modale-titre');
+  var modaleIframe = document.getElementById('modale-iframe');
+  var modaleLu = document.getElementById('modale-lu');
+  var modaleAccepter = document.getElementById('modale-accepter');
+  var docEnCours = null;
+  function fermerModale() {
+    if (!modale) { return; }
+    modale.hidden = true;
+    if (modaleIframe) { modaleIframe.setAttribute('src', 'about:blank'); }
+    docEnCours = null;
+  }
+  if (modale) {
+    zone.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-lire]');
+      if (!btn) { return; }
+      docEnCours = btn;
+      if (modaleTitre) { modaleTitre.textContent = btn.getAttribute('data-titre') || 'Document'; }
+      if (modaleIframe) { modaleIframe.setAttribute('src', btn.getAttribute('data-doc') || 'about:blank'); }
+      if (modaleLu) { modaleLu.checked = false; }
+      if (modaleAccepter) { modaleAccepter.disabled = true; }
+      modale.hidden = false;
+    });
+    if (modaleLu) {
+      modaleLu.addEventListener('change', function () {
+        if (modaleAccepter) { modaleAccepter.disabled = !modaleLu.checked; }
+      });
+    }
+    if (modaleAccepter) {
+      modaleAccepter.addEventListener('click', function () {
+        if (!docEnCours || !modaleLu || !modaleLu.checked) { return; }
+        var cible = document.getElementById(docEnCours.getAttribute('data-case'));
+        if (cible) {
+          cible.disabled = false;
+          cible.checked = true;
+        }
+        docEnCours.textContent = '✓ ' + (docEnCours.getAttribute('data-titre') || 'Document') + ' — relire';
+        fermerModale();
+      });
+    }
+    Array.prototype.forEach.call(modale.querySelectorAll('[data-fermer]'), function (btn) {
+      btn.addEventListener('click', fermerModale);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !modale.hidden) { fermerModale(); }
+    });
+  }
   montrer(0);
 })();

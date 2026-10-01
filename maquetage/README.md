@@ -1,6 +1,6 @@
 # Maquetage NexusForge
 
-[![Version](https://img.shields.io/badge/version-v0.4.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.5.0-blue)](CHANGELOG.md)
 [![Avancement](https://img.shields.io/badge/avancement-maquettes_en_cours-orange)](ROADMAP.md)
 
 Maquettes statiques des pages d’entrée (joueur et utilisatrice, y compris non avertie).
@@ -16,6 +16,7 @@ Les boutons relient les maquettes entre elles :
 - **Accès** → « Se connecter » renvoie vers l’Accueil (`html/accueil.html`, en attendant la maquette « accueil connecté ») ; le logo « NexusForge » en haut à gauche y ramène aussi.
 - **Accès** → « Commencer » ouvre le wizard (`html/inscription.html`).
 - **Inscription** → 6 étapes : chemin (voies cumulables), compte, accords (mineur, charte), vérification (TOTP), validation admin, première connexion.
+- **Accords** → chaque condition s’ouvre en modale, se lit, puis se valide (« J’accepte et m’engage ») ; la case reste bloquée avant. Email parental distinct exigé si mineur.
 
 ## Arborescence
 
@@ -31,6 +32,7 @@ maquetage/
 ├── css/             # commun.css (socle réutilisable) + un fichier par page
 ├── js/              # carrousel.js, langue.js, wizard.js (sans dépendance, réutilisables)
 ├── img/             # illustrations et symboles (jamais de base64 dans le HTML)
+├── mentions-legales/  # CGU, confidentialité, charte (textes provisoires, convertis en HTML)
 └── outils/          # convertisseur md-vers-html.py (voir ci-dessous)
 ```
 

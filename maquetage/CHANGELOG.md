@@ -1,5 +1,10 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.5.0 — 2026-10-01
+
+- Mentions provisoires (`mentions-legales/`, converties en HTML) : CGU, confidentialité, charte du conteur.
+- Accords en modale : lecture + validation explicite obligatoires avant cochage ; courriel parental distinct contrôlé.
+
 ## v0.4.0 — 2026-10-01
 
 - Wizard d’inscription (`html/inscription.html`, `js/wizard.js`, `css/inscription.css`) : 6 étapes, voies cumulables, cas mineur, TOTP conteur, validation admin, première connexion.

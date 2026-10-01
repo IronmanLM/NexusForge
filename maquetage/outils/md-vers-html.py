@@ -109,27 +109,39 @@ def convertir(lignes):
     return "\n".join(blocs)
 
 
+def lire_version():
+    try:
+        with io.open(os.path.join(RACINE, "VERSION"), encoding="utf-8") as fv:
+            return fv.read().strip().lstrip("v")
+    except OSError:
+        return "0.0.0"
+
+
+def convertir_fichier(source, cible):
+    with io.open(source, encoding="utf-8") as f:
+        lignes = f.read().splitlines()
+    titre = "Document"
+    for ligne in lignes:
+        if ligne.startswith("# "):
+            titre = ligne[2:].strip()
+            break
+    corps = convertir(lignes)
+    page = GABARIT.format(titre=titre, corps=corps, version=lire_version())
+    with io.open(cible, "w", encoding="utf-8") as f:
+        f.write(page)
+    print(os.path.basename(cible), "OK")
+
+
 def main():
     for nom in ("README", "CHANGELOG", "ROADMAP", "TODO"):
-        with io.open(os.path.join(RACINE, nom + ".md"), encoding="utf-8") as f:
-            lignes = f.read().splitlines()
-        titre = "Document"
-        version = "0.0.0"
-        try:
-            with io.open(os.path.join(RACINE, "VERSION"), encoding="utf-8") as fv:
-                version = fv.read().strip().lstrip("v")
-        except OSError:
-            pass
-        for ligne in lignes:
-            if ligne.startswith("# "):
-                titre = ligne[2:].strip()
-                break
-        corps = convertir(lignes)
-        page = GABARIT.format(titre=titre, corps=corps, version=version)
-        cible = os.path.join(RACINE, "html", nom + ".html")
-        with io.open(cible, "w", encoding="utf-8") as f:
-            f.write(page)
-        print(nom + ".html OK")
+        convertir_fichier(os.path.join(RACINE, nom + ".md"),
+                          os.path.join(RACINE, "html", nom + ".html"))
+    mentions = os.path.join(RACINE, "mentions-legales")
+    if os.path.isdir(mentions):
+        for fichier in sorted(os.listdir(mentions)):
+            if fichier.endswith(".md"):
+                convertir_fichier(os.path.join(mentions, fichier),
+                                  os.path.join(RACINE, "html", fichier[:-3] + ".html"))
 
 
 if __name__ == "__main__":
