@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.5 — 2026-10-01
+
+- Espace parents : colonne gauche en vraie pile verticale (titre plaqué en bas), ordre JdR puis protections.
+
 ## v0.8.4 — 2026-10-01
 
 - Espace parents : titre plaqué en bas de la colonne gauche, blocs explicatifs au-dessus (JdR puis protections).

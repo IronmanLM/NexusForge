@@ -1,5 +1,5 @@
 /* ——— page Tuteurs : une seule page, savoir à gauche, agir à droite ——— */
-.gauche.savoir { justify-content: flex-start; gap: 0.5rem; padding-top: 3.4rem; overflow: hidden; }
+.gauche.savoir { flex-direction: column; justify-content: flex-start; gap: 0.5rem; padding: 3.4rem clamp(1.5rem, 4vw, 3.5rem) 1.2rem; overflow: hidden; }
 .gauche.savoir .titre.en-bas { margin-top: auto; margin-bottom: 0; }
 .gauche.savoir .titre h1 { font-size: 1.45rem; }
 .gauche.savoir .lede-w { font-size: 0.85rem; }
