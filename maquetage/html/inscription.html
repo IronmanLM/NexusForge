@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NexusForge — Inscription</title>
-<link rel="stylesheet" href="../css/commun.css?v=0.8.0">
-<link rel="stylesheet" href="../css/acces.css?v=0.8.0">
-<link rel="stylesheet" href="../css/inscription.css?v=0.8.0">
+<link rel="stylesheet" href="../css/commun.css?v=0.8.1">
+<link rel="stylesheet" href="../css/acces.css?v=0.8.1">
+<link rel="stylesheet" href="../css/inscription.css?v=0.8.1">
 </head>
 <body>
 
@@ -89,7 +89,7 @@
         <div class="bloc-mineur" data-si-mineur hidden>
           <p><strong>Tu es mineur :</strong> l’accord d’un parent ou responsable légal est requis, via un courriel différent du tien.</p>
           <label>Courriel d’un parent <input type="email" id="courriel-parent" name="courriel-parent" data-requis-mineur autocomplete="email" placeholder="parent@exemple.fr" /></label>
-          <label class="coche"><input type="checkbox" name="parental" data-requis-mineur /> Un parent ou responsable légal accepte mon inscription.</label>
+          <p class="note">C’est ton parent qui acceptera ton inscription, depuis son <a href="tuteurs.html" target="_blank" rel="noopener">espace parents</a> — pas de case à cocher ici.</p>
         </div>
         <div class="bloc-conteur" data-si-conteur hidden>
           <p><strong>Voie du conteur :</strong> la charte des meneurs s’applique à tes tables.</p>
@@ -150,8 +150,8 @@
 <script>
 window.NF_WIZARD_VOIES = { joueur: 'voie-joueur', conteur: 'voie-conteur' };
 </script>
-<script src="../js/carrousel.js?v=0.8.0" defer></script>
-<script src="../js/wizard.js?v=0.8.0" defer></script>
+<script src="../js/carrousel.js?v=0.8.1" defer></script>
+<script src="../js/wizard.js?v=0.8.1" defer></script>
 
   <div class="modale" id="modale-doc" hidden>
     <div class="modale-cadre" role="dialog" aria-modal="true" aria-labelledby="modale-titre">

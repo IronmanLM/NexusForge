@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.1 — 2026-10-01
+
+- Mineur : plus de case parentale côté enfant, le parent valide depuis l’espace parents ; lien « Espace parents » sur la page d’accès.
+
 ## v0.8.0 — 2026-10-01
 
 - Vérification par code OTP (simulation : 428137, bouton d’envoi, contrôle à l’étape) ; modale documentaire rendue autonome.
