@@ -1,12 +1,12 @@
 /* ——— page Tuteurs : une seule page, savoir à gauche, agir à droite ——— */
-.gauche.savoir { justify-content: flex-start; gap: 0.7rem; padding-top: 4.2rem; overflow: hidden; }
+.gauche.savoir { justify-content: flex-start; gap: 0.5rem; padding-top: 3.4rem; overflow: hidden; }
 .gauche.savoir .titre { margin-bottom: 0; }
-.gauche.savoir .titre h1 { font-size: 1.6rem; }
+.gauche.savoir .titre h1 { font-size: 1.45rem; }
 .gauche.savoir .lede-w { font-size: 0.85rem; }
 .explicatif {
   background: var(--panneau); border: 1px solid var(--filet); border-radius: 12px;
-  padding: 0.8rem 0.9rem; backdrop-filter: blur(8px);
-  display: grid; gap: 0.4rem; position: relative; z-index: 1;
+  padding: 0.65rem 0.85rem; backdrop-filter: blur(8px);
+  display: grid; gap: 0.35rem; position: relative; z-index: 1;
 }
 .explicatif h2 { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; margin: 0; }
 .explicatif p { margin: 0; font-size: 0.82rem; color: var(--muted); }
@@ -15,7 +15,7 @@
 .droite.agir { display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 1rem; }
 .colonne-tuteurs {
   position: relative; z-index: 2; width: 100%; max-width: 26rem;
-  display: grid; gap: 0.7rem;
+  display: grid; gap: 0.55rem;
 }
 .grille-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
 .grille-docs > div { display: grid; gap: 0.3rem; align-content: start; }
@@ -23,8 +23,8 @@
 .grille-docs .coche { font-size: 0.75rem; }
 .autorisation, .contact-admin {
   background: var(--panneau); border: 1px solid var(--filet); border-radius: 12px;
-  padding: 0.8rem 0.9rem; backdrop-filter: blur(8px);
-  display: grid; gap: 0.5rem;
+  padding: 0.65rem 0.85rem; backdrop-filter: blur(8px);
+  display: grid; gap: 0.45rem;
 }
 .autorisation h2, .contact-admin h2 { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; margin: 0; }
 .autorisation label, .contact-admin label { display: grid; gap: 0.3rem; font-size: 0.82rem; }

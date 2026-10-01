@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.3 — 2026-10-01
+
+- Espace parents tassé (~60 px gagnés) pour tenir sur une hauteur 768 px sans ascenseur.
+
 ## v0.8.2 — 2026-10-01
 
 - Espace parents sur une seule page (savoir à gauche, agir à droite) + formulaire de contact administrateur.
