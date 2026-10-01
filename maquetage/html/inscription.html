@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NexusForge — Inscription</title>
-<link rel="stylesheet" href="../css/commun.css?v=0.7.1">
-<link rel="stylesheet" href="../css/acces.css?v=0.7.1">
-<link rel="stylesheet" href="../css/inscription.css?v=0.7.1">
+<link rel="stylesheet" href="../css/commun.css?v=0.7.2">
+<link rel="stylesheet" href="../css/acces.css?v=0.7.2">
+<link rel="stylesheet" href="../css/inscription.css?v=0.7.2">
 </head>
 <body>
 
@@ -19,8 +19,8 @@
       <div data-eclairage="verification" hidden>
         <p><strong>Double verrou.</strong> Le lien de confirmation est valable 24 heures (simulation). La TOTP, c’est un code à usage unique depuis ton téléphone.</p>
         <div class="applis-liste">
-          <a class="appli" href="https://2fas.com" target="_blank" rel="noopener"><img src="../img/appli-2fas.jpg" alt="Logo 2FAS" /><span>2FAS<small>Android · iOS</small></span></a>
-          <a class="appli" href="https://www.aliasvault.net" target="_blank" rel="noopener"><img src="../img/appli-aliasvault.png" alt="Logo AliasVault" /><span>AliasVault<small>Android · iOS</small></span></a>
+          <a class="appli" href="https://2fas.com" target="_blank" rel="noopener"><img src="../img/appli-2fas.jpg" alt="Logo 2FAS" /><span>2FAS<small>Français · Android · iOS · Extension navigateur</small></span></a>
+          <a class="appli" href="https://www.aliasvault.net" target="_blank" rel="noopener"><img src="../img/appli-aliasvault.png" alt="Logo AliasVault" /><span>AliasVault<small>Android · iOS · Extension navigateur</small></span></a>
           <a class="appli" href="https://support.google.com/accounts/answer/1066447" target="_blank" rel="noopener"><img src="../img/appli-google.png" alt="Logo Google" /><span>Google Authenticator<small>Android · iOS</small></span></a>
           <a class="appli" href="https://www.microsoft.com/fr-fr/security/mobile-authenticator-app" target="_blank" rel="noopener"><img src="../img/appli-microsoft.png" alt="Logo Microsoft" /><span>Microsoft Authenticator<small>Android · iOS</small></span></a>
         </div>
@@ -104,14 +104,14 @@
       <div class="panneau" data-panneau="verification" hidden>
         <h2>Prouve que c’est toi</h2>
         <p class="lede-w">Un lien de confirmation part vers ton courriel : ouvre-le, puis reviens ici.</p>
-        <label>Code reçu <input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" placeholder="6 chiffres" /></label>
+        <label id="ligne-code">Code reçu <input type="text" id="code-totp" name="code" required inputmode="numeric" autocomplete="one-time-code" placeholder="6 chiffres" /></label>
         <div class="bloc-conteur" data-si-conteur hidden>
           <p><strong>Conteur :</strong> la double authentification (TOTP) est obligatoire pour mener.</p>
           <label class="coche"><input type="checkbox" name="totp" data-requis-conteur /> Mon application d’authentification est configurée.</label>
         </div>
         <div class="bloc-joueur" data-si-joueur-seul>
           <p><strong>Joueur :</strong> la double authentification reste optionnelle, mais recommandée.</p>
-          <label class="coche"><input type="checkbox" name="totp-plus-tard" checked /> Me rappeler la TOTP plus tard.</label>
+          <label class="coche"><input type="checkbox" id="totp-plus-tard" name="totp-plus-tard" /> Me rappeler la TOTP plus tard.</label>
         </div>
         <div class="actions"><button type="button" data-precedent>← Retour</button><button type="button" data-suivant>Continuer →</button></div>
       </div>
@@ -140,8 +140,8 @@
 <script>
 window.NF_WIZARD_VOIES = { joueur: 'voie-joueur', conteur: 'voie-conteur' };
 </script>
-<script src="../js/carrousel.js?v=0.7.1" defer></script>
-<script src="../js/wizard.js?v=0.7.1" defer></script>
+<script src="../js/carrousel.js?v=0.7.2" defer></script>
+<script src="../js/wizard.js?v=0.7.2" defer></script>
 
   <div class="modale" id="modale-doc" hidden>
     <div class="modale-cadre" role="dialog" aria-modal="true" aria-labelledby="modale-titre">

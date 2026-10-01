@@ -70,6 +70,13 @@
     Array.prototype.forEach.call(document.querySelectorAll('[data-si-joueur-seul]'), function (el) {
       el.hidden = conteur;
     });
+    /* « Me rappeler plus tard » (joueur uniquement) : le code TOTP disparaît avec son obligation */
+    var reporte = document.getElementById('totp-plus-tard');
+    var reporteCoche = !!(reporte && reporte.checked);
+    var ligneCode = document.getElementById('ligne-code');
+    if (ligneCode) { ligneCode.hidden = reporteCoche; }
+    var codeTotp = document.getElementById('code-totp');
+    if (codeTotp) { codeTotp.required = !reporteCoche; }
   }
   function message(panneau, texte) {
     var el = panneau.querySelector('.avert-champ');
@@ -144,6 +151,8 @@
     if (el) { el.addEventListener('change', rafraichirConditions); }
   });
   if (naissance) { naissance.addEventListener('change', rafraichirConditions); }
+  var totpPlusTard = document.getElementById('totp-plus-tard');
+  if (totpPlusTard) { totpPlusTard.addEventListener('change', rafraichirConditions); }
   /* ——— modale documentaire : lire + valider explicitement avant de cocher ——— */
   var modale = document.getElementById('modale-doc');
   var modaleTitre = document.getElementById('modale-titre');

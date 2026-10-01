@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.7.2 — 2026-10-01
+
+- 2FAS en français + extension navigateur, AliasVault + extension ; « Me rappeler plus tard » décochée par défaut et masque le code TOTP.
+
 ## v0.7.1 — 2026-10-01
 
 - Vérification : pictos TOTP déplacés à gauche (vraies icônes en `img/`, plateformes, liste non exhaustive).
