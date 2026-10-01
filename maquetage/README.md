@@ -1,6 +1,6 @@
 # Maquetage NexusForge
 
-[![Version](https://img.shields.io/badge/version-v0.1.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.1.1-blue)](CHANGELOG.md)
 [![Avancement](https://img.shields.io/badge/avancement-maquettes_en_cours-orange)](ROADMAP.md)
 
 Maquettes statiques des pages d’entrée (joueur et utilisatrice, y compris non avertie).
@@ -9,6 +9,7 @@ Textes en français provisoires — l’intégration utilisera les clés i18n (`
 ## Prévisualisation
 
 Aucun serveur requis : ouvrez `index.html` dans un navigateur et naviguez.
+En Docker (depuis `maquetage/`) : `docker compose -f docker-compose.preview.yml up -d`, puis `http://192.168.0.120:8090`.
 Les boutons relient les maquettes entre elles :
 
 - **Accueil** → « Connexion », « Rejoindre une partie », « Devenir un conteur » mènent à la page Accès.

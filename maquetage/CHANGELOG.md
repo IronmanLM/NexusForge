@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.1.1 — 2026-10-01
+
+- Serveur de prévisualisation Docker : `docker-compose.preview.yml` (nginx, port 8090).
+
 ## v0.1.0 — 2026-10-01
 
 - Structure initiale : `html/`, `css/`, `img/`, hub `index.html`, images en fichiers (zéro base64).

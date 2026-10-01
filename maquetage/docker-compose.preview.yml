@@ -1,0 +1,15 @@
+# Prévisualisation statique du maquetage (aucun secret, commité).
+# Lancement depuis le dossier maquetage/ :
+#   docker compose -f docker-compose.preview.yml up -d
+# Puis ouvrir http://192.168.0.120:8090
+name: nexusforge-maquetage
+
+services:
+  preview:
+    image: nginx:alpine
+    container_name: nexusforge-maquetage-preview
+    ports:
+      - "8090:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+    restart: unless-stopped
