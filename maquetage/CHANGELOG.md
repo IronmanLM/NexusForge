@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.6.2 — 2026-10-01
+
+- `hidden` blindé dans le socle (un `display` auteur ne peut plus réafficher un bloc masqué) ; rappel d’âge en tête des Accords.
+
 ## v0.6.1 — 2026-10-01
 
 - Pseudo d’exemple neutralisé (plus de clin d’œil nominatif).

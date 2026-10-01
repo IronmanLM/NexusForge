@@ -46,11 +46,14 @@
     var mineur = !estMajeur();
     document.body.setAttribute('data-mineur', mineur ? 'oui' : 'non');
     var noteAge = document.getElementById('note-age');
-    if (noteAge) {
-      if (!naissance || !naissance.value) { noteAge.textContent = ''; }
-      else if (mineur) { noteAge.textContent = 'Détecté : mineur — accord parental requis.'; }
-      else { noteAge.textContent = 'Détecté : majeur — accords standards.'; }
+    var rappelAge = document.getElementById('rappel-age');
+    var texteAge = '';
+    if (naissance && naissance.value) {
+      texteAge = mineur ? 'Détecté : mineur — accord parental requis.'
+                        : 'Détecté : majeur — accords standards.';
     }
+    if (noteAge) { noteAge.textContent = (!naissance || !naissance.value) ? '' : texteAge; }
+    if (rappelAge) { rappelAge.textContent = texteAge || 'Âge non renseigné : retourne à l’étape Compte.'; }
     var conteur = estConteur();
     Array.prototype.forEach.call(document.querySelectorAll('[data-si-mineur]'), function (el) {
       el.hidden = !mineur;
