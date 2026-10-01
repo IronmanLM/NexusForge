@@ -4,14 +4,22 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NexusForge — Inscription</title>
-<link rel="stylesheet" href="../css/commun.css?v=0.5.0">
-<link rel="stylesheet" href="../css/acces.css?v=0.5.0">
-<link rel="stylesheet" href="../css/inscription.css?v=0.5.0">
+<link rel="stylesheet" href="../css/commun.css?v=0.6.0">
+<link rel="stylesheet" href="../css/acces.css?v=0.6.0">
+<link rel="stylesheet" href="../css/inscription.css?v=0.6.0">
 </head>
 <body>
 
-  <section class="gauche" aria-label="NexusForge Inscription">
+  <section class="gauche avec-eclairage" aria-label="NexusForge Inscription">
     <a class="marque" href="accueil.html"><img src="../img/nexus_forge_symbol.svg" alt="" /><span>NexusForge</span></a>
+    <aside class="eclairage" aria-label="Explications">
+      <div data-eclairage="chemin"><p><strong>Pourquoi choisir ?</strong> Les voies se cumulent et se règlent plus tard. Ce choix adapte les accords et la vérification.</p></div>
+      <div data-eclairage="compte" hidden><p><strong>Tes données.</strong> Pseudo public à la table. Courriel jamais revendu. Mot de passe de 12 caractères minimum. La naissance sert uniquement aux protections des mineurs.</p></div>
+      <div data-eclairage="accords" hidden><p><strong>Lis avant de cocher.</strong> Chaque document s’ouvre, se lit, puis se valide explicitement. Sans lecture, pas de case.</p></div>
+      <div data-eclairage="verification" hidden><p><strong>Double verrou.</strong> Le lien de confirmation est valable 24 heures (simulation). La TOTP, c’est un code à usage unique depuis ton téléphone.</p></div>
+      <div data-eclairage="validation" hidden><p><strong>Un humain examine.</strong> Chaque demande est relue (simulation immédiate ici). Compte inactif en attendant, courriel de notification.</p></div>
+      <div data-eclairage="connexion" hidden><p><strong>Première entrée.</strong> Connexion automatique après validation, simulée ici par le bouton.</p></div>
+    </aside>
     <div class="titre">
       <p class="sur-titre">Inscription</p>
       <h1>Commence ton périple.</h1>
@@ -52,6 +60,7 @@
         <label>Courriel <input type="email" name="courriel" required autocomplete="email" placeholder="vous@exemple.fr" /></label>
         <label>Mot de passe <input type="password" name="motdepasse" required minlength="12" autocomplete="new-password" placeholder="12 caractères minimum" /></label>
         <label>Date de naissance <input type="date" id="naissance" name="naissance" required /></label>
+        <p class="note" id="note-age" aria-live="polite"></p>
         <p class="note">Ta naissance adapte les accords (protection des mineurs), rien d’autre.</p>
         <div class="actions"><button type="button" data-precedent>← Retour</button><button type="button" data-suivant>Continuer →</button></div>
       </div>
@@ -86,6 +95,11 @@
         <h2>Prouve que c’est toi</h2>
         <p class="lede-w">Un lien de confirmation part vers ton courriel : ouvre-le, puis reviens ici.</p>
         <label>Code reçu <input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" placeholder="6 chiffres" /></label>
+        <div class="applis-totp">
+          <p><strong>Applications compatibles :</strong></p>
+          <ul><li>2FAS</li><li>AliasVault</li><li>Google Authenticator</li><li>Microsoft Authenticator</li></ul>
+          <p class="note">Ouvre l’application, ajoute le compte NexusForge, puis saisis le code à 6 chiffres.</p>
+        </div>
         <div class="bloc-conteur" data-si-conteur hidden>
           <p><strong>Conteur :</strong> la double authentification (TOTP) est obligatoire pour mener.</p>
           <label class="coche"><input type="checkbox" name="totp" data-requis-conteur /> Mon application d’authentification est configurée.</label>
@@ -121,8 +135,8 @@
 <script>
 window.NF_WIZARD_VOIES = { joueur: 'voie-joueur', conteur: 'voie-conteur' };
 </script>
-<script src="../js/carrousel.js?v=0.5.0" defer></script>
-<script src="../js/wizard.js?v=0.5.0" defer></script>
+<script src="../js/carrousel.js?v=0.6.0" defer></script>
+<script src="../js/wizard.js?v=0.6.0" defer></script>
 
   <div class="modale" id="modale-doc" hidden>
     <div class="modale-cadre" role="dialog" aria-modal="true" aria-labelledby="modale-titre">

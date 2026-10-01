@@ -106,3 +106,22 @@
   .modale { padding: 0.5rem; }
   .modale-cadre { height: 94dvh; }
 }
+
+/* zone gauche : explications contextuelles */
+.gauche.avec-eclairage { flex-direction: column; align-items: stretch; justify-content: flex-end; gap: 1rem; }
+.gauche.avec-eclairage .marque { position: static; }
+.eclairage {
+  position: relative; z-index: 1;
+  background: var(--panneau); border: 1px solid var(--filet); border-radius: 12px;
+  padding: 1rem 1.1rem; backdrop-filter: blur(8px);
+  font-size: 0.88rem; color: var(--muted);
+  max-height: 38vh; overflow: auto;
+}
+.eclairage strong { color: var(--ink); }
+.eclairage p { margin: 0; }
+.eclairage [hidden] { display: none; }
+/* applis TOTP */
+.applis-totp { border: 1px solid var(--filet); border-radius: 10px; padding: 0.8rem 0.9rem; display: grid; gap: 0.4rem; }
+.applis-totp p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+.applis-totp strong { color: var(--ink); }
+.applis-totp ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.15rem; font-size: 0.88rem; }

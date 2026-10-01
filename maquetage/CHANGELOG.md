@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.6.0 — 2026-10-01
+
+- Inscription : explications contextuelles à gauche (une par étape), 4 applis TOTP proposées, âge détecté affiché.
+
 ## v0.5.0 — 2026-10-01
 
 - Mentions provisoires (`mentions-legales/`, converties en HTML) : CGU, confidentialité, charte du conteur.

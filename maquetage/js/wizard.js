@@ -45,6 +45,12 @@
   function rafraichirConditions() {
     var mineur = !estMajeur();
     document.body.setAttribute('data-mineur', mineur ? 'oui' : 'non');
+    var noteAge = document.getElementById('note-age');
+    if (noteAge) {
+      if (!naissance || !naissance.value) { noteAge.textContent = ''; }
+      else if (mineur) { noteAge.textContent = 'Détecté : mineur — accord parental requis.'; }
+      else { noteAge.textContent = 'Détecté : majeur — accords standards.'; }
+    }
     var conteur = estConteur();
     Array.prototype.forEach.call(document.querySelectorAll('[data-si-mineur]'), function (el) {
       el.hidden = !mineur;
@@ -115,6 +121,9 @@
       li.classList.toggle('fait', !ici && !vu);
       if (ici) { li.setAttribute('aria-current', 'step'); }
       else { li.removeAttribute('aria-current'); }
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-eclairage]'), function (el) {
+      el.hidden = el.getAttribute('data-eclairage') !== nom;
     });
     rafraichirConditions();
   }
