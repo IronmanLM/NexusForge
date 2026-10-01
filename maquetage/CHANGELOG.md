@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.9.5 — 2026-10-01
+
+- Validation : « Bienvenue dans NexusForge » + texte explicatif complet + bouton « Entrer dans NexusForge ». Eclairage gauche aligné.
+
 ## v0.9.4 — 2026-10-01
 
 - Validation : « inactif » éradiqué partout (bloc validation + éclairage gauche) → « bridé » avec détails.
