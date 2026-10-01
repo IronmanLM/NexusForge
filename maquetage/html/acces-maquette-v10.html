@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NexusForge — Accès (maquette v5, textes provisoires)</title>
+<link rel="stylesheet" href="../css/acces.css">
+</head>
+<body>
+
+  <section class="gauche" aria-label="NexusForge Accès">
+    <span class="marque"><img src="../img/nexus_forge_symbol.svg" alt="" /><span>NexusForge</span></span>
+    <div class="titre">
+      <p class="sur-titre">Accès</p>
+      <h1>Entrez dans le jeu.</h1>
+    </div>
+  </section>
+
+  <section class="droite" aria-label="Connexion et inscription">
+    <div class="fond visible" id="fondA" aria-hidden="true"></div>
+    <div class="fond" id="fondB" aria-hidden="true"></div>
+    <div class="colonne">
+      <!-- Maquette statique : la connexion renvoie vers l’accueil en attendant la page « accueil connecté » (cf. TODO.md). -->
+      <form class="rapide" action="accueil-maquette-v11.html" method="get" aria-label="Connexion habituelle">
+        <h2>Déjà des nôtres</h2>
+        <label>Courriel <input type="email" name="email" autocomplete="email" placeholder="vous@exemple.fr" /></label>
+        <label>Mot de passe <input type="password" name="motdepasse" autocomplete="current-password" placeholder="••••••••" /></label>
+        <button type="submit">Se connecter</button>
+      </form>
+      <div class="rejoindre">
+        <h2>Nous rejoindre</h2>
+        <p>Première fois ? Nous t’accompagnons tout le long de ton périple.</p>
+        <a class="cta" href="#">Commencer →</a>
+      </div>
+    </div>
+  </section>
+
+<script>
+(function () {
+  'use strict';
+  /* ——— carrousel des 6 décors : jamais deux fois le même, fondu toutes les 15 s ——— */
+  var FONDS = ['../img/decor-abysses.jpg', '../img/decor-cyber.jpg', '../img/decor-phare.jpg', '../img/decor-dryade.jpg', '../img/decor-steam.jpg', '../img/decor-vampires.jpg'];
+  var coucheA = document.getElementById('fondA');
+  var coucheB = document.getElementById('fondB');
+  if (!coucheA || !coucheB) { return; }
+  var courant = Math.floor(Math.random() * FONDS.length);
+  var visible = coucheA, cachee = coucheB;
+  FONDS.forEach(function (src) { var im = new Image(); im.src = src; });
+  visible.style.backgroundImage = 'url("' + FONDS[courant] + '")';
+  function tirage(sauf) {
+    var i;
+    do { i = Math.floor(Math.random() * FONDS.length); } while (i === sauf);
+    return i;
+  }
+  var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduit) {
+    setInterval(function () {
+      var suivant = tirage(courant);
+      courant = suivant;
+      cachee.style.backgroundImage = 'url("' + FONDS[suivant] + '")';
+      cachee.classList.add('visible');
+      visible.classList.remove('visible');
+      var echange = visible; visible = cachee; cachee = echange;
+    }, 15000);
+  }
+})();
+</script>
+
+</body>
+</html>

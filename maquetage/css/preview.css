@@ -1,0 +1,30 @@
+:root {
+  --ink: #e8ecf4;
+  --muted: #9aa6bd;
+  --fond: #06090f;
+  --accent: #38e1ff;
+  --filet: rgba(232, 236, 244, 0.16);
+  --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--fond); color: var(--ink);
+  font-family: var(--sans); line-height: 1.5;
+  min-height: 100dvh; display: flex; align-items: center; justify-content: center;
+  padding: 2rem 1.2rem;
+}
+main { width: 100%; max-width: 44rem; }
+.sur-titre { color: var(--accent); text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.78rem; margin: 0 0 0.5rem; }
+.version { border: 1px solid var(--filet); border-radius: 999px; padding: 0.1rem 0.6rem; letter-spacing: 0.05em; }
+h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0 0 0.6rem; }
+.lede { color: var(--muted); margin: 0 0 1.6rem; }
+.cartes { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.carte { border: 1px solid var(--filet); border-radius: 14px; padding: 1.2rem 1.3rem; text-decoration: none; color: var(--ink); }
+.carte:hover { border-color: var(--accent); }
+.carte h2 { font-family: var(--serif); font-weight: 400; font-size: 1.3rem; margin: 0 0 0.4rem; }
+.etiquette { font-family: var(--sans); font-size: 0.75rem; color: var(--accent); border: 1px solid var(--filet); border-radius: 999px; padding: 0.1rem 0.55rem; vertical-align: middle; }
+.carte p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+footer { margin-top: 1.8rem; font-size: 0.85rem; color: var(--muted); }
+footer a { color: var(--muted); }
+@media (max-width: 640px) { .cartes { grid-template-columns: 1fr; } }

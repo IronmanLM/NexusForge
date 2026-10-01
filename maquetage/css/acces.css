@@ -1,0 +1,64 @@
+:root {
+    --ink: #e8ecf4;
+    --muted: #9aa6bd;
+    --fond: #06090f;
+    --panneau: rgba(11, 18, 32, 0.55);
+    --accent: #38e1ff;
+    --filet: rgba(232, 236, 244, 0.16);
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--fond); color: var(--ink);
+    font-family: var(--sans); line-height: 1.5;
+    height: 100dvh; overflow: hidden;
+    display: grid; grid-template-columns: 1fr 1fr;
+  }
+  /* ——— moitié gauche : fond NexusForge statique ——— */
+  .gauche {
+    position: relative; display: flex; align-items: flex-end;
+    background: url("../img/bandeau-nexusforge.jpg") center 40% / cover no-repeat, var(--fond);
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+  }
+  .gauche::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(6, 9, 15, 0.88) 0%, transparent 55%), linear-gradient(to left, var(--fond) 0%, transparent clamp(60px, 8vw, 140px)), linear-gradient(rgba(6, 9, 15, 0.6), rgba(6, 9, 15, 0.6)); }
+  .gauche .marque { position: absolute; top: clamp(1.2rem, 3vh, 2.2rem); left: clamp(1.5rem, 4vw, 3.5rem); display: flex; align-items: center; gap: 0.7rem; z-index: 1; }
+  .gauche .marque img { height: 36px; width: auto; display: block; }
+  .gauche .marque span { font-family: var(--serif); font-size: 1.3rem; letter-spacing: 0.04em; }
+  .gauche .titre { position: relative; z-index: 1; }
+  .gauche .sur-titre { color: var(--accent); text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.78rem; margin: 0 0 0.5rem; }
+  .gauche h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 4.5vw, 3.4rem); line-height: 1.06; margin: 0; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.85); }
+  /* ——— moitié droite : décors tournants + login + rejoindre ——— */
+  .droite { position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: clamp(1.2rem, 3vw, 2.5rem); }
+  .droite .fond {
+    position: absolute; inset: 0; z-index: 0;
+    background-size: cover; background-position: center 30%; background-repeat: no-repeat;
+    opacity: 0; transition: opacity 1.6s ease;
+  }
+  .droite .fond.visible { opacity: 1; }
+  .droite::after { content: ""; position: absolute; inset: 0; z-index: 1; background: rgba(6, 9, 15, 0.62); }
+  /* ——— couture douce : fondu au noir entre les deux moitiés (AU-DESSUS des fonds) ——— */
+  .droite::before {
+    content: ""; position: absolute; top: 0; bottom: 0; left: 0; z-index: 1;
+    width: clamp(60px, 8vw, 140px);
+    background: linear-gradient(to right, var(--fond), transparent);
+  }
+  .droite .colonne { position: relative; z-index: 2; width: 100%; max-width: 24rem; display: grid; gap: 1.1rem; }
+  form.rapide { background: var(--panneau); border: 1px solid var(--filet); border-radius: 14px; padding: 1.3rem; display: grid; gap: 0.7rem; backdrop-filter: blur(10px); }
+  form.rapide h2 { font-family: var(--serif); font-weight: 400; font-size: 1.25rem; margin: 0; }
+  form.rapide label { font-size: 0.88rem; color: var(--muted); display: grid; gap: 0.25rem; }
+  form.rapide input { background: #060b16; border: 1px solid var(--filet); border-radius: 8px; color: var(--ink); padding: 0.65rem 0.85rem; font-size: 0.95rem; min-height: 44px; width: 100%; }
+  form.rapide button { background: var(--accent); color: #04121a; font-weight: 600; border: none; border-radius: 999px; padding: 0.75rem 1.5rem; font-size: 0.95rem; min-height: 44px; cursor: pointer; }
+  .rejoindre { background: var(--panneau); border: 1px solid var(--filet); border-radius: 14px; padding: 1.1rem 1.3rem; backdrop-filter: blur(10px); }
+  .rejoindre h2 { font-family: var(--serif); font-weight: 400; font-size: 1.15rem; margin: 0 0 0.3rem; }
+  .rejoindre p { margin: 0 0 0.9rem; color: var(--muted); font-size: 0.92rem; }
+  .rejoindre a.cta { display: inline-flex; align-items: center; background: var(--accent); color: #04121a; font-weight: 600; border: none; border-radius: 999px; padding: 0.7rem 1.6rem; min-height: 44px; text-decoration: none; font-size: 0.95rem; }
+  @media (max-width: 760px) {
+    body { height: auto; min-height: 100dvh; overflow: visible; grid-template-columns: 1fr; }
+    .gauche { min-height: 42vh; }
+    .droite::before { top: 0; bottom: auto; left: 0; right: 0; width: auto; height: 90px; background: linear-gradient(to bottom, var(--fond), transparent); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .droite .fond { transition: none; }
+  }

@@ -4,104 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NexusForge — Accueil (maquette v2)</title>
-<style>
-  :root {
-    --ink: #e8ecf4;
-    --muted: #9aa6bd;
-    --fond: #06090f;
-    --accent: #38e1ff;
-    --accent-chaud: #ffb347;
-    --filet: rgba(232, 236, 244, 0.16);
-    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  }
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    background: var(--fond);
-    color: var(--ink);
-    font-family: var(--sans);
-    line-height: 1.6;
-  }
-  /* ——— navigation fine avec logo ——— */
-  .nav {
-    display: flex; align-items: center; gap: 1.6rem;
-    padding: 0.8rem clamp(1.2rem, 5vw, 4rem);
-    font-size: 0.95rem;
-  }
-  .nav .marque { display: flex; align-items: center; gap: 0.7rem; margin-right: auto; text-decoration: none; }
-  .nav .marque img { height: 34px; width: auto; display: block; }
-  .nav .marque span { font-family: var(--serif); font-size: 1.25rem; letter-spacing: 0.04em; color: var(--ink); }
-  .nav a { color: var(--muted); text-decoration: none; }
-  .nav a.actif { color: var(--ink); border-bottom: 1px solid var(--accent); padding-bottom: 2px; }
-  .nav a:hover { color: var(--ink); }
-  .nav select {
-    background: transparent; color: var(--muted); border: 1px solid var(--filet);
-    border-radius: 999px; padding: 0.45rem 0.8rem; font-size: 0.9rem; min-height: 44px;
-  }
-  .nav select option { color: #111; }
-  .nav .connexion { color: var(--ink); border: 1px solid var(--filet); border-radius: 999px; padding: 0.45rem 1.2rem; }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  /* ——— héros plein-bleed sur l'image de campagne ——— */
-  .heros {
-    position: relative;
-    min-height: min(82vh, 700px);
-    display: flex; align-items: flex-end;
-    background: var(--fond);
-    overflow: hidden;
-  }
-  .heros .fond {
-    position: absolute; inset: 0;
-    background-size: cover; background-position: center 30%; background-repeat: no-repeat;
-    opacity: 0; transition: opacity 1.6s ease;
-  }
-  .heros .fond.visible { opacity: 1; }
-  .heros::after {
-    content: ""; position: absolute; inset: 0;
-    background: linear-gradient(to top, var(--fond) 2%, rgba(6, 9, 15, 0.55) 34%, transparent 62%);
-  }
-  .heros .texte { position: relative; z-index: 1; padding: 0 clamp(1.2rem, 5vw, 4rem) clamp(2rem, 6vh, 4rem); max-width: 46rem; }
-  .sur-titre { color: var(--accent); text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.78rem; margin: 0 0 0.8rem; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9); }
-  h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(2.4rem, 6vw, 4.4rem); line-height: 1.05; margin: 0 0 1rem; text-wrap: pretty; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.85); }
-  .chapeau { color: var(--ink); font-size: clamp(1.02rem, 1.6vw, 1.2rem); max-width: 34rem; margin: 0 0 1.8rem; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.9); }
-  .cta { display: flex; flex-wrap: wrap; gap: 0.9rem; }
-  .cta a { text-decoration: none; border-radius: 999px; padding: 0.8rem 1.8rem; font-size: 1rem; min-height: 44px; display: inline-flex; align-items: center; }
-  .cta .primaire { background: var(--accent); color: #04121a; font-weight: 600; }
-  .cta .secondaire { color: var(--ink); border: 1px solid var(--filet); background: rgba(6, 9, 15, 0.55); }
-  /* ——— manifeste : une phrase, rien d'autre ——— */
-  .manifeste { text-align: center; padding: clamp(3.5rem, 9vh, 6rem) clamp(1.2rem, 8vw, 6rem); }
-  .manifeste p { font-family: var(--serif); font-size: clamp(1.4rem, 3vw, 2.1rem); line-height: 1.4; max-width: 44rem; margin: 0 auto; text-wrap: pretty; }
-  .manifeste p em { color: var(--accent-chaud); font-style: italic; }
-  /* ——— trois entrées en lignes éditoriales, séparées d'un filet ——— */
-  .entrees { max-width: 60rem; margin: 0 auto; padding: 0 clamp(1.2rem, 5vw, 4rem) clamp(3rem, 8vh, 5rem); }
-  .entree { display: grid; grid-template-columns: 4rem 1fr auto; gap: 1.4rem; align-items: baseline; padding: 1.8rem 0; border-top: 1px solid var(--filet); text-decoration: none; color: inherit; }
-  .entree:last-child { border-bottom: 1px solid var(--filet); }
-  .entree .numero { font-family: var(--serif); color: var(--accent); font-size: 1.3rem; }
-  .entree h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(1.4rem, 2.6vw, 1.9rem); margin: 0 0 0.3rem; }
-  .entree p { color: var(--muted); margin: 0; max-width: 32rem; }
-  .entree .fleche { color: var(--muted); font-size: 1.5rem; transition: transform 0.2s ease, color 0.2s ease; }
-  .entree:hover .fleche { transform: translateX(6px); color: var(--accent); }
-  /* ——— respiration visuelle : le bandeau large officiel, plein-bleed ——— */
-  .respiration img { display: block; width: 100%; height: clamp(200px, 36vw, 420px); object-fit: cover; object-position: center 40%; }
-  .pied { display: flex; flex-wrap: wrap; gap: 1rem 2.5rem; align-items: center; padding: 2.2rem clamp(1.2rem, 5vw, 4rem) 3rem; color: var(--muted); font-size: 0.9rem; }
-  .pied .marque { font-family: var(--serif); color: var(--ink); font-size: 1.05rem; margin-right: auto; }
-  .pied a { color: var(--muted); text-decoration: none; }
-  @media (max-width: 640px) {
-    .nav { gap: 1rem; font-size: 0.85rem; }
-    .entree { grid-template-columns: 2.6rem 1fr; }
-    .entree .fleche { display: none; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
-    .entree .fleche { transition: none; }
-  }
-</style>
+<link rel="stylesheet" href="../css/accueil.css">
 </head>
 <body>
 
   <nav class="nav" aria-label="Navigation principale">
-    <span class="marque"><img src="../../frontend/public/brand/nexus_forge_symbol.svg" alt="" /><span>NexusForge</span></span>
+    <span class="marque"><img src="../img/nexus_forge_symbol.svg" alt="" /><span>NexusForge</span></span>
     <a class="actif" href="#" aria-current="page" data-i18n="nav.home">Accueil</a>
     <label class="sr" for="langue">Langue / Language</label>
     <select id="langue" aria-label="Langue">
@@ -110,7 +18,7 @@
       <option value="de">Deutsch</option>
       <option value="es">Español</option>
     </select>
-    <a class="connexion" href="#" data-i18n="nav.login">Connexion</a>
+    <a class="connexion" href="acces-maquette-v10.html" data-i18n="nav.login">Connexion</a>
   </nav>
 
   <header class="heros" id="heros">
@@ -121,8 +29,8 @@
       <h1 data-i18n="hero.title">La table où vos mondes prennent vie.</h1>
       <p class="chapeau" data-i18n="hero.lead">Rejoignez votre partie en un clic, ou forgez votre propre système de règles. NexusForge fonctionne même sans connexion.</p>
       <div class="cta">
-        <a class="primaire" href="#" data-i18n="hero.cta1">Rejoindre une partie</a>
-        <a class="secondaire" href="#" data-i18n="hero.cta2">Devenir un conteur</a>
+        <a class="primaire" href="acces-maquette-v10.html" data-i18n="hero.cta1">Rejoindre une partie</a>
+        <a class="secondaire" href="acces-maquette-v10.html" data-i18n="hero.cta2">Devenir un conteur</a>
       </div>
     </div>
   </header>
@@ -132,24 +40,24 @@
   </section>
 
   <nav class="entrees" aria-label="Trois façons d'entrer">
-    <a class="entree" href="#">
+    <a class="entree" href="acces-maquette-v10.html">
       <span class="numero">I</span>
       <span><h2 data-i18n="e1t">Je suis joueur</h2><p data-i18n="e1d">Mes parties m’attendent, mes fiches sont prêtes. Rien à installer, rien à configurer.</p></span>
       <span class="fleche" aria-hidden="true">→</span>
     </a>
-    <a class="entree" href="#">
+    <a class="entree" href="acces-maquette-v10.html">
       <span class="numero">II</span>
       <span><h2 data-i18n="e2t">Je suis conteur</h2><p data-i18n="e2d">Je conte mon histoire, j’invite ma tablée, je règle le décor séance par séance.</p></span>
       <span class="fleche" aria-hidden="true">→</span>
     </a>
-    <a class="entree" href="#">
+    <a class="entree" href="acces-maquette-v10.html">
       <span class="numero">III</span>
       <span><h2 data-i18n="e3t">Je découvre</h2><p data-i18n="e3d">Une visite guidée de la table, sans compte et sans jargon, en deux minutes.</p></span>
       <span class="fleche" aria-hidden="true">→</span>
     </a>
   </nav>
 
-  <div class="respiration"><img src="../../frontend/public/brand/nexusforge_bandeau.png" alt="L’univers NexusForge" /></div>
+  <div class="respiration"><img src="../img/bandeau-nexusforge.jpg" alt="L’univers NexusForge" /></div>
 
   <footer class="pied">
     <span class="marque">NexusForge</span>
@@ -161,7 +69,7 @@
 (function () {
   'use strict';
   /* ——— carrousel de fonds : 5 images, jamais deux fois la même, fondu toutes les 15 s ——— */
-  var FONDS = ['assets/fond-fantasy.jpg', 'assets/fond-cyber.jpg', 'assets/fond-tenebres.jpg', 'assets/fond-steam.jpg', 'assets/fond-abysses.jpg'];
+  var FONDS = ['../img/fond-fantasy.jpg', '../img/fond-cyber.jpg', '../img/fond-tenebres.jpg', '../img/fond-steam.jpg', '../img/fond-abysses.jpg'];
   var heros = document.getElementById('heros');
   var coucheA = document.getElementById('fondA');
   var coucheB = document.getElementById('fondB');
