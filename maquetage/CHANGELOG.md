@@ -1,5 +1,11 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.3.1 — 2026-10-01
+
+- Page Accès : hauteurs minimales portées par les sections elles-mêmes (navigateurs
+  sans `dvh` ou grille capricieuse, page tassée et bande vide en bas).
+- Anti-cache : `?v=` sur les liens CSS/JS (auto depuis `VERSION` pour les docs générées).
+
 ## v0.3.0 — 2026-10-01
 
 - Socle réutilisable : `css/commun.css` (variables, base, carrousel) partagé par les pages, `js/carrousel.js` et `js/langue.js` externes (zéro JS embarqué).

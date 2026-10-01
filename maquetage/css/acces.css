@@ -6,6 +6,7 @@
   /* ——— moitié gauche : fond NexusForge statique ——— */
   .gauche {
     position: relative; display: flex; align-items: flex-end;
+    min-height: 100%; min-height: 100vh; min-height: 100dvh;
     background: url("../img/bandeau-nexusforge.jpg") center 40% / cover no-repeat, var(--fond);
     padding: clamp(1.5rem, 4vw, 3.5rem);
   }
@@ -17,7 +18,7 @@
   .gauche .sur-titre { margin: 0 0 0.5rem; }
   .gauche h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 4.5vw, 3.4rem); line-height: 1.06; margin: 0; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.85); }
   /* ——— moitié droite : décors tournants + login + rejoindre ——— */
-  .droite { position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: clamp(1.2rem, 3vw, 2.5rem); }
+  .droite { position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; min-height: 100%; min-height: 100vh; min-height: 100dvh; padding: clamp(1.2rem, 3vw, 2.5rem); }
   .droite::after { content: ""; position: absolute; inset: 0; z-index: 1; background: rgba(6, 9, 15, 0.62); }
   /* ——— couture douce : fondu au noir entre les deux moitiés (AU-DESSUS des fonds) ——— */
   .droite::before {

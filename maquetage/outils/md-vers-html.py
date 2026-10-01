@@ -19,7 +19,7 @@ GABARIT = """<!doctype html>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>{titre} — Maquetage NexusForge</title>
-<link rel="stylesheet" href="../css/preview.css">
+<link rel="stylesheet" href="../css/preview.css?v={version}">
 <!-- Page générée par outils/md-vers-html.py — retoucher le .md, pas ce fichier. -->
 </head>
 <body>
@@ -114,12 +114,18 @@ def main():
         with io.open(os.path.join(RACINE, nom + ".md"), encoding="utf-8") as f:
             lignes = f.read().splitlines()
         titre = "Document"
+        version = "0.0.0"
+        try:
+            with io.open(os.path.join(RACINE, "VERSION"), encoding="utf-8") as fv:
+                version = fv.read().strip().lstrip("v")
+        except OSError:
+            pass
         for ligne in lignes:
             if ligne.startswith("# "):
                 titre = ligne[2:].strip()
                 break
         corps = convertir(lignes)
-        page = GABARIT.format(titre=titre, corps=corps)
+        page = GABARIT.format(titre=titre, corps=corps, version=version)
         cible = os.path.join(RACINE, "html", nom + ".html")
         with io.open(cible, "w", encoding="utf-8") as f:
             f.write(page)

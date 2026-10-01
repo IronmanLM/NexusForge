@@ -1,6 +1,6 @@
 # Maquetage NexusForge
 
-[![Version](https://img.shields.io/badge/version-v0.3.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.3.1-blue)](CHANGELOG.md)
 [![Avancement](https://img.shields.io/badge/avancement-maquettes_en_cours-orange)](ROADMAP.md)
 
 Maquettes statiques des pages d’entrée (joueur et utilisatrice, y compris non avertie).
@@ -61,3 +61,6 @@ python3 outils/md-vers-html.py
 
 `VERSION` et `CHANGELOG.md` sont mis à jour à chaque commit.
 Les shields du README reflètent la version et l’avancement courants.
+Anti-cache : les liens CSS/JS portent `?v=` (issu de `VERSION`, auto pour les docs
+générées) — le mettre à jour à chaque version dans `html/*.html` et `index.html`,
+puis régénérer les docs avant de commiter.
