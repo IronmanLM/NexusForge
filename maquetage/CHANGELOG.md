@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.4 — 2026-10-01
+
+- Espace parents : titre plaqué en bas de la colonne gauche, blocs explicatifs au-dessus (JdR puis protections).
+
 ## v0.8.3 — 2026-10-01
 
 - Espace parents tassé (~60 px gagnés) pour tenir sur une hauteur 768 px sans ascenseur.
