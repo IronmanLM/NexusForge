@@ -10,7 +10,7 @@
     background: url("../img/bandeau-nexusforge.jpg") center 40% / cover no-repeat, var(--fond);
     padding: clamp(1.5rem, 4vw, 3.5rem);
   }
-  .gauche::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(6, 9, 15, 0.88) 0%, transparent 55%), linear-gradient(to left, var(--fond) 0%, transparent clamp(60px, 8vw, 140px)), linear-gradient(rgba(6, 9, 15, 0.6), rgba(6, 9, 15, 0.6)); }
+  .gauche::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(6, 9, 15, 0.88) 0%, transparent 55%), linear-gradient(to left, var(--fond) 0%, transparent clamp(60px, 8vw, 140px)), linear-gradient(rgba(6, 9, 15, 0.85), rgba(6, 9, 15, 0.85)); }
   .gauche .marque { position: absolute; top: clamp(1.2rem, 3vh, 2.2rem); left: clamp(1.5rem, 4vw, 3.5rem); display: flex; align-items: center; gap: 0.7rem; z-index: 1; }
   .gauche .marque img { height: 36px; width: auto; display: block; }
   .gauche .marque span { font-family: var(--serif); font-size: 1.3rem; letter-spacing: 0.04em; }

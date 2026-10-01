@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.3.3 — 2026-10-01
+
+- Bandeau de gauche : voile renforcé (0.85), logo à peine visible.
+
 ## v0.3.2 — 2026-10-01
 
 - Page Accès : voile sombre retiré des décors de droite, réservé au bandeau de gauche.
