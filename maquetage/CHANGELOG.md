@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.3.2 — 2026-10-01
+
+- Page Accès : voile sombre retiré des décors de droite, réservé au bandeau de gauche.
+
 ## v0.3.1 — 2026-10-01
 
 - Page Accès : hauteurs minimales portées par les sections elles-mêmes (navigateurs

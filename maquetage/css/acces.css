@@ -19,7 +19,7 @@
   .gauche h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 4.5vw, 3.4rem); line-height: 1.06; margin: 0; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.85); }
   /* ——— moitié droite : décors tournants + login + rejoindre ——— */
   .droite { position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; min-height: 100%; min-height: 100vh; min-height: 100dvh; padding: clamp(1.2rem, 3vw, 2.5rem); }
-  .droite::after { content: ""; position: absolute; inset: 0; z-index: 1; background: rgba(6, 9, 15, 0.62); }
+  /* Pas de voile sur les décors de droite : l’obscurcissement reste réservé au bandeau de gauche. */
   /* ——— couture douce : fondu au noir entre les deux moitiés (AU-DESSUS des fonds) ——— */
   .droite::before {
     content: ""; position: absolute; top: 0; bottom: 0; left: 0; z-index: 1;
