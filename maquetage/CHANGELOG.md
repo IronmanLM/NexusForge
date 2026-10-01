@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.9.3 — 2026-10-01
+
+- Validation : « inactif » → « bridé » (profil + consentements + exploration possibles, interdictions d'interaction). Distinction claire du mineur non autorisé.
+
 ## v0.9.2 — 2026-10-01
 
 - TOTP : correction des fonctions SHA-1 (mauvaises variables) ; 4 vecteurs validés (SHA-1 ×2, HMAC RFC 2202, TOTP RFC 6238).
