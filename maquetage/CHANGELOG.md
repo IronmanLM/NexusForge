@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.4.0 — 2026-10-01
+
+- Wizard d’inscription (`html/inscription.html`, `js/wizard.js`, `css/inscription.css`) : 6 étapes, voies cumulables, cas mineur, TOTP conteur, validation admin, première connexion.
+
 ## v0.3.3 — 2026-10-01
 
 - Bandeau de gauche : voile renforcé (0.85), logo à peine visible.

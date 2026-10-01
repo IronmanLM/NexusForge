@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NexusForge — Inscription</title>
+<link rel="stylesheet" href="../css/commun.css?v=0.4.0">
+<link rel="stylesheet" href="../css/acces.css?v=0.4.0">
+<link rel="stylesheet" href="../css/inscription.css?v=0.4.0">
+</head>
+<body>
+
+  <section class="gauche" aria-label="NexusForge Inscription">
+    <a class="marque" href="accueil.html"><img src="../img/nexus_forge_symbol.svg" alt="" /><span>NexusForge</span></a>
+    <div class="titre">
+      <p class="sur-titre">Inscription</p>
+      <h1>Commence ton périple.</h1>
+    </div>
+  </section>
+
+  <section class="droite carrousel" data-fonds="../img/decor-abysses.jpg ../img/decor-cyber.jpg ../img/decor-phare.jpg ../img/decor-dryade.jpg ../img/decor-steam.jpg ../img/decor-vampires.jpg" data-delai="15000" aria-label="Assistant d’inscription">
+    <div class="fond" aria-hidden="true"></div>
+    <div class="fond" aria-hidden="true"></div>
+    <div class="colonne large" data-wizard>
+      <ol class="progres" aria-label="Progression">
+        <li data-etape="chemin">Chemin</li>
+        <li data-etape="compte">Compte</li>
+        <li data-etape="accords">Accords</li>
+        <li data-etape="verification">Vérification</li>
+        <li data-etape="validation">Validation</li>
+        <li data-etape="connexion">Connexion</li>
+      </ol>
+
+      <div class="panneau" data-panneau="chemin">
+        <h2>Qui veux-tu être ?</h2>
+        <p class="lede-w">Joueur, conteur… ou les deux : les voies ne s’excluent pas et se règlent plus tard.</p>
+        <label class="voie"><input type="checkbox" id="voie-joueur" checked /> <span><strong>Jouer</strong>Rejoindre des tables, mes fiches sous le bras.</span></label>
+        <label class="voie"><input type="checkbox" id="voie-conteur" /> <span><strong>Conter</strong>Mener mes séances, inviter ma tablée.</span></label>
+        <ol class="protocole">
+          <li><strong>Compte</strong> — pseudo, courriel, mot de passe.</li>
+          <li><strong>Accords</strong> — règles acceptées, accord parental si mineur.</li>
+          <li><strong>Vérification</strong> — courriel confirmé, TOTP renforcé.</li>
+          <li><strong>Validation</strong> — un administrateur active le compte.</li>
+          <li><strong>Connexion</strong> — entrée automatique dans le jeu.</li>
+        </ol>
+        <div class="actions"><button type="button" data-suivant>Continuer →</button></div>
+      </div>
+
+      <div class="panneau" data-panneau="compte" hidden>
+        <h2>Ton compte</h2>
+        <label>Pseudo <input type="text" name="pseudo" required autocomplete="nickname" placeholder="Ex. NehwonLM" /></label>
+        <label>Courriel <input type="email" name="courriel" required autocomplete="email" placeholder="vous@exemple.fr" /></label>
+        <label>Mot de passe <input type="password" name="motdepasse" required minlength="12" autocomplete="new-password" placeholder="12 caractères minimum" /></label>
+        <label>Date de naissance <input type="date" id="naissance" name="naissance" required /></label>
+        <p class="note">Ta naissance adapte les accords (protection des mineurs), rien d’autre.</p>
+        <div class="actions"><button type="button" data-precedent>← Retour</button><button type="button" data-suivant>Continuer →</button></div>
+      </div>
+
+      <div class="panneau" data-panneau="accords" hidden>
+        <h2>Les règles du jeu</h2>
+        <label class="coche"><input type="checkbox" name="cgu" required /> J’accepte les conditions d’utilisation.</label>
+        <label class="coche"><input type="checkbox" name="confidentialite" required /> J’accepte la politique de confidentialité.</label>
+        <div class="bloc-mineur" data-si-mineur hidden>
+          <p><strong>Tu es mineur :</strong> l’accord d’un parent ou responsable légal est requis.</p>
+          <label class="coche"><input type="checkbox" name="parental" data-requis-mineur /> Un parent ou responsable légal accepte mon inscription.</label>
+        </div>
+        <div class="bloc-conteur" data-si-conteur hidden>
+          <p><strong>Voie du conteur :</strong> la charte des meneurs s’applique à tes tables.</p>
+          <label class="coche"><input type="checkbox" name="charte" data-requis-conteur /> J’accepte la charte du conteur.</label>
+        </div>
+        <div class="actions"><button type="button" data-precedent>← Retour</button><button type="button" data-suivant>Continuer →</button></div>
+      </div>
+
+      <div class="panneau" data-panneau="verification" hidden>
+        <h2>Prouve que c’est toi</h2>
+        <p class="lede-w">Un lien de confirmation part vers ton courriel : ouvre-le, puis reviens ici.</p>
+        <label>Code reçu <input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" placeholder="6 chiffres" /></label>
+        <div class="bloc-conteur" data-si-conteur hidden>
+          <p><strong>Conteur :</strong> la double authentification (TOTP) est obligatoire pour mener.</p>
+          <label class="coche"><input type="checkbox" name="totp" data-requis-conteur /> Mon application d’authentification est configurée.</label>
+        </div>
+        <div class="bloc-joueur" data-si-joueur-seul>
+          <p><strong>Joueur :</strong> la double authentification reste optionnelle, mais recommandée.</p>
+          <label class="coche"><input type="checkbox" name="totp-plus-tard" checked /> Me rappeler la TOTP plus tard.</label>
+        </div>
+        <div class="actions"><button type="button" data-precedent>← Retour</button><button type="button" data-suivant>Continuer →</button></div>
+      </div>
+
+      <div class="panneau" data-panneau="validation" hidden>
+        <h2>Dernier pas : nous</h2>
+        <ol class="protocole etat">
+          <li class="fait">Compte créé et vérifié.</li>
+          <li class="encours">Un administrateur examine ta demande.</li>
+          <li>Première connexion automatique.</li>
+        </ol>
+        <p class="note"><strong>Ton compte reste inactif</strong> tant qu’un administrateur ne l’a pas validé. Tu recevras un courriel dès que ce sera fait.</p>
+        <div class="actions"><button type="button" data-precedent>← Retour</button><button type="button" data-suivant>J’ai compris →</button></div>
+      </div>
+
+      <div class="panneau" data-panneau="connexion" hidden>
+        <h2>Bienvenue à la table</h2>
+        <!-- Maquette statique : en production, la validation admin déclenche la connexion automatique. -->
+        <p class="lede-w">L’administrateur vient de valider ton compte <em>(simulation)</em> : ta première connexion est automatique.</p>
+        <div class="actions"><a class="cta" href="accueil.html">Entrer dans le jeu →</a></div>
+      </div>
+
+    </div>
+  </section>
+
+<script>
+window.NF_WIZARD_VOIES = { joueur: 'voie-joueur', conteur: 'voie-conteur' };
+</script>
+<script src="../js/carrousel.js?v=0.4.0" defer></script>
+<script src="../js/wizard.js?v=0.4.0" defer></script>
+
+</body>
+</html>

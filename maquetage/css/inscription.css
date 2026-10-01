@@ -1,0 +1,65 @@
+/* ——— page Inscription : réutilise acces.css, ajoute le pas-à-pas ——— */
+.droite .colonne.large { max-width: 28rem; }
+/* progression */
+.progres {
+  display: flex; gap: 0.35rem; list-style: none;
+  margin: 0; padding: 0; font-size: 0.72rem; color: var(--muted);
+}
+.progres li {
+  flex: 1; padding-top: 0.45rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  border-top: 2px solid var(--filet);
+}
+.progres li.fait { border-top-color: var(--accent); color: var(--ink); }
+.progres li[aria-current] { border-top-color: var(--ink); color: var(--ink); }
+/* panneaux */
+.panneau {
+  background: var(--panneau); border: 1px solid var(--filet); border-radius: 14px;
+  padding: 1.3rem; display: grid; gap: 0.75rem; backdrop-filter: blur(10px);
+}
+.panneau[hidden] { display: none; }
+.panneau h2 { font-family: var(--serif); font-weight: 400; font-size: 1.25rem; margin: 0; }
+.panneau .lede-w { margin: 0; color: var(--muted); font-size: 0.92rem; }
+.panneau label { font-size: 0.88rem; color: var(--muted); display: grid; gap: 0.25rem; }
+.panneau input[type="text"], .panneau input[type="email"],
+.panneau input[type="password"], .panneau input[type="date"] {
+  background: #060b16; border: 1px solid var(--filet); border-radius: 8px;
+  color: var(--ink); padding: 0.65rem 0.85rem; font-size: 0.95rem; min-height: 44px; width: 100%;
+}
+/* cartes de voie + cases */
+.voie, .coche {
+  display: flex !important; flex-direction: row; align-items: flex-start; gap: 0.7rem;
+  border: 1px solid var(--filet); border-radius: 10px; padding: 0.8rem 0.9rem;
+  cursor: pointer; color: var(--ink) !important;
+}
+.voie:has(input:checked) { border-color: var(--accent); }
+.voie input, .coche input { width: 1.15rem; height: 1.15rem; margin-top: 0.15rem; accent-color: var(--accent); flex: 0 0 auto; }
+.voie strong { display: block; font-size: 0.95rem; }
+.voie span { font-size: 0.85rem; color: var(--muted); }
+/* protocole + blocs conditionnels */
+.protocole { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; font-size: 0.85rem; color: var(--muted); }
+.protocole strong { color: var(--ink); }
+.protocole.etat .fait { color: var(--ink); }
+.protocole.etat .encours { color: var(--accent); }
+.bloc-mineur { border: 1px solid rgba(255, 179, 71, 0.45); border-radius: 10px; padding: 0.8rem 0.9rem; display: grid; gap: 0.6rem; }
+.bloc-mineur p, .bloc-conteur p, .bloc-joueur p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+.bloc-mineur strong, .bloc-conteur strong, .bloc-joueur strong { color: var(--ink); }
+.note { margin: 0; font-size: 0.85rem; color: var(--muted); }
+.note strong { color: var(--ink); }
+.avert-champ { margin: 0; font-size: 0.88rem; color: #ff9a9a; }
+.avert-champ[hidden] { display: none; }
+/* actions */
+.actions { display: flex; justify-content: space-between; gap: 0.8rem; }
+.actions button, .actions .cta {
+  border-radius: 999px; padding: 0.7rem 1.5rem; min-height: 44px;
+  font-size: 0.95rem; text-decoration: none; cursor: pointer;
+}
+.actions button[data-suivant], .actions .cta {
+  background: var(--accent); color: #04121a; font-weight: 600; border: none; margin-left: auto;
+}
+.actions button[data-precedent] {
+  background: transparent; color: var(--ink); border: 1px solid var(--filet);
+}
+@media (max-width: 760px) {
+  .progres li { font-size: 0; }
+  .progres li::after { content: "●"; font-size: 0.72rem; }
+}

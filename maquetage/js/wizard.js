@@ -1,0 +1,120 @@
+/* Assistant pas-à-pas (sans dépendance).
+   Conventions (même balisage reprisable côté frontend) :
+     [data-wizard]                  conteneur
+     [data-panneau="nom"]           étapes (la première visible, les autres hidden)
+     [data-suivant] / [data-precedent] boutons de navigation
+     li[data-etape="nom"]           progression (classes .fait, aria-current)
+     #naissance                     date de naissance -> body[data-mineur]
+     window.NF_WIZARD_VOIES         { joueur: 'id-case', conteur: 'id-case' }
+     [data-si-mineur] / [data-si-conteur] / [data-si-joueur-seul] blocs conditionnels
+     [data-requis-mineur] / [data-requis-conteur] cases requises quand visibles
+   Validation : champs [required] visibles du panneau courant + au moins une voie. */
+(function () {
+  'use strict';
+  var zone = document.querySelector('[data-wizard]');
+  if (!zone) { return; }
+  var panneaux = Array.prototype.slice.call(zone.querySelectorAll('[data-panneau]'));
+  var puces = Array.prototype.slice.call(zone.querySelectorAll('[data-etape]'));
+  var courant = 0;
+  var VOIES = window.NF_WIZARD_VOIES || {};
+  var naissance = document.getElementById('naissance');
+
+  function estMajeur() {
+    if (!naissance || !naissance.value) { return true; }
+    var date = new Date(naissance.value + 'T00:00:00');
+    if (isNaN(date.getTime())) { return true; }
+    var limite = new Date(date.getFullYear() + 18, date.getMonth(), date.getDate());
+    return new Date() >= limite;
+  }
+  function estConteur() {
+    var id = VOIES.conteur;
+    var el = id && document.getElementById(id);
+    return !!(el && el.checked);
+  }
+  function voiesChoisies() {
+    return Object.keys(VOIES).some(function (k) {
+      var el = document.getElementById(VOIES[k]);
+      return el && el.checked;
+    });
+  }
+  function rafraichirConditions() {
+    var mineur = !estMajeur();
+    document.body.setAttribute('data-mineur', mineur ? 'oui' : 'non');
+    var conteur = estConteur();
+    Array.prototype.forEach.call(document.querySelectorAll('[data-si-mineur]'), function (el) {
+      el.hidden = !mineur;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-requis-mineur]'), function (el) {
+      el.required = mineur;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-si-conteur]'), function (el) {
+      el.hidden = !conteur;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-requis-conteur]'), function (el) {
+      el.required = conteur;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-si-joueur-seul]'), function (el) {
+      el.hidden = conteur;
+    });
+  }
+  function message(panneau, texte) {
+    var el = panneau.querySelector('.avert-champ');
+    if (!el) {
+      el = document.createElement('p');
+      el.className = 'avert-champ';
+      el.setAttribute('role', 'alert');
+      panneau.appendChild(el);
+    }
+    el.textContent = texte || '';
+    el.hidden = !texte;
+  }
+  function valide(i) {
+    var panneau = panneaux[i];
+    message(panneau, '');
+    if (panneau.getAttribute('data-panneau') === 'chemin') {
+      if (!voiesChoisies()) {
+        message(panneau, 'Choisis au moins une voie : joueur, conteur… ou les deux.');
+        return false;
+      }
+      return true;
+    }
+    var champs = Array.prototype.slice.call(panneau.querySelectorAll('[required]'));
+    for (var j = 0; j < champs.length; j++) {
+      if (champs[j].offsetParent === null) { continue; }
+      if (!champs[j].checkValidity()) {
+        champs[j].reportValidity();
+        return false;
+      }
+    }
+    return true;
+  }
+  function montrer(i) {
+    courant = Math.max(0, Math.min(panneaux.length - 1, i));
+    panneaux.forEach(function (p, k) { p.hidden = k !== courant; });
+    var nom = panneaux[courant].getAttribute('data-panneau');
+    var vu = false;
+    puces.forEach(function (li) {
+      var ici = li.getAttribute('data-etape') === nom;
+      if (ici) { vu = true; }
+      li.classList.toggle('fait', !ici && !vu);
+      if (ici) { li.setAttribute('aria-current', 'step'); }
+      else { li.removeAttribute('aria-current'); }
+    });
+    rafraichirConditions();
+  }
+  zone.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-suivant], [data-precedent]');
+    if (!btn) { return; }
+    if (btn.hasAttribute('data-suivant')) {
+      if (valide(courant)) { montrer(courant + 1); }
+    } else {
+      montrer(courant - 1);
+    }
+  });
+  Object.keys(VOIES).forEach(function (k) {
+    var el = document.getElementById(VOIES[k]);
+    if (el) { el.addEventListener('change', rafraichirConditions); }
+  });
+  if (naissance) { naissance.addEventListener('change', rafraichirConditions); }
+  montrer(0);
+})();

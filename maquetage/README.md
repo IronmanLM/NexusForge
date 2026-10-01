@@ -1,6 +1,6 @@
 # Maquetage NexusForge
 
-[![Version](https://img.shields.io/badge/version-v0.3.3-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.4.0-blue)](CHANGELOG.md)
 [![Avancement](https://img.shields.io/badge/avancement-maquettes_en_cours-orange)](ROADMAP.md)
 
 Maquettes statiques des pages d’entrée (joueur et utilisatrice, y compris non avertie).
@@ -14,7 +14,8 @@ Les boutons relient les maquettes entre elles :
 
 - **Accueil** → « Connexion », « Rejoindre une partie », « Devenir un conteur » mènent à la page Accès (`html/acces.html`).
 - **Accès** → « Se connecter » renvoie vers l’Accueil (`html/accueil.html`, en attendant la maquette « accueil connecté ») ; le logo « NexusForge » en haut à gauche y ramène aussi.
-- **Accès** → « Commencer » : déclenchera le futur wizard d’inscription (cf. `TODO.md`).
+- **Accès** → « Commencer » ouvre le wizard (`html/inscription.html`).
+- **Inscription** → 6 étapes : chemin (voies cumulables), compte, accords (mineur, charte), vérification (TOTP), validation admin, première connexion.
 
 ## Arborescence
 
@@ -28,7 +29,7 @@ maquetage/
 ├── index.html       # hub de prévisualisation statique
 ├── html/            # pages aux noms fonctionnels (accueil.html, acces.html, …)
 ├── css/             # commun.css (socle réutilisable) + un fichier par page
-├── js/              # carrousel.js, langue.js (sans dépendance, réutilisables)
+├── js/              # carrousel.js, langue.js, wizard.js (sans dépendance, réutilisables)
 ├── img/             # illustrations et symboles (jamais de base64 dans le HTML)
 └── outils/          # convertisseur md-vers-html.py (voir ci-dessous)
 ```
@@ -42,6 +43,8 @@ maquetage/
   `prefers-reduced-motion`. Même balisage reprisable côté frontend.
 - `js/langue.js` : mémorise `<select id="langue">` et applique `window.NF_TEXTES`
   aux `[data-i18n]` ; les dictionnaires restent dans la page (contenu, futurs `messages.ts`).
+- `js/wizard.js` : pas-à-pas générique (`data-panneau`, `data-suivant`, progression
+  `data-etape`, blocs `data-si-*`, âge via `#naissance`, voies via `window.NF_WIZARD_VOIES`).
 
 ## Pages de documentation
 

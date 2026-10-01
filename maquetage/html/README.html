@@ -4,21 +4,22 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Maquetage NexusForge — Maquetage NexusForge</title>
-<link rel="stylesheet" href="../css/preview.css?v=0.3.3">
+<link rel="stylesheet" href="../css/preview.css?v=0.4.0">
 <!-- Page générée par outils/md-vers-html.py — retoucher le .md, pas ce fichier. -->
 </head>
 <body>
   <main class="doc">
     <p class="sur-titre"><a href="../index.html">← Maquetage</a></p>
 <h1>Maquetage NexusForge</h1>
-<p><a href="CHANGELOG.html"><img class="bouclier" alt="Version" src="https://img.shields.io/badge/version-v0.3.3-blue"></a> <a href="ROADMAP.html"><img class="bouclier" alt="Avancement" src="https://img.shields.io/badge/avancement-maquettes_en_cours-orange"></a></p>
+<p><a href="CHANGELOG.html"><img class="bouclier" alt="Version" src="https://img.shields.io/badge/version-v0.4.0-blue"></a> <a href="ROADMAP.html"><img class="bouclier" alt="Avancement" src="https://img.shields.io/badge/avancement-maquettes_en_cours-orange"></a></p>
 <p>Maquettes statiques des pages d’entrée (joueur et utilisatrice, y compris non avertie). Textes en français provisoires — l’intégration utilisera les clés i18n (<code>nav.home</code>, etc.).</p>
 <h2>Prévisualisation</h2>
 <p>Aucun serveur requis : ouvrez <code>index.html</code> dans un navigateur et naviguez. En Docker (depuis <code>maquetage/</code>) : <code>docker compose -f docker-compose.preview.yml up -d</code>, puis <code>http://192.168.0.120:8090</code>. Les boutons relient les maquettes entre elles :</p>
 <ul>
 <li><strong>Accueil</strong> → « Connexion », « Rejoindre une partie », « Devenir un conteur » mènent à la page Accès (<code>html/acces.html</code>).</li>
 <li><strong>Accès</strong> → « Se connecter » renvoie vers l’Accueil (<code>html/accueil.html</code>, en attendant la maquette « accueil connecté ») ; le logo « NexusForge » en haut à gauche y ramène aussi.</li>
-<li><strong>Accès</strong> → « Commencer » : déclenchera le futur wizard d’inscription (cf. <code>TODO.md</code>).</li>
+<li><strong>Accès</strong> → « Commencer » ouvre le wizard (<code>html/inscription.html</code>).</li>
+<li><strong>Inscription</strong> → 6 étapes : chemin (voies cumulables), compte, accords (mineur, charte), vérification (TOTP), validation admin, première connexion.</li>
 </ul>
 <h2>Arborescence</h2>
 <pre><code>maquetage/
@@ -30,7 +31,7 @@
 ├── index.html       # hub de prévisualisation statique
 ├── html/            # pages aux noms fonctionnels (accueil.html, acces.html, …)
 ├── css/             # commun.css (socle réutilisable) + un fichier par page
-├── js/              # carrousel.js, langue.js (sans dépendance, réutilisables)
+├── js/              # carrousel.js, langue.js, wizard.js (sans dépendance, réutilisables)
 ├── img/             # illustrations et symboles (jamais de base64 dans le HTML)
 └── outils/          # convertisseur md-vers-html.py (voir ci-dessous)</code></pre>
 <h2>Socle réutilisable (préparation de l’intégration)</h2>
@@ -46,6 +47,10 @@
 <li><code>js/langue.js</code> : mémorise <code>&lt;select id=&quot;langue&quot;&gt;</code> et applique <code>window.NF_TEXTES</code></li>
 </ul>
 <p>aux <code>[data-i18n]</code> ; les dictionnaires restent dans la page (contenu, futurs <code>messages.ts</code>).</p>
+<ul>
+<li><code>js/wizard.js</code> : pas-à-pas générique (<code>data-panneau</code>, <code>data-suivant</code>, progression</li>
+</ul>
+<p><code>data-etape</code>, blocs <code>data-si-*</code>, âge via <code>#naissance</code>, voies via <code>window.NF_WIZARD_VOIES</code>).</p>
 <h2>Pages de documentation</h2>
 <p><code>README.md</code>, <code>CHANGELOG.md</code>, <code>ROADMAP.md</code> et <code>TODO.md</code> sont lisibles en HTML (<code>html/README.html</code>, etc., même habillage que le site) depuis le hub. Elles sont générées, jamais retouchées à la main :</p>
 <pre><code>python3 outils/md-vers-html.py</code></pre>
