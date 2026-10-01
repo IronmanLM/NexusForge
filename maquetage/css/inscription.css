@@ -125,3 +125,11 @@
 .applis-totp p { margin: 0; font-size: 0.88rem; color: var(--muted); }
 .applis-totp strong { color: var(--ink); }
 .applis-totp ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.15rem; font-size: 0.88rem; }
+.applis-liste { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.appli {
+  display: flex; align-items: center; gap: 0.6rem;
+  border: 1px solid var(--filet); border-radius: 10px; padding: 0.5rem 0.7rem;
+  color: var(--ink); text-decoration: none; font-size: 0.85rem;
+}
+.appli:hover { border-color: var(--accent); }
+.appli svg { width: 2.2rem; height: 2.2rem; flex: 0 0 auto; }

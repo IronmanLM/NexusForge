@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.7.0 — 2026-10-01
+
+- Vérification : pictos des 4 applis TOTP, liens vers les sites officiels (nouvel onglet).
+
 ## v0.6.2 — 2026-10-01
 
 - `hidden` blindé dans le socle (un `display` auteur ne peut plus réafficher un bloc masqué) ; rappel d’âge en tête des Accords.

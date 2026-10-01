@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NexusForge — Inscription</title>
-<link rel="stylesheet" href="../css/commun.css?v=0.6.2">
-<link rel="stylesheet" href="../css/acces.css?v=0.6.2">
-<link rel="stylesheet" href="../css/inscription.css?v=0.6.2">
+<link rel="stylesheet" href="../css/commun.css?v=0.7.0">
+<link rel="stylesheet" href="../css/acces.css?v=0.7.0">
+<link rel="stylesheet" href="../css/inscription.css?v=0.7.0">
 </head>
 <body>
 
@@ -98,7 +98,12 @@
         <label>Code reçu <input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" placeholder="6 chiffres" /></label>
         <div class="applis-totp">
           <p><strong>Applications compatibles :</strong></p>
-          <ul><li>2FAS</li><li>AliasVault</li><li>Google Authenticator</li><li>Microsoft Authenticator</li></ul>
+          <div class="applis-liste">
+            <a class="appli" href="https://2fas.com" target="_blank" rel="noopener"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="9" fill="#c8102e"/><text x="20" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="#fff">2F</text></svg><span>2FAS</span></a>
+            <a class="appli" href="https://www.aliasvault.net" target="_blank" rel="noopener"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="9" fill="#e8821e"/><text x="20" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="#fff">AV</text></svg><span>AliasVault</span></a>
+            <a class="appli" href="https://support.google.com/accounts/answer/1066447" target="_blank" rel="noopener"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="9" fill="#1a73e8"/><text x="20" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#fff">G</text></svg><span>Google Authenticator</span></a>
+            <a class="appli" href="https://www.microsoft.com/fr-fr/security/mobile-authenticator-app" target="_blank" rel="noopener"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="9" fill="#0f6cbd"/><text x="20" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#fff">M</text></svg><span>Microsoft Authenticator</span></a>
+          </div>
           <p class="note">Ouvre l’application, ajoute le compte NexusForge, puis saisis le code à 6 chiffres.</p>
         </div>
         <div class="bloc-conteur" data-si-conteur hidden>
@@ -136,8 +141,8 @@
 <script>
 window.NF_WIZARD_VOIES = { joueur: 'voie-joueur', conteur: 'voie-conteur' };
 </script>
-<script src="../js/carrousel.js?v=0.6.2" defer></script>
-<script src="../js/wizard.js?v=0.6.2" defer></script>
+<script src="../js/carrousel.js?v=0.7.0" defer></script>
+<script src="../js/wizard.js?v=0.7.0" defer></script>
 
   <div class="modale" id="modale-doc" hidden>
     <div class="modale-cadre" role="dialog" aria-modal="true" aria-labelledby="modale-titre">
