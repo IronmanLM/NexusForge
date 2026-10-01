@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.9 — 2026-10-01
+
+- Espace parents : logo dans le flux (fini le chevauchement du premier bloc).
+
 ## v0.8.8 — 2026-10-01
 
 - Espace parents : chapô en bloc dédié bordure cyan, colonne droite agrandie, acceptations empilées.
