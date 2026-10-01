@@ -21,12 +21,33 @@ app.set('trust proxy', 1);
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = Number(process.env.PORT || 4000);
 const DEFAULT_CORS_ORIGIN = '*';
-const DEFAULT_JWT_SECRET = 'dev-access-secret';
-const DEFAULT_JWT_REFRESH_SECRET = 'dev-refresh-secret';
-const DEFAULT_ROOT_ADMIN_PASSWORD = 'ZOcDJyuTEjSIA8';
+const UNSAFE_SECRET_PLACEHOLDERS = new Set([
+  'change-me-access-secret',
+  'change-me-refresh-secret',
+  'change-me-root-admin-password'
+]);
+
+function readRuntimeSecret(name, { ephemeralInDevelopment = false } = {}) {
+  const configured = String(process.env[name] || '').trim();
+  if (configured) {
+    return configured;
+  }
+
+  if (NODE_ENV === 'production' || !ephemeralInDevelopment) {
+    return '';
+  }
+
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function isMissingOrUnsafeSecret(name) {
+  const configured = String(process.env[name] || '').trim();
+  return !configured || UNSAFE_SECRET_PLACEHOLDERS.has(configured);
+}
+
 const CORS_ORIGIN = process.env.CORS_ORIGIN || DEFAULT_CORS_ORIGIN;
-const JWT_SECRET = process.env.JWT_SECRET || DEFAULT_JWT_SECRET;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || DEFAULT_JWT_REFRESH_SECRET;
+const JWT_SECRET = readRuntimeSecret('JWT_SECRET', { ephemeralInDevelopment: true });
+const JWT_REFRESH_SECRET = readRuntimeSecret('JWT_REFRESH_SECRET', { ephemeralInDevelopment: true });
 const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '1h';
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
 const APP_BASE_URL = process.env.APP_BASE_URL || 'https://nexusforge.en-ligne.fr';
@@ -46,12 +67,7 @@ const ROOT_ADMIN_FIRST_NAME = process.env.ROOT_ADMIN_FIRST_NAME || 'Mikael';
 const ROOT_ADMIN_LAST_NAME = process.env.ROOT_ADMIN_LAST_NAME || 'Frémaux';
 const ROOT_ADMIN_NICKNAME = process.env.ROOT_ADMIN_NICKNAME || 'IronmanLM';
 const ROOT_ADMIN_EMAIL = (process.env.ROOT_ADMIN_EMAIL || 'ironmanlm@en-ligne.fr').toLowerCase();
-const ROOT_ADMIN_PASSWORD =
-  typeof process.env.ROOT_ADMIN_PASSWORD === 'string' && process.env.ROOT_ADMIN_PASSWORD.trim()
-    ? process.env.ROOT_ADMIN_PASSWORD
-    : NODE_ENV === 'production'
-    ? ''
-    : DEFAULT_ROOT_ADMIN_PASSWORD;
+const ROOT_ADMIN_PASSWORD = readRuntimeSecret('ROOT_ADMIN_PASSWORD');
 const ROOT_ADMIN_TOTP_SECRET = String(process.env.ROOT_ADMIN_TOTP_SECRET || '').trim().replace(/\s+/g, '').toUpperCase();
 
 const EMAIL_TOKEN_TTL_MS = Number(process.env.EMAIL_TOKEN_TTL_MS || 24 * 60 * 60 * 1000);
@@ -91,11 +107,14 @@ function assertProductionSecurityConfig() {
   if (!CORS_ORIGIN || CORS_ORIGIN === DEFAULT_CORS_ORIGIN) {
     missing.push('CORS_ORIGIN');
   }
-  if (!JWT_SECRET || JWT_SECRET === DEFAULT_JWT_SECRET) {
+  if (isMissingOrUnsafeSecret('JWT_SECRET')) {
     missing.push('JWT_SECRET');
   }
-  if (!JWT_REFRESH_SECRET || JWT_REFRESH_SECRET === DEFAULT_JWT_REFRESH_SECRET) {
+  if (isMissingOrUnsafeSecret('JWT_REFRESH_SECRET')) {
     missing.push('JWT_REFRESH_SECRET');
+  }
+  if (process.env.ROOT_ADMIN_PASSWORD && isMissingOrUnsafeSecret('ROOT_ADMIN_PASSWORD')) {
+    missing.push('ROOT_ADMIN_PASSWORD');
   }
   if (missing.length > 0) {
     throw new Error(`[nexusforge-backend] production security configuration missing or unsafe: ${missing.join(', ')}`);
