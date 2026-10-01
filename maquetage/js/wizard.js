@@ -22,7 +22,77 @@
   var puces = Array.prototype.slice.call(zone.querySelectorAll('[data-etape]'));
   var courant = 0;
   var VOIES = window.NF_WIZARD_VOIES || {};
-  var CODE_DEMO = '428137'; /* simulation OTP, sans backend */
+  var CODE_DEMO = '428137'; /* OTP courriel (simulation, sans backend) */
+  var SECRET_TOTP = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ'; /* clé démo affichée + QR (RFC 6238) */
+  function sha1(msg) {
+    var h0 = 0x67452301, h1 = 0xEFCDAB89, h2 = 0x98BADCFE, h3 = 0x10325476, h4 = 0xC3D2E1F0;
+    var bytes = msg.slice();
+    var ml = bytes.length;
+    bytes.push(0x80);
+    while (bytes.length % 64 !== 56) { bytes.push(0); }
+    var hi = Math.floor(ml / 0x20000000), lo = (ml << 3) >>> 0;
+    bytes.push((hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255,
+               (lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255);
+    var w80 = new Array(80);
+    var rol = function (n, s) { return ((n << s) | (n >>> (32 - s))) >>> 0; };
+    for (var b = 0; b < bytes.length; b += 64) {
+      var i;
+      for (i = 0; i < 16; i++) {
+        w80[i] = ((bytes[b + i * 4] << 24) | (bytes[b + i * 4 + 1] << 16) | (bytes[b + i * 4 + 2] << 8) | bytes[b + i * 4 + 3]) >>> 0;
+      }
+      for (i = 16; i < 80; i++) { w80[i] = rol(w80[i - 3] ^ w80[i - 8] ^ w80[i - 14] ^ w80[i - 16], 1); }
+      var a = h0, bb = h1, cc = h2, dd = h3, ee = h4, f, k;
+      for (i = 0; i < 80; i++) {
+        if (i < 20) { f = (bb & dd) | (~bb & ee); k = 0x5A827999; }
+        else if (i < 40) { f = bb ^ dd ^ ee; k = 0x6ED9EBA1; }
+        else if (i < 60) { f = (bb & dd) | (bb & ee) | (dd & ee); k = 0x8F1BBCDC; }
+        else { f = bb ^ dd ^ ee; k = 0xCA62C1D6; }
+        var tmp = (rol(a, 5) + f + ee + k + w80[i]) >>> 0;
+        ee = dd; dd = cc; cc = rol(bb, 30); bb = a; a = tmp;
+      }
+      h0 = (h0 + a) >>> 0; h1 = (h1 + bb) >>> 0; h2 = (h2 + cc) >>> 0; h3 = (h3 + dd) >>> 0; h4 = (h4 + ee) >>> 0;
+    }
+    var out = [];
+    [h0, h1, h2, h3, h4].forEach(function (h) { out.push((h >>> 24) & 255, (h >>> 16) & 255, (h >>> 8) & 255, h & 255); });
+    return out;
+  }
+  function hmacSha1(cle, msg) {
+    if (cle.length > 64) { cle = sha1(cle); }
+    while (cle.length < 64) { cle.push(0); }
+    var o = [], ip = [];
+    for (var i = 0; i < 64; i++) { o.push(cle[i] ^ 0x5c); ip.push(cle[i] ^ 0x36); }
+    return sha1(o.concat(sha1(ip.concat(msg))));
+  }
+  function base32(texte) {
+    var alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    var s = String(texte).toUpperCase().replace(/[^A-Z2-7]/g, '');
+    var val = 0, bits = 0, out = [];
+    for (var i = 0; i < s.length; i++) {
+      val = (val << 5) | alpha.indexOf(s.charAt(i));
+      bits += 5;
+      if (bits >= 8) { out.push((val >>> (bits - 8)) & 255); bits -= 8; }
+    }
+    return out;
+  }
+  function totpGenere(secret, t) {
+    var cle = base32(secret);
+    var compteur = Math.floor(t / 30);
+    var hi = Math.floor(compteur / 4294967296), lo = compteur % 4294967296;
+    var msg = [(hi >>> 24) & 255, (hi >>> 16) & 255, (hi >>> 8) & 255, hi & 255,
+               (lo >>> 24) & 255, (lo >>> 16) & 255, (lo >>> 8) & 255, lo & 255];
+    var h = hmacSha1(cle, msg);
+    var off = h[19] & 15;
+    var code = (((h[off] & 127) << 24) | (h[off + 1] << 16) | (h[off + 2] << 8) | h[off + 3]) % 1000000;
+    return ('000000' + code).slice(-6);
+  }
+  function totpValide(secret, saisie) {
+    var t = Math.floor(Date.now() / 1000);
+    for (var d = -1; d <= 1; d++) {
+      if (totpGenere(secret, t + d * 30) === saisie) { return true; }
+    }
+    return false;
+  }
+  window.NF_TOTP = { secret: SECRET_TOTP, generer: totpGenere, verifier: totpValide };
   var naissance = document.getElementById('naissance');
 
   function estMajeur() {
@@ -76,6 +146,8 @@
     var reporteCoche = !!(reporte && reporte.checked);
     var blocCode = document.getElementById('bloc-code');
     if (blocCode) { blocCode.hidden = reporteCoche; }
+    var blocConfig = document.getElementById('bloc-config-totp');
+    if (blocConfig) { blocConfig.hidden = reporteCoche; }
     var codeTotp = document.getElementById('code-totp');
     if (codeTotp) { codeTotp.required = !reporteCoche; }
   }
@@ -112,12 +184,17 @@
       }
     }
     if (panneau.getAttribute('data-panneau') === 'verification') {
+      var mail2 = document.getElementById('code-email');
+      if (mail2 && (mail2.value || '').replace(/[\s-]/g, '') !== CODE_DEMO) {
+        message(panneau, 'Code courriel incorrect (simulation : ' + CODE_DEMO + ').');
+        return false;
+      }
       var reporte2 = document.getElementById('totp-plus-tard');
       var code2 = document.getElementById('code-totp');
       if (code2 && !(reporte2 && reporte2.checked)) {
         var saisie = (code2.value || '').replace(/[\s-]/g, '');
-        if (saisie !== CODE_DEMO) {
-          message(panneau, 'Code incorrect. Vérifie le courriel reçu (simulation : ' + CODE_DEMO + ').');
+        if (!totpValide(SECRET_TOTP, saisie)) {
+          message(panneau, 'Code TOTP incorrect ou expiré — vérifie ton application (période de 30 secondes).');
           return false;
         }
       }

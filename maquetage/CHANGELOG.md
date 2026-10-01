@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.9.0 — 2026-10-01
+
+- Vérification : installation TOTP réelle (QR + clé, contrôle RFC 6238 en local) ; code courriel et code appli vérifiés séparément.
+
 ## v0.8.11 — 2026-10-01
 
 - Espace parents : titre au singulier exclamatif, bloc JdR réécrit en questions-réponses (ni jeu vidéo, ni violent ni occulte, encadré).

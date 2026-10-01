@@ -87,7 +87,7 @@
 .appli img { width: 2.2rem; height: 2.2rem; flex: 0 0 auto; border-radius: 7px; }
 .appli span small { display: block; color: var(--muted); font-size: 0.72rem; }
 
-/* envoi du code OTP */
+/* envoi du code OTP + installation TOTP */
 .ligne-envoi { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 0.7rem; }
 #envoyer-code {
   background: transparent; color: var(--accent); border: 1px solid var(--accent);
@@ -96,3 +96,11 @@
 }
 #envoyer-code:hover { background: var(--accent); color: #04121a; }
 #note-envoi { margin: 0; }
+.config-totp { display: flex; gap: 0.8rem; align-items: center; margin: 0.7rem 0; }
+.config-totp img { width: 7.5rem; height: 7.5rem; flex: 0 0 auto; border-radius: 8px; background: #fff; padding: 0.3rem; }
+.config-totp .note { margin: 0 0 0.4rem; }
+.cle-totp {
+  margin: 0; font-family: ui-monospace, Consolas, monospace; font-size: 0.82rem;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--filet); border-radius: 8px;
+  padding: 0.5rem 0.7rem; word-break: break-all;
+}
