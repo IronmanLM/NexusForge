@@ -3,6 +3,12 @@
 .gauche.savoir .titre.en-bas { margin-top: auto; margin-bottom: 0; }
 .gauche.savoir .titre h1 { font-size: 1.45rem; }
 .gauche.savoir .lede-w { font-size: 0.85rem; color: var(--ink); }
+.alerte-mineur {
+  background: var(--panneau); border: 1px solid var(--accent); border-radius: 12px;
+  padding: 0.8rem 0.95rem; backdrop-filter: blur(8px);
+  font-size: 0.9rem; color: var(--ink); margin: 0; position: relative; z-index: 1;
+}
+.alerte-mineur strong { color: var(--accent); }
 .explicatif {
   background: var(--panneau); border: 1px solid var(--filet); border-radius: 12px;
   padding: 0.65rem 0.85rem; backdrop-filter: blur(8px);
@@ -14,21 +20,21 @@
 .explicatif ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; font-size: 0.82rem; color: var(--muted); }
 .droite.agir { display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 1rem; }
 .colonne-tuteurs {
-  position: relative; z-index: 2; width: 100%; max-width: 26rem;
-  display: grid; gap: 0.55rem;
+  position: relative; z-index: 2; width: 100%; max-width: 28rem;
+  display: grid; gap: 0.8rem;
 }
-.grille-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-.grille-docs > div { display: grid; gap: 0.3rem; align-content: start; }
-.grille-docs button[data-lire] { justify-self: stretch; font-size: 0.78rem; padding: 0.55rem 0.4rem; text-align: center; }
-.grille-docs .coche { font-size: 0.75rem; }
+.grille-docs { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+.grille-docs > div { display: grid; gap: 0.35rem; align-content: start; }
+.grille-docs button[data-lire] { justify-self: stretch; font-size: 0.9rem; padding: 0.65rem 1rem; text-align: left; }
+.grille-docs .coche { font-size: 0.82rem; }
 .autorisation, .contact-admin {
   background: var(--panneau); border: 1px solid var(--filet); border-radius: 12px;
-  padding: 0.65rem 0.85rem; backdrop-filter: blur(8px);
-  display: grid; gap: 0.45rem;
+  padding: 1rem 1.1rem; backdrop-filter: blur(8px);
+  display: grid; gap: 0.6rem;
 }
-.autorisation h2, .contact-admin h2 { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; margin: 0; }
-.autorisation label:not(.coche), .contact-admin label:not(.coche) { display: grid; gap: 0.3rem; font-size: 0.82rem; }
-.autorisation .coche { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.82rem; cursor: pointer; }
+.autorisation h2, .contact-admin h2 { font-family: var(--serif); font-weight: 400; font-size: 1.15rem; margin: 0; }
+.autorisation label:not(.coche), .contact-admin label:not(.coche) { display: grid; gap: 0.35rem; font-size: 0.9rem; }
+.autorisation .coche { display: flex; gap: 0.5rem; align-items: flex-start; font-size: 0.9rem; cursor: pointer; }
 .autorisation .coche input { margin-top: 0.15rem; flex: 0 0 auto; }
 .autorisation input[type="text"], .contact-admin input[type="email"], .contact-admin textarea {
   background: rgba(255, 255, 255, 0.06); border: 1px solid var(--filet); border-radius: 8px;

@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.8 — 2026-10-01
+
+- Espace parents : chapô en bloc dédié bordure cyan, colonne droite agrandie, acceptations empilées.
+
 ## v0.8.7 — 2026-10-01
 
 - Espace parents : case d’autorisation en ligne (case à gauche du texte).
