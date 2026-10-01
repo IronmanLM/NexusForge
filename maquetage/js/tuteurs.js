@@ -33,4 +33,25 @@
     }
     dire('✓ Autorisation enregistrée pour « ' + pseudo.value.trim() + ' » (simulation). Le compte sera activé après validation par un administrateur.', true);
   });
+  var envoi = document.getElementById('envoyer-contact');
+  if (envoi) { envoi.addEventListener('click', function () {
+    var courriel = document.getElementById('contact-email');
+    var texte = document.getElementById('contact-message');
+    var zone = document.getElementById('message-contact');
+    function repondre(msg, ok) {
+      if (!zone) { return; }
+      zone.hidden = false;
+      zone.textContent = msg;
+      zone.className = 'message-tuteurs ' + (ok ? 'succes' : 'erreur');
+    }
+    if (!courriel || !courriel.value || courriel.checkValidity() === false) {
+      repondre('Indiquez un courriel valide pour recevoir la réponse.', false);
+      return;
+    }
+    if (!texte || !texte.value.trim()) {
+      repondre('Écrivez votre message avant d’envoyer.', false);
+      return;
+    }
+    repondre('✓ Message envoyé aux administrateurs (simulation). Réponse sous quelques jours sur ' + courriel.value.trim() + '.', true);
+  }); }
 })();

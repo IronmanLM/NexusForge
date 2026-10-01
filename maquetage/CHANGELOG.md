@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.2 — 2026-10-01
+
+- Espace parents sur une seule page (savoir à gauche, agir à droite) + formulaire de contact administrateur.
+
 ## v0.8.1 — 2026-10-01
 
 - Mineur : plus de case parentale côté enfant, le parent valide depuis l’espace parents ; lien « Espace parents » sur la page d’accès.

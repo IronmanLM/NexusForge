@@ -1,37 +1,49 @@
-/* ——— page Tuteurs : reprend acces.css, colonne droite défilante ——— */
-.droite.fixe { display: block; overflow-y: auto; padding: 2.2rem 1.5rem; }
-.contenu-tuteurs {
-  position: relative; z-index: 2;
-  max-width: 34rem; margin: 0 auto;
-  display: grid; gap: 1.4rem;
-}
+/* ——— page Tuteurs : une seule page, savoir à gauche, agir à droite ——— */
+.gauche.savoir { justify-content: flex-start; gap: 0.7rem; padding-top: 4.2rem; overflow: hidden; }
+.gauche.savoir .titre { margin-bottom: 0; }
+.gauche.savoir .titre h1 { font-size: 1.6rem; }
+.gauche.savoir .lede-w { font-size: 0.85rem; }
 .explicatif {
   background: var(--panneau); border: 1px solid var(--filet); border-radius: 12px;
-  padding: 1.1rem 1.2rem; backdrop-filter: blur(8px);
-  display: grid; gap: 0.6rem;
+  padding: 0.8rem 0.9rem; backdrop-filter: blur(8px);
+  display: grid; gap: 0.4rem; position: relative; z-index: 1;
 }
-.explicatif h2 { font-family: var(--serif); font-weight: 400; font-size: 1.2rem; margin: 0; }
-.explicatif p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+.explicatif h2 { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; margin: 0; }
+.explicatif p { margin: 0; font-size: 0.82rem; color: var(--muted); }
 .explicatif strong { color: var(--ink); }
-.explicatif ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; font-size: 0.92rem; color: var(--muted); }
-.autorisation {
+.explicatif ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; font-size: 0.82rem; color: var(--muted); }
+.droite.agir { display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 1rem; }
+.colonne-tuteurs {
+  position: relative; z-index: 2; width: 100%; max-width: 26rem;
+  display: grid; gap: 0.7rem;
+}
+.grille-docs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+.grille-docs > div { display: grid; gap: 0.3rem; align-content: start; }
+.grille-docs button[data-lire] { justify-self: stretch; font-size: 0.78rem; padding: 0.55rem 0.4rem; text-align: center; }
+.grille-docs .coche { font-size: 0.75rem; }
+.autorisation, .contact-admin {
   background: var(--panneau); border: 1px solid var(--filet); border-radius: 12px;
-  padding: 1.1rem 1.2rem; backdrop-filter: blur(8px);
-  display: grid; gap: 0.8rem;
+  padding: 0.8rem 0.9rem; backdrop-filter: blur(8px);
+  display: grid; gap: 0.5rem;
 }
-.autorisation h2 { font-family: var(--serif); font-weight: 400; font-size: 1.2rem; margin: 0; }
-.autorisation label { display: grid; gap: 0.35rem; font-size: 0.9rem; }
-.autorisation input[type="text"] {
+.autorisation h2, .contact-admin h2 { font-family: var(--serif); font-weight: 400; font-size: 1.05rem; margin: 0; }
+.autorisation label, .contact-admin label { display: grid; gap: 0.3rem; font-size: 0.82rem; }
+.autorisation input[type="text"], .contact-admin input[type="email"], .contact-admin textarea {
   background: rgba(255, 255, 255, 0.06); border: 1px solid var(--filet); border-radius: 8px;
-  color: var(--ink); padding: 0.65rem 0.8rem; font-size: 0.95rem; width: 100%;
+  color: var(--ink); padding: 0.55rem 0.7rem; font-size: 0.88rem; width: 100%; font-family: inherit;
 }
-#valider-autorisation {
+.contact-admin textarea { resize: none; }
+.contact-admin .note { margin: 0; }
+#valider-autorisation, #envoyer-contact {
   background: var(--accent); color: #04121a; font-weight: 600; border: none;
-  border-radius: 999px; padding: 0.75rem 1.5rem; min-height: 44px; font-size: 0.95rem; cursor: pointer;
+  border-radius: 999px; padding: 0.6rem 1.4rem; min-height: 44px; font-size: 0.9rem; cursor: pointer;
 }
-.message-tuteurs { margin: 0; font-size: 0.9rem; border-radius: 8px; padding: 0.6rem 0.8rem; }
+#envoyer-contact { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+#envoyer-contact:hover { background: var(--accent); color: #04121a; }
+.message-tuteurs { margin: 0; font-size: 0.85rem; border-radius: 8px; padding: 0.5rem 0.7rem; }
 .message-tuteurs.erreur { background: rgba(200, 40, 40, 0.15); border: 1px solid rgba(200, 40, 40, 0.5); }
 .message-tuteurs.succes { background: rgba(40, 180, 100, 0.15); border: 1px solid rgba(40, 180, 100, 0.5); }
 @media (max-width: 760px) {
-  .droite.fixe { padding: 1.2rem 1rem 3rem; }
+  .gauche.savoir, .droite.agir { overflow: visible; }
+  .grille-docs { grid-template-columns: 1fr; }
 }

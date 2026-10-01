@@ -4,55 +4,65 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NexusForge — Espace parents</title>
-<link rel="stylesheet" href="../css/commun.css?v=0.8.1">
-<link rel="stylesheet" href="../css/acces.css?v=0.8.1">
-<link rel="stylesheet" href="../css/tuteurs.css?v=0.8.1">
+<link rel="stylesheet" href="../css/commun.css?v=0.8.2">
+<link rel="stylesheet" href="../css/acces.css?v=0.8.2">
+<link rel="stylesheet" href="../css/tuteurs.css?v=0.8.2">
 </head>
 <body>
 
-  <section class="gauche" aria-label="NexusForge Espace parents">
+  <section class="gauche savoir" aria-label="Comprendre">
     <a class="marque" href="accueil.html"><img src="../img/nexus_forge_symbol.svg" alt="" /><span>NexusForge</span></a>
     <div class="titre">
       <p class="sur-titre">Espace parents</p>
       <h1>Ils jouent, vous savez.</h1>
     </div>
+    <p class="lede-w">Votre enfant s’est inscrit sur NexusForge et a indiqué être mineur : <strong>son compte restera inactif</strong> tant que vous n’aurez pas validé son inscription.</p>
+    <article class="explicatif">
+      <h2>Le jeu de rôle, c’est quoi ?</h2>
+      <p>Autour d’une table — ici virtuelle — des joueurs inventent ensemble une histoire : un <strong>conteur</strong> décrit le monde, chacun joue un personnage et tente des actions, parfois décidées par un jet de dés. On parle, on négocie, on coopère : une activité sociale avant d’être un jeu.</p>
+    </article>
+    <article class="explicatif">
+      <h2>La protection des mineurs</h2>
+      <ul>
+        <li>Autorisation parentale obligatoire, donnée ici après lecture des documents.</li>
+        <li>Espaces modérés, signalement en un clic, aucune donnée cédée ou revendue.</li>
+        <li>Autorisation retirable à tout moment : le compte est alors suspendu.</li>
+      </ul>
+    </article>
   </section>
 
-  <section class="droite fixe" aria-label="Autorisation parentale">
-    <div class="contenu-tuteurs">
-      <p class="lede-w">Votre enfant s’est inscrit sur NexusForge et a indiqué être mineur : <strong>son compte restera inactif</strong> tant que vous n’aurez pas validé son inscription ci-dessous.</p>
-
-      <article class="explicatif">
-        <h2>Le jeu de rôle, c’est quoi ?</h2>
-        <p>Autour d’une table — ici virtuelle — des joueurs inventent ensemble une histoire : un <strong>conteur</strong> décrit le monde et ses dangers, chacun joue un personnage et tente des actions, parfois décidées par un jet de dés.</p>
-        <p>Pas d’écran passif : on parle, on négocie, on coopère. Créativité, calcul, expression orale et esprit d’équipe — le jeu de rôle est une activité sociale avant d’être un jeu.</p>
-      </article>
-
-      <article class="explicatif">
-        <h2>La protection des mineurs</h2>
-        <ul>
-          <li>Autorisation parentale obligatoire, donnée ici après lecture des documents.</li>
-          <li>Compte marqué mineur, espaces modérés, signalement en un clic.</li>
-          <li>Aucune donnée cédée ou revendue ; votre courriel sert uniquement à l’autorisation et aux alertes.</li>
-          <li>Autorisation retirable à tout moment : le compte est alors suspendu.</li>
-        </ul>
-      </article>
-
-      <div class="doc-cond">
-        <button type="button" data-lire data-doc="cgu.html" data-titre="Conditions d’utilisation" data-case="coche-t-cgu">Lire les conditions d’utilisation</button>
-        <label class="coche"><input type="checkbox" id="coche-t-cgu" disabled /> J’ai lu et j’accepte les conditions d’utilisation.</label>
-        <button type="button" data-lire data-doc="confidentialite.html" data-titre="Politique de confidentialité" data-case="coche-t-conf">Lire la politique de confidentialité</button>
-        <label class="coche"><input type="checkbox" id="coche-t-conf" disabled /> J’ai lu et j’accepte la politique de confidentialité.</label>
-        <button type="button" data-lire data-doc="charte-mineurs.html" data-titre="Charte de protection des mineurs" data-case="coche-t-mineurs">Lire la charte de protection des mineurs</button>
-        <label class="coche"><input type="checkbox" id="coche-t-mineurs" disabled /> J’ai lu et j’accepte la charte de protection des mineurs.</label>
+  <section class="droite agir" aria-label="Autorisation parentale">
+    <div class="colonne-tuteurs">
+      <div class="doc-cond grille-docs">
+        <div>
+          <button type="button" data-lire data-doc="cgu.html" data-titre="Conditions d’utilisation" data-case="coche-t-cgu">Conditions d’utilisation</button>
+          <label class="coche"><input type="checkbox" id="coche-t-cgu" disabled /> Lues et acceptées.</label>
+        </div>
+        <div>
+          <button type="button" data-lire data-doc="confidentialite.html" data-titre="Politique de confidentialité" data-case="coche-t-conf">Confidentialité</button>
+          <label class="coche"><input type="checkbox" id="coche-t-conf" disabled /> Lue et acceptée.</label>
+        </div>
+        <div>
+          <button type="button" data-lire data-doc="charte-mineurs.html" data-titre="Charte de protection des mineurs" data-case="coche-t-mineurs">Charte des mineurs</button>
+          <label class="coche"><input type="checkbox" id="coche-t-mineurs" disabled /> Lue et acceptée.</label>
+        </div>
       </div>
 
       <div class="autorisation">
         <h2>Votre autorisation</h2>
         <label>Pseudo de l’enfant <input type="text" id="pseudo-enfant" autocomplete="off" placeholder="Ex. Aventurier42" /></label>
-        <label class="coche"><input type="checkbox" id="coche-t-autorise" /> Je suis le représentant légal de cet enfant et j’autorise son inscription sur NexusForge.</label>
+        <label class="coche"><input type="checkbox" id="coche-t-autorise" /> Je suis le représentant légal de cet enfant et j’autorise son inscription.</label>
         <p class="message-tuteurs" id="message-tuteurs" role="alert" hidden></p>
         <button type="button" id="valider-autorisation">Valider l’autorisation →</button>
+      </div>
+
+      <div class="contact-admin">
+        <h2>Contacter un administrateur</h2>
+        <p class="note">Une question, un doute, un retrait d’autorisation ? Écrivez-nous (simulation).</p>
+        <label>Votre courriel <input type="email" id="contact-email" autocomplete="email" placeholder="vous@exemple.fr" /></label>
+        <label>Votre message <textarea id="contact-message" rows="2" placeholder="Bonjour, à propos du compte de…"></textarea></label>
+        <p class="message-tuteurs" id="message-contact" role="alert" hidden></p>
+        <button type="button" id="envoyer-contact">Envoyer →</button>
       </div>
     </div>
   </section>
@@ -71,7 +81,7 @@
     </div>
   </div>
 
-<script src="../js/wizard.js?v=0.8.1" defer></script>
-<script src="../js/tuteurs.js?v=0.8.1" defer></script>
+<script src="../js/wizard.js?v=0.8.2" defer></script>
+<script src="../js/tuteurs.js?v=0.8.2" defer></script>
 </body>
 </html>
