@@ -21,7 +21,7 @@
 .explicatif ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; font-size: 0.82rem; color: var(--muted); }
 .droite.agir { display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 1rem; }
 .colonne-tuteurs {
-  position: relative; z-index: 2; width: 100%; max-width: 28rem;
+  position: relative; z-index: 2; width: 100%; max-width: 36rem;
   display: grid; gap: 0.8rem;
 }
 .grille-docs { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }

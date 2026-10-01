@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.10 — 2026-10-01
+
+- Espace parents : colonne d’action élargie (28 → 36 rem).
+
 ## v0.8.9 — 2026-10-01
 
 - Espace parents : logo dans le flux (fini le chevauchement du premier bloc).
