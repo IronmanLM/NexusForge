@@ -89,3 +89,5 @@
     html { scroll-behavior: auto; }
     .entree .fleche { transition: none; }
   }
+
+  a.marque { color: inherit; text-decoration: none; }

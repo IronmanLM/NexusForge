@@ -63,3 +63,5 @@
   @media (prefers-reduced-motion: reduce) {
     .droite .fond { transition: none; }
   }
+
+  a.marque { color: inherit; text-decoration: none; }

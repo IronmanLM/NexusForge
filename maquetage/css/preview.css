@@ -27,4 +27,16 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(1.8rem, 4vw, 
 .carte p { margin: 0; color: var(--muted); font-size: 0.92rem; }
 footer { margin-top: 1.8rem; font-size: 0.85rem; color: var(--muted); }
 footer a { color: var(--muted); }
+main.doc h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(1.6rem, 3.4vw, 2.2rem); margin: 0 0 1rem; }
+main.doc h2 { font-family: var(--serif); font-weight: 400; font-size: 1.3rem; margin: 1.8rem 0 0.6rem; color: var(--ink); }
+main.doc h3 { font-size: 1.05rem; margin: 1.4rem 0 0.4rem; }
+main.doc p, main.doc li { color: var(--muted); }
+main.doc strong, main.doc h1, main.doc li.case { color: var(--ink); }
+main.doc a { color: var(--accent); }
+main.doc .sur-titre a { color: var(--accent); text-decoration: none; }
+main.doc ul { padding-left: 1.3rem; display: grid; gap: 0.3rem; }
+main.doc li.case { list-style: none; margin-left: -1.3rem; }
+main.doc pre { background: #060b16; border: 1px solid var(--filet); border-radius: 10px; padding: 0.9rem 1.1rem; overflow-x: auto; font-size: 0.85rem; }
+main.doc code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; }
+main.doc img.bouclier { vertical-align: middle; margin-right: 0.4rem; }
 @media (max-width: 640px) { .cartes { grid-template-columns: 1fr; } }

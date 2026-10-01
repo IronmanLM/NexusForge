@@ -1,6 +1,6 @@
 # Maquetage NexusForge
 
-[![Version](https://img.shields.io/badge/version-v0.1.2-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.2.0-blue)](CHANGELOG.md)
 [![Avancement](https://img.shields.io/badge/avancement-maquettes_en_cours-orange)](ROADMAP.md)
 
 Maquettes statiques des pages d’entrée (joueur et utilisatrice, y compris non avertie).
@@ -12,8 +12,8 @@ Aucun serveur requis : ouvrez `index.html` dans un navigateur et naviguez.
 En Docker (depuis `maquetage/`) : `docker compose -f docker-compose.preview.yml up -d`, puis `http://192.168.0.120:8090`.
 Les boutons relient les maquettes entre elles :
 
-- **Accueil** → « Connexion », « Rejoindre une partie », « Devenir un conteur » mènent à la page Accès.
-- **Accès** → « Se connecter » renvoie vers l’Accueil (en attendant la maquette « accueil connecté »).
+- **Accueil** → « Connexion », « Rejoindre une partie », « Devenir un conteur » mènent à la page Accès (`html/acces.html`).
+- **Accès** → « Se connecter » renvoie vers l’Accueil (`html/accueil.html`, en attendant la maquette « accueil connecté ») ; le logo « NexusForge » en haut à gauche y ramène aussi.
 - **Accès** → « Commencer » : déclenchera le futur wizard d’inscription (cf. `TODO.md`).
 
 ## Arborescence
@@ -26,9 +26,20 @@ maquetage/
 ├── ROADMAP.md       # cap et jalons
 ├── TODO.md          # reste à faire
 ├── index.html       # hub de prévisualisation statique
-├── html/            # pages (chemins relatifs vers ../css et ../img)
-├── css/             # un fichier par page + preview.css pour l’index
-└── img/             # illustrations et symboles (jamais de base64 dans le HTML)
+├── html/            # pages aux noms fonctionnels (accueil.html, acces.html, …)
+├── css/             # un fichier par page + preview.css pour l’index et les docs
+├── img/             # illustrations et symboles (jamais de base64 dans le HTML)
+└── outils/          # convertisseur md-vers-html.py (voir ci-dessous)
+```
+
+## Pages de documentation
+
+`README.md`, `CHANGELOG.md`, `ROADMAP.md` et `TODO.md` sont lisibles en HTML
+(`html/README.html`, etc., même habillage que le site) depuis le hub.
+Elles sont générées, jamais retouchées à la main :
+
+```text
+python3 outils/md-vers-html.py
 ```
 
 ## Versionnement (vM.m.f)

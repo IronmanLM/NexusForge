@@ -1,5 +1,10 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.2.0 — 2026-10-01
+
+- Pages aux noms fonctionnels (`accueil.html`, `acces.html`) : navigation interne complète (logo « NexusForge » et « Accueil » ramènent à l’accueil).
+- Documentation lisible en HTML : convertisseur `outils/md-vers-html.py`, même habillage que le site, lié depuis le hub.
+
 ## v0.1.2 — 2026-10-01
 
 - Page Accès : repli `100vh` avant `100dvh` (navigateurs sans `dvh`, corps tassé et bande vide en bas) et fond sombre sur `html`.
