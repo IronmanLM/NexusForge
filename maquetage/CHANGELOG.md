@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.9.6 — 2026-10-01
+
+- Accès : lien « Espace parents » thématisé (cyan du thème, lisible).
+
 ## v0.9.5 — 2026-10-01
 
 - Validation : « Bienvenue dans NexusForge » + texte explicatif complet + bouton « Entrer dans NexusForge ». Eclairage gauche aligné.

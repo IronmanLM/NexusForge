@@ -36,6 +36,9 @@
   .rejoindre h2 { font-family: var(--serif); font-weight: 400; font-size: 1.15rem; margin: 0 0 0.3rem; }
   .rejoindre p { margin: 0 0 0.9rem; color: var(--muted); font-size: 0.92rem; }
   .rejoindre a.cta { display: inline-flex; align-items: center; background: var(--accent); color: #04121a; font-weight: 600; border: none; border-radius: 999px; padding: 0.7rem 1.6rem; min-height: 44px; text-decoration: none; font-size: 0.95rem; }
+  .rejoindre .note { margin: 0.7rem 0 0; font-size: 0.85rem; }
+  .rejoindre .note a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .rejoindre .note a:hover { text-decoration: underline; }
   @media (max-width: 760px) {
     body { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; grid-template-columns: 1fr; }
     .gauche { min-height: 42vh; }
