@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.9.2 — 2026-10-01
+
+- TOTP : correction des fonctions SHA-1 (mauvaises variables) ; 4 vecteurs validés (SHA-1 ×2, HMAC RFC 2202, TOTP RFC 6238).
+
 ## v0.9.1 — 2026-10-01
 
 - TOTP : correction du décodage base32 (vecteur RFC 6238 à revalider).

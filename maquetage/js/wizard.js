@@ -43,10 +43,10 @@
       for (i = 16; i < 80; i++) { w80[i] = rol(w80[i - 3] ^ w80[i - 8] ^ w80[i - 14] ^ w80[i - 16], 1); }
       var a = h0, bb = h1, cc = h2, dd = h3, ee = h4, f, k;
       for (i = 0; i < 80; i++) {
-        if (i < 20) { f = (bb & dd) | (~bb & ee); k = 0x5A827999; }
-        else if (i < 40) { f = bb ^ dd ^ ee; k = 0x6ED9EBA1; }
-        else if (i < 60) { f = (bb & dd) | (bb & ee) | (dd & ee); k = 0x8F1BBCDC; }
-        else { f = bb ^ dd ^ ee; k = 0xCA62C1D6; }
+        if (i < 20) { f = (bb & cc) | (~bb & dd); k = 0x5A827999; }
+        else if (i < 40) { f = bb ^ cc ^ dd; k = 0x6ED9EBA1; }
+        else if (i < 60) { f = (bb & cc) | (bb & dd) | (cc & dd); k = 0x8F1BBCDC; }
+        else { f = bb ^ cc ^ dd; k = 0xCA62C1D6; }
         var tmp = (rol(a, 5) + f + ee + k + w80[i]) >>> 0;
         ee = dd; dd = cc; cc = rol(bb, 30); bb = a; a = tmp;
       }
