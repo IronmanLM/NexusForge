@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.11 — 2026-10-01
+
+- Espace parents : titre au singulier exclamatif, bloc JdR réécrit en questions-réponses (ni jeu vidéo, ni violent ni occulte, encadré).
+
 ## v0.8.10 — 2026-10-01
 
 - Espace parents : colonne d’action élargie (28 → 36 rem).
