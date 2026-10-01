@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.9.4 — 2026-10-01
+
+- Validation : « inactif » éradiqué partout (bloc validation + éclairage gauche) → « bridé » avec détails.
+
 ## v0.9.3 — 2026-10-01
 
 - Validation : « inactif » → « bridé » (profil + consentements + exploration possibles, interdictions d'interaction). Distinction claire du mineur non autorisé.
