@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.7.1 — 2026-10-01
+
+- Vérification : pictos TOTP déplacés à gauche (vraies icônes en `img/`, plateformes, liste non exhaustive).
+
 ## v0.7.0 — 2026-10-01
 
 - Vérification : pictos des 4 applis TOTP, liens vers les sites officiels (nouvel onglet).

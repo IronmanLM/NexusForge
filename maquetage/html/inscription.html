@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NexusForge — Inscription</title>
-<link rel="stylesheet" href="../css/commun.css?v=0.7.0">
-<link rel="stylesheet" href="../css/acces.css?v=0.7.0">
-<link rel="stylesheet" href="../css/inscription.css?v=0.7.0">
+<link rel="stylesheet" href="../css/commun.css?v=0.7.1">
+<link rel="stylesheet" href="../css/acces.css?v=0.7.1">
+<link rel="stylesheet" href="../css/inscription.css?v=0.7.1">
 </head>
 <body>
 
@@ -16,7 +16,16 @@
       <div data-eclairage="chemin"><p><strong>Pourquoi choisir ?</strong> Les voies se cumulent et se règlent plus tard. Ce choix adapte les accords et la vérification.</p></div>
       <div data-eclairage="compte" hidden><p><strong>Tes données.</strong> Pseudo public à la table. Courriel jamais revendu. Mot de passe de 12 caractères minimum. La naissance sert uniquement aux protections des mineurs.</p></div>
       <div data-eclairage="accords" hidden><p><strong>Lis avant de cocher.</strong> Chaque document s’ouvre, se lit, puis se valide explicitement. Sans lecture, pas de case.</p></div>
-      <div data-eclairage="verification" hidden><p><strong>Double verrou.</strong> Le lien de confirmation est valable 24 heures (simulation). La TOTP, c’est un code à usage unique depuis ton téléphone.</p></div>
+      <div data-eclairage="verification" hidden>
+        <p><strong>Double verrou.</strong> Le lien de confirmation est valable 24 heures (simulation). La TOTP, c’est un code à usage unique depuis ton téléphone.</p>
+        <div class="applis-liste">
+          <a class="appli" href="https://2fas.com" target="_blank" rel="noopener"><img src="../img/appli-2fas.jpg" alt="Logo 2FAS" /><span>2FAS<small>Android · iOS</small></span></a>
+          <a class="appli" href="https://www.aliasvault.net" target="_blank" rel="noopener"><img src="../img/appli-aliasvault.png" alt="Logo AliasVault" /><span>AliasVault<small>Android · iOS</small></span></a>
+          <a class="appli" href="https://support.google.com/accounts/answer/1066447" target="_blank" rel="noopener"><img src="../img/appli-google.png" alt="Logo Google" /><span>Google Authenticator<small>Android · iOS</small></span></a>
+          <a class="appli" href="https://www.microsoft.com/fr-fr/security/mobile-authenticator-app" target="_blank" rel="noopener"><img src="../img/appli-microsoft.png" alt="Logo Microsoft" /><span>Microsoft Authenticator<small>Android · iOS</small></span></a>
+        </div>
+        <p class="note">Liste non exhaustive : toute application TOTP standard convient. Ouvre l’application, ajoute le compte NexusForge, puis saisis le code.</p>
+      </div>
       <div data-eclairage="validation" hidden><p><strong>Un humain examine.</strong> Chaque demande est relue (simulation immédiate ici). Compte inactif en attendant, courriel de notification.</p></div>
       <div data-eclairage="connexion" hidden><p><strong>Première entrée.</strong> Connexion automatique après validation, simulée ici par le bouton.</p></div>
     </aside>
@@ -96,16 +105,6 @@
         <h2>Prouve que c’est toi</h2>
         <p class="lede-w">Un lien de confirmation part vers ton courriel : ouvre-le, puis reviens ici.</p>
         <label>Code reçu <input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" placeholder="6 chiffres" /></label>
-        <div class="applis-totp">
-          <p><strong>Applications compatibles :</strong></p>
-          <div class="applis-liste">
-            <a class="appli" href="https://2fas.com" target="_blank" rel="noopener"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="9" fill="#c8102e"/><text x="20" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="#fff">2F</text></svg><span>2FAS</span></a>
-            <a class="appli" href="https://www.aliasvault.net" target="_blank" rel="noopener"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="9" fill="#e8821e"/><text x="20" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" font-weight="700" fill="#fff">AV</text></svg><span>AliasVault</span></a>
-            <a class="appli" href="https://support.google.com/accounts/answer/1066447" target="_blank" rel="noopener"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="9" fill="#1a73e8"/><text x="20" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#fff">G</text></svg><span>Google Authenticator</span></a>
-            <a class="appli" href="https://www.microsoft.com/fr-fr/security/mobile-authenticator-app" target="_blank" rel="noopener"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="9" fill="#0f6cbd"/><text x="20" y="26" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#fff">M</text></svg><span>Microsoft Authenticator</span></a>
-          </div>
-          <p class="note">Ouvre l’application, ajoute le compte NexusForge, puis saisis le code à 6 chiffres.</p>
-        </div>
         <div class="bloc-conteur" data-si-conteur hidden>
           <p><strong>Conteur :</strong> la double authentification (TOTP) est obligatoire pour mener.</p>
           <label class="coche"><input type="checkbox" name="totp" data-requis-conteur /> Mon application d’authentification est configurée.</label>
@@ -141,8 +140,8 @@
 <script>
 window.NF_WIZARD_VOIES = { joueur: 'voie-joueur', conteur: 'voie-conteur' };
 </script>
-<script src="../js/carrousel.js?v=0.7.0" defer></script>
-<script src="../js/wizard.js?v=0.7.0" defer></script>
+<script src="../js/carrousel.js?v=0.7.1" defer></script>
+<script src="../js/wizard.js?v=0.7.1" defer></script>
 
   <div class="modale" id="modale-doc" hidden>
     <div class="modale-cadre" role="dialog" aria-modal="true" aria-labelledby="modale-titre">

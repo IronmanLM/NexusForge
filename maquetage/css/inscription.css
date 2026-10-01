@@ -120,16 +120,13 @@
 .eclairage strong { color: var(--ink); }
 .eclairage p { margin: 0; }
 .eclairage [hidden] { display: none; }
-/* applis TOTP */
-.applis-totp { border: 1px solid var(--filet); border-radius: 10px; padding: 0.8rem 0.9rem; display: grid; gap: 0.4rem; }
-.applis-totp p { margin: 0; font-size: 0.88rem; color: var(--muted); }
-.applis-totp strong { color: var(--ink); }
-.applis-totp ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.15rem; font-size: 0.88rem; }
-.applis-liste { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+/* applis TOTP (zone gauche, étape vérification) */
+.applis-liste { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin: 0.6rem 0; }
 .appli {
   display: flex; align-items: center; gap: 0.6rem;
   border: 1px solid var(--filet); border-radius: 10px; padding: 0.5rem 0.7rem;
   color: var(--ink); text-decoration: none; font-size: 0.85rem;
 }
 .appli:hover { border-color: var(--accent); }
-.appli svg { width: 2.2rem; height: 2.2rem; flex: 0 0 auto; }
+.appli img { width: 2.2rem; height: 2.2rem; flex: 0 0 auto; border-radius: 7px; }
+.appli span small { display: block; color: var(--muted); font-size: 0.72rem; }
