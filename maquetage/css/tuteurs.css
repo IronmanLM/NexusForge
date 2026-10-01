@@ -1,0 +1,37 @@
+/* ——— page Tuteurs : reprend acces.css, colonne droite défilante ——— */
+.droite.fixe { display: block; overflow-y: auto; padding: 2.2rem 1.5rem; }
+.contenu-tuteurs {
+  position: relative; z-index: 2;
+  max-width: 34rem; margin: 0 auto;
+  display: grid; gap: 1.4rem;
+}
+.explicatif {
+  background: var(--panneau); border: 1px solid var(--filet); border-radius: 12px;
+  padding: 1.1rem 1.2rem; backdrop-filter: blur(8px);
+  display: grid; gap: 0.6rem;
+}
+.explicatif h2 { font-family: var(--serif); font-weight: 400; font-size: 1.2rem; margin: 0; }
+.explicatif p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+.explicatif strong { color: var(--ink); }
+.explicatif ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.3rem; font-size: 0.92rem; color: var(--muted); }
+.autorisation {
+  background: var(--panneau); border: 1px solid var(--filet); border-radius: 12px;
+  padding: 1.1rem 1.2rem; backdrop-filter: blur(8px);
+  display: grid; gap: 0.8rem;
+}
+.autorisation h2 { font-family: var(--serif); font-weight: 400; font-size: 1.2rem; margin: 0; }
+.autorisation label { display: grid; gap: 0.35rem; font-size: 0.9rem; }
+.autorisation input[type="text"] {
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--filet); border-radius: 8px;
+  color: var(--ink); padding: 0.65rem 0.8rem; font-size: 0.95rem; width: 100%;
+}
+#valider-autorisation {
+  background: var(--accent); color: #04121a; font-weight: 600; border: none;
+  border-radius: 999px; padding: 0.75rem 1.5rem; min-height: 44px; font-size: 0.95rem; cursor: pointer;
+}
+.message-tuteurs { margin: 0; font-size: 0.9rem; border-radius: 8px; padding: 0.6rem 0.8rem; }
+.message-tuteurs.erreur { background: rgba(200, 40, 40, 0.15); border: 1px solid rgba(200, 40, 40, 0.5); }
+.message-tuteurs.succes { background: rgba(40, 180, 100, 0.15); border: 1px solid rgba(40, 180, 100, 0.5); }
+@media (max-width: 760px) {
+  .droite.fixe { padding: 1.2rem 1rem 3rem; }
+}

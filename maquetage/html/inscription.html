@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NexusForge — Inscription</title>
-<link rel="stylesheet" href="../css/commun.css?v=0.7.2">
-<link rel="stylesheet" href="../css/acces.css?v=0.7.2">
-<link rel="stylesheet" href="../css/inscription.css?v=0.7.2">
+<link rel="stylesheet" href="../css/commun.css?v=0.8.0">
+<link rel="stylesheet" href="../css/acces.css?v=0.8.0">
+<link rel="stylesheet" href="../css/inscription.css?v=0.8.0">
 </head>
 <body>
 
@@ -103,8 +103,18 @@
 
       <div class="panneau" data-panneau="verification" hidden>
         <h2>Prouve que c’est toi</h2>
-        <p class="lede-w">Un lien de confirmation part vers ton courriel : ouvre-le, puis reviens ici.</p>
-        <label id="ligne-code">Code reçu <input type="text" id="code-totp" name="code" required inputmode="numeric" autocomplete="one-time-code" placeholder="6 chiffres" /></label>
+        <p class="lede-w">Un code à 6 chiffres part vers ton courriel : envoie-le, puis saisis-le ici.</p>
+        <div id="bloc-code">
+          <div class="ligne-envoi">
+            <button type="button" id="envoyer-code">Envoyer le code</button>
+            <p class="note" id="note-envoi" hidden></p>
+          </div>
+          <label>Code reçu <input type="text" id="code-totp" name="code" required inputmode="numeric" autocomplete="one-time-code" placeholder="6 chiffres" /></label>
+        </div>
+        <div class="bloc-mineur" data-si-mineur hidden>
+          <p><strong>Mineur :</strong> un courriel part aussi vers ton parent : il valide ton inscription en un clic, depuis son <a href="tuteurs.html" target="_blank" rel="noopener">espace parents</a>.</p>
+          <p class="note">Statut : en attente de la validation parentale (simulation : <a href="tuteurs.html" target="_blank" rel="noopener">ouvrir l’espace parents</a>).</p>
+        </div>
         <div class="bloc-conteur" data-si-conteur hidden>
           <p><strong>Conteur :</strong> la double authentification (TOTP) est obligatoire pour mener.</p>
           <label class="coche"><input type="checkbox" name="totp" data-requis-conteur /> Mon application d’authentification est configurée.</label>
@@ -140,8 +150,8 @@
 <script>
 window.NF_WIZARD_VOIES = { joueur: 'voie-joueur', conteur: 'voie-conteur' };
 </script>
-<script src="../js/carrousel.js?v=0.7.2" defer></script>
-<script src="../js/wizard.js?v=0.7.2" defer></script>
+<script src="../js/carrousel.js?v=0.8.0" defer></script>
+<script src="../js/wizard.js?v=0.8.0" defer></script>
 
   <div class="modale" id="modale-doc" hidden>
     <div class="modale-cadre" role="dialog" aria-modal="true" aria-labelledby="modale-titre">

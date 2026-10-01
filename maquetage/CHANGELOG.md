@@ -1,5 +1,10 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.8.0 — 2026-10-01
+
+- Vérification par code OTP (simulation : 428137, bouton d’envoi, contrôle à l’étape) ; modale documentaire rendue autonome.
+- Espace parents (`tuteurs.html`) : le jeu de rôle expliqué, charte de protection des mineurs, 3 documents à valider, autorisation en un clic.
+
 ## v0.7.2 — 2026-10-01
 
 - 2FAS en français + extension navigateur, AliasVault + extension ; « Me rappeler plus tard » décochée par défaut et masque le code TOTP.

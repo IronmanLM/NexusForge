@@ -22,6 +22,7 @@
   var puces = Array.prototype.slice.call(zone.querySelectorAll('[data-etape]'));
   var courant = 0;
   var VOIES = window.NF_WIZARD_VOIES || {};
+  var CODE_DEMO = '428137'; /* simulation OTP, sans backend */
   var naissance = document.getElementById('naissance');
 
   function estMajeur() {
@@ -73,8 +74,8 @@
     /* « Me rappeler plus tard » (joueur uniquement) : le code TOTP disparaît avec son obligation */
     var reporte = document.getElementById('totp-plus-tard');
     var reporteCoche = !!(reporte && reporte.checked);
-    var ligneCode = document.getElementById('ligne-code');
-    if (ligneCode) { ligneCode.hidden = reporteCoche; }
+    var blocCode = document.getElementById('bloc-code');
+    if (blocCode) { blocCode.hidden = reporteCoche; }
     var codeTotp = document.getElementById('code-totp');
     if (codeTotp) { codeTotp.required = !reporteCoche; }
   }
@@ -108,6 +109,17 @@
         parent.setCustomValidity('Doit être différent de ton adresse d’inscription.');
         parent.reportValidity();
         return false;
+      }
+    }
+    if (panneau.getAttribute('data-panneau') === 'verification') {
+      var reporte2 = document.getElementById('totp-plus-tard');
+      var code2 = document.getElementById('code-totp');
+      if (code2 && !(reporte2 && reporte2.checked)) {
+        var saisie = (code2.value || '').replace(/[\s-]/g, '');
+        if (saisie !== CODE_DEMO) {
+          message(panneau, 'Code incorrect. Vérifie le courriel reçu (simulation : ' + CODE_DEMO + ').');
+          return false;
+        }
       }
     }
     var champs = Array.prototype.slice.call(panneau.querySelectorAll('[required]'));
@@ -153,6 +165,23 @@
   if (naissance) { naissance.addEventListener('change', rafraichirConditions); }
   var totpPlusTard = document.getElementById('totp-plus-tard');
   if (totpPlusTard) { totpPlusTard.addEventListener('change', rafraichirConditions); }
+  var envoyerCode = document.getElementById('envoyer-code');
+  if (envoyerCode) { envoyerCode.addEventListener('click', function () {
+    var note = document.getElementById('note-envoi');
+    var mien = document.querySelector('[data-panneau="compte"] [name="courriel"]');
+    var dest = (mien && mien.value) ? mien.value : 'ton courriel';
+    if (note) {
+      note.hidden = false;
+      note.textContent = 'Code envoyé à ' + dest + ' (simulation : ' + CODE_DEMO + ').';
+    }
+    envoyerCode.textContent = 'Renvoyer le code';
+  }); }
+  montrer(0);
+})();
+
+/* ——— modale documentaire : autonome, réutilisable sur toute page ——— */
+(function () {
+  'use strict';
   /* ——— modale documentaire : lire + valider explicitement avant de cocher ——— */
   var modale = document.getElementById('modale-doc');
   var modaleTitre = document.getElementById('modale-titre');
@@ -167,7 +196,7 @@
     docEnCours = null;
   }
   if (modale) {
-    zone.addEventListener('click', function (e) {
+    document.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-lire]');
       if (!btn) { return; }
       docEnCours = btn;
@@ -201,5 +230,4 @@
       if (e.key === 'Escape' && !modale.hidden) { fermerModale(); }
     });
   }
-  montrer(0);
 })();
