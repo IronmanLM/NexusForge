@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.1.2 — 2026-10-01
+
+- Page Accès : repli `100vh` avant `100dvh` (navigateurs sans `dvh`, corps tassé et bande vide en bas) et fond sombre sur `html`.
+
 ## v0.1.1 — 2026-10-01
 
 - Serveur de prévisualisation Docker : `docker-compose.preview.yml` (nginx, port 8090).

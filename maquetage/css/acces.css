@@ -10,10 +10,11 @@
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
+  html { background: var(--fond); }
   body {
     margin: 0; background: var(--fond); color: var(--ink);
     font-family: var(--sans); line-height: 1.5;
-    height: 100dvh; overflow: hidden;
+    min-height: 100vh; min-height: 100dvh; overflow: hidden;
     display: grid; grid-template-columns: 1fr 1fr;
   }
   /* ——— moitié gauche : fond NexusForge statique ——— */
@@ -55,7 +56,7 @@
   .rejoindre p { margin: 0 0 0.9rem; color: var(--muted); font-size: 0.92rem; }
   .rejoindre a.cta { display: inline-flex; align-items: center; background: var(--accent); color: #04121a; font-weight: 600; border: none; border-radius: 999px; padding: 0.7rem 1.6rem; min-height: 44px; text-decoration: none; font-size: 0.95rem; }
   @media (max-width: 760px) {
-    body { height: auto; min-height: 100dvh; overflow: visible; grid-template-columns: 1fr; }
+    body { height: auto; min-height: 100vh; min-height: 100dvh; overflow: visible; grid-template-columns: 1fr; }
     .gauche { min-height: 42vh; }
     .droite::before { top: 0; bottom: auto; left: 0; right: 0; width: auto; height: 90px; background: linear-gradient(to bottom, var(--fond), transparent); }
   }
