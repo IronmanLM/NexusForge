@@ -1,5 +1,10 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.3.0 — 2026-10-01
+
+- Socle réutilisable : `css/commun.css` (variables, base, carrousel) partagé par les pages, `js/carrousel.js` et `js/langue.js` externes (zéro JS embarqué).
+- Titres fonctionnels (« NexusForge — Accueil / Accès », sans mention maquette).
+
 ## v0.2.0 — 2026-10-01
 
 - Pages aux noms fonctionnels (`accueil.html`, `acces.html`) : navigation interne complète (logo « NexusForge » et « Accueil » ramènent à l’accueil).

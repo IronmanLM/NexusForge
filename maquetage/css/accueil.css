@@ -1,22 +1,6 @@
-:root {
-    --ink: #e8ecf4;
-    --muted: #9aa6bd;
-    --fond: #06090f;
-    --accent: #38e1ff;
-    --accent-chaud: #ffb347;
-    --filet: rgba(232, 236, 244, 0.16);
-    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  }
-  * { box-sizing: border-box; }
+  /* Socle (variables, base, carrousel) : voir commun.css */
   html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    background: var(--fond);
-    color: var(--ink);
-    font-family: var(--sans);
-    line-height: 1.6;
-  }
+  body { line-height: 1.6; }
   /* ——— navigation fine avec logo ——— */
   .nav {
     display: flex; align-items: center; gap: 1.6rem;
@@ -44,18 +28,12 @@
     background: var(--fond);
     overflow: hidden;
   }
-  .heros .fond {
-    position: absolute; inset: 0;
-    background-size: cover; background-position: center 30%; background-repeat: no-repeat;
-    opacity: 0; transition: opacity 1.6s ease;
-  }
-  .heros .fond.visible { opacity: 1; }
   .heros::after {
     content: ""; position: absolute; inset: 0;
     background: linear-gradient(to top, var(--fond) 2%, rgba(6, 9, 15, 0.55) 34%, transparent 62%);
   }
   .heros .texte { position: relative; z-index: 1; padding: 0 clamp(1.2rem, 5vw, 4rem) clamp(2rem, 6vh, 4rem); max-width: 46rem; }
-  .sur-titre { color: var(--accent); text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.78rem; margin: 0 0 0.8rem; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9); }
+  .sur-titre { margin: 0 0 0.8rem; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9); }
   h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(2.4rem, 6vw, 4.4rem); line-height: 1.05; margin: 0 0 1rem; text-wrap: pretty; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.85); }
   .chapeau { color: var(--ink); font-size: clamp(1.02rem, 1.6vw, 1.2rem); max-width: 34rem; margin: 0 0 1.8rem; text-shadow: 0 1px 14px rgba(0, 0, 0, 0.9); }
   .cta { display: flex; flex-wrap: wrap; gap: 0.9rem; }
@@ -90,4 +68,3 @@
     .entree .fleche { transition: none; }
   }
 
-  a.marque { color: inherit; text-decoration: none; }

@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NexusForge — Accueil (maquette v2)</title>
+<title>NexusForge — Accueil</title>
+<link rel="stylesheet" href="../css/commun.css">
 <link rel="stylesheet" href="../css/accueil.css">
 </head>
 <body>
@@ -21,9 +22,9 @@
     <a class="connexion" href="acces.html" data-i18n="nav.login">Connexion</a>
   </nav>
 
-  <header class="heros" id="heros">
-    <div class="fond visible" id="fondA" aria-hidden="true"></div>
-    <div class="fond" id="fondB" aria-hidden="true"></div>
+  <header class="heros carrousel" data-fonds="../img/fond-fantasy.jpg ../img/fond-cyber.jpg ../img/fond-tenebres.jpg ../img/fond-steam.jpg ../img/fond-abysses.jpg" data-delai="15000">
+    <div class="fond" aria-hidden="true"></div>
+    <div class="fond" aria-hidden="true"></div>
     <div class="texte">
       <p class="sur-titre" data-i18n="hero.kicker">Jeu de rôle en ligne et hors-ligne</p>
       <h1 data-i18n="hero.title">La table où vos mondes prennent vie.</h1>
@@ -66,36 +67,7 @@
   </footer>
 
 <script>
-(function () {
-  'use strict';
-  /* ——— carrousel de fonds : 5 images, jamais deux fois la même, fondu toutes les 15 s ——— */
-  var FONDS = ['../img/fond-fantasy.jpg', '../img/fond-cyber.jpg', '../img/fond-tenebres.jpg', '../img/fond-steam.jpg', '../img/fond-abysses.jpg'];
-  var heros = document.getElementById('heros');
-  var coucheA = document.getElementById('fondA');
-  var coucheB = document.getElementById('fondB');
-  var courant = Math.floor(Math.random() * FONDS.length);
-  var visible = coucheA, cachee = coucheB;
-  FONDS.forEach(function (src) { var im = new Image(); im.src = src; });
-  visible.style.backgroundImage = 'url("' + FONDS[courant] + '")';
-  function tirage(sauf) {
-    var i;
-    do { i = Math.floor(Math.random() * FONDS.length); } while (i === sauf);
-    return i;
-  }
-  var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduit) {
-    setInterval(function () {
-      var suivant = tirage(courant);
-      courant = suivant;
-      cachee.style.backgroundImage = 'url("' + FONDS[suivant] + '")';
-      cachee.classList.add('visible');
-      visible.classList.remove('visible');
-      var echange = visible; visible = cachee; cachee = echange;
-    }, 15000);
-  }
-
-  /* ——— libellés FR/EN/DE/ES (fond/forme : aucun texte en dur côté logique) ——— */
-  var TEXTES = {
+window.NF_TEXTES = {
     fr: {
       'nav.home': 'Accueil', 'nav.login': 'Connexion',
       'hero.kicker': 'Jeu de rôle en ligne et hors-ligne',
@@ -141,24 +113,9 @@
       e3t: 'Estoy descubriendo', e3d: 'Una visita guiada de la mesa, sin cuenta y sin jerga, en dos minutos.'
     }
   };
-  var select = document.getElementById('langue');
-  function appliquer(langue) {
-    var dict = TEXTES[langue] || TEXTES.fr;
-    document.documentElement.lang = langue;
-    Array.prototype.forEach.call(document.querySelectorAll('[data-i18n]'), function (el) {
-      var v = dict[el.getAttribute('data-i18n')];
-      if (typeof v === 'string') { el.innerHTML = v; }
-    });
-    try { localStorage.setItem('nf-langue', langue); } catch (e) {}
-  }
-  var initiale = 'fr';
-  try { initiale = localStorage.getItem('nf-langue') || 'fr'; } catch (e) {}
-  if (!TEXTES[initiale]) { initiale = 'fr'; }
-  select.value = initiale;
-  appliquer(initiale);
-  select.addEventListener('change', function () { appliquer(select.value); });
-})();
 </script>
+<script src="../js/carrousel.js" defer></script>
+<script src="../js/langue.js" defer></script>
 
 </body>
 </html>

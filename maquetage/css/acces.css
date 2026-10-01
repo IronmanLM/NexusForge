@@ -1,19 +1,5 @@
-:root {
-    --ink: #e8ecf4;
-    --muted: #9aa6bd;
-    --fond: #06090f;
-    --panneau: rgba(11, 18, 32, 0.55);
-    --accent: #38e1ff;
-    --filet: rgba(232, 236, 244, 0.16);
-    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
-    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  html { background: var(--fond); }
+  /* Socle (variables, base, carrousel) : voir commun.css */
   body {
-    margin: 0; background: var(--fond); color: var(--ink);
-    font-family: var(--sans); line-height: 1.5;
     min-height: 100vh; min-height: 100dvh; overflow: hidden;
     display: grid; grid-template-columns: 1fr 1fr;
   }
@@ -28,16 +14,10 @@
   .gauche .marque img { height: 36px; width: auto; display: block; }
   .gauche .marque span { font-family: var(--serif); font-size: 1.3rem; letter-spacing: 0.04em; }
   .gauche .titre { position: relative; z-index: 1; }
-  .gauche .sur-titre { color: var(--accent); text-transform: uppercase; letter-spacing: 0.22em; font-size: 0.78rem; margin: 0 0 0.5rem; }
+  .gauche .sur-titre { margin: 0 0 0.5rem; }
   .gauche h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(2rem, 4.5vw, 3.4rem); line-height: 1.06; margin: 0; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.85); }
   /* ——— moitié droite : décors tournants + login + rejoindre ——— */
   .droite { position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: clamp(1.2rem, 3vw, 2.5rem); }
-  .droite .fond {
-    position: absolute; inset: 0; z-index: 0;
-    background-size: cover; background-position: center 30%; background-repeat: no-repeat;
-    opacity: 0; transition: opacity 1.6s ease;
-  }
-  .droite .fond.visible { opacity: 1; }
   .droite::after { content: ""; position: absolute; inset: 0; z-index: 1; background: rgba(6, 9, 15, 0.62); }
   /* ——— couture douce : fondu au noir entre les deux moitiés (AU-DESSUS des fonds) ——— */
   .droite::before {
@@ -61,7 +41,5 @@
     .droite::before { top: 0; bottom: auto; left: 0; right: 0; width: auto; height: 90px; background: linear-gradient(to bottom, var(--fond), transparent); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .droite .fond { transition: none; }
   }
 
-  a.marque { color: inherit; text-decoration: none; }

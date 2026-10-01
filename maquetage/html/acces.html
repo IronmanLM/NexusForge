@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NexusForge — Accès (maquette v5, textes provisoires)</title>
+<title>NexusForge — Accès</title>
+<link rel="stylesheet" href="../css/commun.css">
 <link rel="stylesheet" href="../css/acces.css">
 </head>
 <body>
@@ -16,9 +17,9 @@
     </div>
   </section>
 
-  <section class="droite" aria-label="Connexion et inscription">
-    <div class="fond visible" id="fondA" aria-hidden="true"></div>
-    <div class="fond" id="fondB" aria-hidden="true"></div>
+  <section class="droite carrousel" data-fonds="../img/decor-abysses.jpg ../img/decor-cyber.jpg ../img/decor-phare.jpg ../img/decor-dryade.jpg ../img/decor-steam.jpg ../img/decor-vampires.jpg" data-delai="15000" aria-label="Connexion et inscription">
+    <div class="fond" aria-hidden="true"></div>
+    <div class="fond" aria-hidden="true"></div>
     <div class="colonne">
       <!-- Maquette statique : la connexion renvoie vers l’accueil en attendant la page « accueil connecté » (cf. TODO.md). -->
       <form class="rapide" action="accueil.html" method="get" aria-label="Connexion habituelle">
@@ -35,36 +36,7 @@
     </div>
   </section>
 
-<script>
-(function () {
-  'use strict';
-  /* ——— carrousel des 6 décors : jamais deux fois le même, fondu toutes les 15 s ——— */
-  var FONDS = ['../img/decor-abysses.jpg', '../img/decor-cyber.jpg', '../img/decor-phare.jpg', '../img/decor-dryade.jpg', '../img/decor-steam.jpg', '../img/decor-vampires.jpg'];
-  var coucheA = document.getElementById('fondA');
-  var coucheB = document.getElementById('fondB');
-  if (!coucheA || !coucheB) { return; }
-  var courant = Math.floor(Math.random() * FONDS.length);
-  var visible = coucheA, cachee = coucheB;
-  FONDS.forEach(function (src) { var im = new Image(); im.src = src; });
-  visible.style.backgroundImage = 'url("' + FONDS[courant] + '")';
-  function tirage(sauf) {
-    var i;
-    do { i = Math.floor(Math.random() * FONDS.length); } while (i === sauf);
-    return i;
-  }
-  var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduit) {
-    setInterval(function () {
-      var suivant = tirage(courant);
-      courant = suivant;
-      cachee.style.backgroundImage = 'url("' + FONDS[suivant] + '")';
-      cachee.classList.add('visible');
-      visible.classList.remove('visible');
-      var echange = visible; visible = cachee; cachee = echange;
-    }, 15000);
-  }
-})();
-</script>
+<script src="../js/carrousel.js" defer></script>
 
 </body>
 </html>

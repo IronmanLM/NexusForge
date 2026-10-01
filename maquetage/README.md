@@ -1,6 +1,6 @@
 # Maquetage NexusForge
 
-[![Version](https://img.shields.io/badge/version-v0.2.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v0.3.0-blue)](CHANGELOG.md)
 [![Avancement](https://img.shields.io/badge/avancement-maquettes_en_cours-orange)](ROADMAP.md)
 
 Maquettes statiques des pages d’entrée (joueur et utilisatrice, y compris non avertie).
@@ -27,10 +27,21 @@ maquetage/
 ├── TODO.md          # reste à faire
 ├── index.html       # hub de prévisualisation statique
 ├── html/            # pages aux noms fonctionnels (accueil.html, acces.html, …)
-├── css/             # un fichier par page + preview.css pour l’index et les docs
+├── css/             # commun.css (socle réutilisable) + un fichier par page
+├── js/              # carrousel.js, langue.js (sans dépendance, réutilisables)
 ├── img/             # illustrations et symboles (jamais de base64 dans le HTML)
 └── outils/          # convertisseur md-vers-html.py (voir ci-dessous)
 ```
+
+## Socle réutilisable (préparation de l’intégration)
+
+- `css/commun.css` : variables de thème (`:root`), base, couches du carrousel.
+  Les thèmes par MJ / séance surchargeront ces variables sans toucher au HTML (E0 : fond/forme).
+- `js/carrousel.js` : carrousel générique piloté par `data-fonds` (images séparées
+  par des espaces) et `data-delai` (15000 par défaut), sans répétition, coupé si
+  `prefers-reduced-motion`. Même balisage reprisable côté frontend.
+- `js/langue.js` : mémorise `<select id="langue">` et applique `window.NF_TEXTES`
+  aux `[data-i18n]` ; les dictionnaires restent dans la page (contenu, futurs `messages.ts`).
 
 ## Pages de documentation
 

@@ -11,7 +11,7 @@
   <main class="doc">
     <p class="sur-titre"><a href="../index.html">← Maquetage</a></p>
 <h1>Maquetage NexusForge</h1>
-<p><a href="CHANGELOG.html"><img class="bouclier" alt="Version" src="https://img.shields.io/badge/version-v0.2.0-blue"></a> <a href="ROADMAP.html"><img class="bouclier" alt="Avancement" src="https://img.shields.io/badge/avancement-maquettes_en_cours-orange"></a></p>
+<p><a href="CHANGELOG.html"><img class="bouclier" alt="Version" src="https://img.shields.io/badge/version-v0.3.0-blue"></a> <a href="ROADMAP.html"><img class="bouclier" alt="Avancement" src="https://img.shields.io/badge/avancement-maquettes_en_cours-orange"></a></p>
 <p>Maquettes statiques des pages d’entrée (joueur et utilisatrice, y compris non avertie). Textes en français provisoires — l’intégration utilisera les clés i18n (<code>nav.home</code>, etc.).</p>
 <h2>Prévisualisation</h2>
 <p>Aucun serveur requis : ouvrez <code>index.html</code> dans un navigateur et naviguez. En Docker (depuis <code>maquetage/</code>) : <code>docker compose -f docker-compose.preview.yml up -d</code>, puis <code>http://192.168.0.120:8090</code>. Les boutons relient les maquettes entre elles :</p>
@@ -29,9 +29,23 @@
 ├── TODO.md          # reste à faire
 ├── index.html       # hub de prévisualisation statique
 ├── html/            # pages aux noms fonctionnels (accueil.html, acces.html, …)
-├── css/             # un fichier par page + preview.css pour l’index et les docs
+├── css/             # commun.css (socle réutilisable) + un fichier par page
+├── js/              # carrousel.js, langue.js (sans dépendance, réutilisables)
 ├── img/             # illustrations et symboles (jamais de base64 dans le HTML)
 └── outils/          # convertisseur md-vers-html.py (voir ci-dessous)</code></pre>
+<h2>Socle réutilisable (préparation de l’intégration)</h2>
+<ul>
+<li><code>css/commun.css</code> : variables de thème (<code>:root</code>), base, couches du carrousel.</li>
+</ul>
+<p>Les thèmes par MJ / séance surchargeront ces variables sans toucher au HTML (E0 : fond/forme).</p>
+<ul>
+<li><code>js/carrousel.js</code> : carrousel générique piloté par <code>data-fonds</code> (images séparées</li>
+</ul>
+<p>par des espaces) et <code>data-delai</code> (15000 par défaut), sans répétition, coupé si <code>prefers-reduced-motion</code>. Même balisage reprisable côté frontend.</p>
+<ul>
+<li><code>js/langue.js</code> : mémorise <code>&lt;select id=&quot;langue&quot;&gt;</code> et applique <code>window.NF_TEXTES</code></li>
+</ul>
+<p>aux <code>[data-i18n]</code> ; les dictionnaires restent dans la page (contenu, futurs <code>messages.ts</code>).</p>
 <h2>Pages de documentation</h2>
 <p><code>README.md</code>, <code>CHANGELOG.md</code>, <code>ROADMAP.md</code> et <code>TODO.md</code> sont lisibles en HTML (<code>html/README.html</code>, etc., même habillage que le site) depuis le hub. Elles sont générées, jamais retouchées à la main :</p>
 <pre><code>python3 outils/md-vers-html.py</code></pre>
