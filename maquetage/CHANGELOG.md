@@ -1,5 +1,9 @@
 # CHANGELOG — Maquetage NexusForge
 
+## v0.9.1 — 2026-10-01
+
+- TOTP : correction du décodage base32 (vecteur RFC 6238 à revalider).
+
 ## v0.9.0 — 2026-10-01
 
 - Vérification : installation TOTP réelle (QR + clé, contrôle RFC 6238 en local) ; code courriel et code appli vérifiés séparément.

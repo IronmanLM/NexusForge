@@ -70,7 +70,8 @@
     for (var i = 0; i < s.length; i++) {
       val = (val << 5) | alpha.indexOf(s.charAt(i));
       bits += 5;
-      if (bits >= 8) { out.push((val >>> (bits - 8)) & 255); bits -= 8; }
+      while (bits >= 8) { out.push((val >>> (bits - 8)) & 255); bits -= 8; }
+      val = bits > 0 ? val & ((1 << bits) - 1) : 0;
     }
     return out;
   }
@@ -92,7 +93,7 @@
     }
     return false;
   }
-  window.NF_TOTP = { secret: SECRET_TOTP, generer: totpGenere, verifier: totpValide };
+  window.NF_TOTP = { secret: SECRET_TOTP, generer: totpGenere, verifier: totpValide, sha1: sha1 };
   var naissance = document.getElementById('naissance');
 
   function estMajeur() {
