@@ -1,7 +1,7 @@
 # CHANGELOG — NexusForge `decors`
 
 ## [Unreleased] — branche `decors`
-- Maquette `maquettes/accueil/accueil.html` (v7) : page Accueil one-page sans blocs, héros à fond aléatoire (fantasy/cyberpunk), menu épuré (Accueil + langue + Connexion), sélecteur FR/EN/DE/ES fonctionnel, logo officiel haut/bas.
+- Maquette `maquettes/accueil/accueil.html` (v10) : page Accueil one-page sans blocs, carrousel de 5 fonds (fantasy/cyberpunk/ténèbres/steampunk/abysses, sans répétition, fondu toutes les 15 s), menu épuré (Accueil + langue + Connexion), sélecteur FR/EN/DE/ES fonctionnel, logo officiel haut/bas.
 - i18n : clés `nav.home` (« Accueil » en FR), `nav.resources`, `nav.screens`, `nav.tools` ajoutées en FR/EN/DE/ES — la navigation affichait les clés brutes ; accents FR redressés (`Atelier Système`, `Thème`). Audit : 91 clés `t()` utilisées, toutes définies.
 - Favicon : jeu généré depuis le logo carré (crop resserré sur le vortex de gauche, halo bleu lisible en petit) — `favicon.ico` (16/32/48), `apple-touch-icon.png`, `icon-192.png`, `icon-512.png` — câblé dans `index.html` + manifeste, suppression du bricolage `favicon.svg`.
 - E0/M1.4a : écran `/sessions` réordonné zones joueur (liste « Mes parties » d’abord, création MJ ensuite, états traduits, options « Mode silence » traduites, aucun identifiant technique côté joueur) ; nouvelles clés i18n FR/EN/DE/ES (`parties.mine`, `parties.settings`, `parties.state.*`). Build frontend vert.

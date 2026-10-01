@@ -32,6 +32,7 @@
   }
   .nav .marque { display: flex; align-items: center; gap: 0.7rem; margin-right: auto; text-decoration: none; }
   .nav .marque img { height: 34px; width: auto; display: block; }
+  .nav .marque span { font-family: var(--serif); font-size: 1.25rem; letter-spacing: 0.04em; color: var(--ink); }
   .nav a { color: var(--muted); text-decoration: none; }
   .nav a.actif { color: var(--ink); border-bottom: 1px solid var(--accent); padding-bottom: 2px; }
   .nav a:hover { color: var(--ink); }
@@ -47,8 +48,15 @@
     position: relative;
     min-height: min(82vh, 700px);
     display: flex; align-items: flex-end;
-    background: url("assets/fond-fantasy.jpg") center 30% / cover no-repeat, var(--fond);
+    background: var(--fond);
+    overflow: hidden;
   }
+  .heros .fond {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center 30%; background-repeat: no-repeat;
+    opacity: 0; transition: opacity 1.6s ease;
+  }
+  .heros .fond.visible { opacity: 1; }
   .heros::after {
     content: ""; position: absolute; inset: 0;
     background: linear-gradient(to top, var(--fond) 2%, rgba(6, 9, 15, 0.55) 34%, transparent 62%);
@@ -93,7 +101,7 @@
 <body>
 
   <nav class="nav" aria-label="Navigation principale">
-    <span class="marque"><img src="../../frontend/public/brand/nexus_forge_with_text.svg" alt="NexusForge" /></span>
+    <span class="marque"><img src="../../frontend/public/brand/nexus_forge_symbol.svg" alt="" /><span>NexusForge</span></span>
     <a class="actif" href="#" aria-current="page" data-i18n="nav.home">Accueil</a>
     <label class="sr" for="langue">Langue / Language</label>
     <select id="langue" aria-label="Langue">
@@ -106,6 +114,8 @@
   </nav>
 
   <header class="heros" id="heros">
+    <div class="fond visible" id="fondA" aria-hidden="true"></div>
+    <div class="fond" id="fondB" aria-hidden="true"></div>
     <div class="texte">
       <p class="sur-titre" data-i18n="hero.kicker">Jeu de rôle en ligne et hors-ligne</p>
       <h1 data-i18n="hero.title">La table où vos mondes prennent vie.</h1>
@@ -150,13 +160,31 @@
 <script>
 (function () {
   'use strict';
-  /* ——— fond héros aléatoire : campagne fantasy OU équipe cyberpunk ——— */
-  var FONDS = ['assets/fond-fantasy.jpg', 'assets/fond-cyber.jpg'];
-  var choix = FONDS[Math.floor(Math.random() * FONDS.length)];
+  /* ——— carrousel de fonds : 5 images, jamais deux fois la même, fondu toutes les 15 s ——— */
+  var FONDS = ['assets/fond-fantasy.jpg', 'assets/fond-cyber.jpg', 'assets/fond-tenebres.jpg', 'assets/fond-steam.jpg', 'assets/fond-abysses.jpg'];
   var heros = document.getElementById('heros');
-  var pre = new Image();
-  pre.src = choix;
-  pre.onload = function () { heros.style.backgroundImage = 'url("' + choix + '")'; };
+  var coucheA = document.getElementById('fondA');
+  var coucheB = document.getElementById('fondB');
+  var courant = Math.floor(Math.random() * FONDS.length);
+  var visible = coucheA, cachee = coucheB;
+  FONDS.forEach(function (src) { var im = new Image(); im.src = src; });
+  visible.style.backgroundImage = 'url("' + FONDS[courant] + '")';
+  function tirage(sauf) {
+    var i;
+    do { i = Math.floor(Math.random() * FONDS.length); } while (i === sauf);
+    return i;
+  }
+  var reduit = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduit) {
+    setInterval(function () {
+      var suivant = tirage(courant);
+      courant = suivant;
+      cachee.style.backgroundImage = 'url("' + FONDS[suivant] + '")';
+      cachee.classList.add('visible');
+      visible.classList.remove('visible');
+      var echange = visible; visible = cachee; cachee = echange;
+    }, 15000);
+  }
 
   /* ——— libellés FR/EN/DE/ES (fond/forme : aucun texte en dur côté logique) ——— */
   var TEXTES = {
