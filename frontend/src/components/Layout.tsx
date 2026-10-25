@@ -202,7 +202,7 @@ export default function Layout({ children, wide = false, hideNavigation = false 
           <button
             type="button"
             className={`top-nav__menu-toggle ${isMobileNavOpen ? 'is-open' : ''}`.trim()}
-            aria-label="Ouvrir le menu"
+            aria-label={t('nav.openMenu')}
             aria-expanded={isMobileNavOpen}
             aria-controls="top-nav-links"
             onClick={() => {
@@ -217,7 +217,7 @@ export default function Layout({ children, wide = false, hideNavigation = false 
           <nav
             id="top-nav-links"
             className={`top-nav__links ${isMobileNavOpen ? 'is-open' : ''} ${isNativeApp ? 'top-nav__links--native' : ''}`.trim()}
-            aria-label="Navigation principale"
+            aria-label={t('nav.mainNavigation')}
           >
             {currentUser ? (
               <>
@@ -255,15 +255,15 @@ export default function Layout({ children, wide = false, hideNavigation = false 
                   </Link>
                   <Link to="/network">
                     <span className="top-nav__link-label">
-                      {t("nav.network")}
+                      {t('nav.network')}
                       {pendingFriendRequestCount > 0 ? <span className="home-pill home-pill--success">{pendingFriendRequestCount}</span> : null}
                     </span>
                   </Link>
-                  <Link to="/profile">{t("nav.profile")}</Link>
-                  <Link to="/settings">{t("nav.settings")}</Link>
-                  <Link to="/announcements">{t("nav.announcements")}</Link>
-                  {isAdmin ? <Link to="/admin/users/pending">{t("nav.admin.accounts")}</Link> : null}
-                  {isAdmin ? <Link to="/admin/content">{t("nav.admin.content")}</Link> : null}
+                  <Link to="/profile">{t('nav.profile')}</Link>
+                  <Link to="/settings">{t('nav.settings')}</Link>
+                  <Link to="/announcements">{t('nav.announcements')}</Link>
+                  {isAdmin ? <Link to="/admin/users/pending">{t('nav.admin.accounts')}</Link> : null}
+                  {isAdmin ? <Link to="/admin/content">{t('nav.admin.content')}</Link> : null}
                   <button type="button" className="top-nav__mobile-logout" onClick={() => logout()}>
                     {t('nav.logout')}
                   </button>
@@ -307,36 +307,36 @@ export default function Layout({ children, wide = false, hideNavigation = false 
                   <div className="top-nav__user-dropdown" role="menu">
                     <div className="top-nav__user-dropdown-header">
                       <strong>{currentUser.displayName}</strong>
-                      <small>{theme === 'dark' ? 'Dark' : 'Light'}</small>
+                      <small>{theme === 'dark' ? t('theme.dark') : t('theme.light')}</small>
                     </div>
                     <Link to="/settings" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                      Paramètres
+                      {t('nav.settings')}
                     </Link>
                     <Link to="/profile" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                      Profil
+                      {t('nav.profile')}
                     </Link>
                     <Link to="/messages" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
                       <span className="top-nav__menu-item-label">
-                        Messagerie
+                        {t('nav.messages')}
                         {unreadMessageCount > 0 ? <span className="home-pill home-pill--accent">{unreadMessageCount}</span> : null}
                       </span>
                     </Link>
                     <Link to="/network" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
                       <span className="top-nav__menu-item-label">
-                        {t("nav.network")}
+                        {t('nav.network')}
                         {pendingFriendRequestCount > 0 ? <span className="home-pill home-pill--success">{pendingFriendRequestCount}</span> : null}
                       </span>
                     </Link>
                     <Link to="/announcements" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                      Annonces
+                      {t('nav.announcements')}
                     </Link>
                     {isAdmin ? (
                       <>
                         <Link to="/admin/users/pending" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                          Admin comptes
+                          {t('nav.admin.accounts')}
                         </Link>
                         <Link to="/admin/content" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                          Admin contenu
+                          {t('nav.admin.content')}
                         </Link>
                       </>
                     ) : null}
@@ -358,13 +358,13 @@ export default function Layout({ children, wide = false, hideNavigation = false 
         </div>
         {!isNativeApp && isAdmin && pendingCount > 0 ? (
           <div className="admin-pending-banner">
-            <Link to="/admin/users/pending">{pendingCount} compte(s) en attente de validation admin</Link>
+            <Link to="/admin/users/pending">{pendingCount} {t('notification.pendingAccounts')}</Link>
           </div>
         ) : null}
         {!isNativeApp && currentUser && pendingInvitationCount > 0 ? (
           <div className="invitation-pending-banner">
             <Link to="/sessions">
-              {pendingInvitationCount} invitation(s) de partie en attente. Ouvre `Parties` pour accepter ou refuser.
+              {pendingInvitationCount} {t('notification.pendingInvitations')}
             </Link>
           </div>
         ) : null}
