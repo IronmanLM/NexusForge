@@ -9,6 +9,7 @@ import { listPendingUsersService } from '../services/authService';
 import { sessionRepository } from '../data/repositories';
 import { listDirectConversationsService, loadSocialRelationsService } from '../services/socialService';
 import { applyTheme, getStoredTheme, THEME_CHANGED_EVENT, ThemeMode } from '../theme';
+import { startAdaptivePolling } from '../services/adaptivePolling';
 
 type LayoutProps = PropsWithChildren<{ wide?: boolean; hideNavigation?: boolean }>;
 
@@ -37,38 +38,8 @@ export default function Layout({ children, wide = false, hideNavigation = false 
   }, [currentUser?.displayName, currentUser?.nickname]);
 
   useEffect(() => {
-    if (!isAdmin) {
-      setPendingCount(0);
-      return;
-    }
-
-    let isMounted = true;
-    const loadPending = async () => {
-      try {
-        const items = await listPendingUsersService();
-        if (isMounted) {
-          setPendingCount(items.length);
-        }
-      } catch {
-        if (isMounted) {
-          setPendingCount(0);
-        }
-      }
-    };
-
-    void loadPending();
-    const interval = window.setInterval(() => {
-      void loadPending();
-    }, 30_000);
-
-    return () => {
-      isMounted = false;
-      window.clearInterval(interval);
-    };
-  }, [isAdmin]);
-
-  useEffect(() => {
     if (!currentUser) {
+      setPendingCount(0);
       setPendingInvitationCount(0);
       setUnreadMessageCount(0);
       setPendingFriendRequestCount(0);
@@ -76,9 +47,10 @@ export default function Layout({ children, wide = false, hideNavigation = false 
     }
 
     let isMounted = true;
-    const loadIndicators = async () => {
-      try {
-        const [sessions, conversations, relations] = await Promise.all([
+    const stopPolling = startAdaptivePolling({
+      task: async () => {
+        const [pendingUsers, sessions, conversations, relations] = await Promise.all([
+          isAdmin ? listPendingUsersService() : Promise.resolve([]),
           sessionRepository.list({ includeArchived: false }),
           listDirectConversationsService(),
           loadSocialRelationsService()
@@ -88,6 +60,7 @@ export default function Layout({ children, wide = false, hideNavigation = false 
           return;
         }
 
+        setPendingCount(pendingUsers.length);
         const invitationCount = sessions.flatMap((session) => session.invitations ?? []).filter(
           (invitation) => invitation.userId === currentUser.id && invitation.status === 'pending'
         ).length;
@@ -97,25 +70,16 @@ export default function Layout({ children, wide = false, hideNavigation = false 
         setPendingInvitationCount(invitationCount);
         setUnreadMessageCount(unreadCount);
         setPendingFriendRequestCount(friendRequestCount);
-      } catch {
-        if (isMounted) {
-          setPendingInvitationCount(0);
-          setUnreadMessageCount(0);
-          setPendingFriendRequestCount(0);
-        }
-      }
-    };
-
-    void loadIndicators();
-    const interval = window.setInterval(() => {
-      void loadIndicators();
-    }, 30_000);
+      },
+      baseIntervalMs: 30_000,
+      maxIntervalMs: 240_000
+    });
 
     return () => {
       isMounted = false;
-      window.clearInterval(interval);
+      stopPolling();
     };
-  }, [currentUser]);
+  }, [currentUser, isAdmin]);
 
   useEffect(() => {
     applyTheme(theme);
