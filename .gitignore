@@ -35,6 +35,10 @@ frontend/android/key.properties
 *.jks
 *.keystore
 
+# Local persistence databases and user assets
+backend/data/
+**/state.json
+
 # Misc
 .codex
 .codex/

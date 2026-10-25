@@ -52,6 +52,15 @@ npm start
 - Si `ROOT_ADMIN_TOTP_SECRET` est défini (BASE32), le 2FA du root admin est forcé et ne peut pas être désactivé via API.
 - Persistance locale JSON (`DATA_FILE`) + sauvegarde automatique après modifications.
 
+### Sécurité de la persistance locale
+
+Le chemin par défaut est `backend/data/state.json`. Cette base peut contenir des hashes de mots de passe, des jetons de session et des données utilisateur : elle ne doit jamais être versionnée.
+
+- `backend/data/` et tous les fichiers `**/state.json` sont exclus par le `.gitignore` racine.
+- `npm test` vérifie ces exclusions et confirme qu'aucun `state.json` n'est suivi par Git.
+- Pour un chemin `DATA_DIR` ou `DATA_FILE` personnalisé, vérifier son exclusion Git avant le premier démarrage.
+- En production, le dossier reste couvert par les sauvegardes et la restauration documentées ; un déploiement de code ne doit jamais l'écraser.
+
 ## Sauvegarde déploiement O2switch (recommandé)
 
 Le runbook de déploiement/backup production est maintenu en scripts privés hors dépôt.
