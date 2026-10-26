@@ -54,6 +54,8 @@ jobs:
         run: npm ci
       - name: Syntax check
         run: node --check src/server.js
+      - name: Test
+        run: npm test
       - name: Smoke test
         run: |
           # Start server in background

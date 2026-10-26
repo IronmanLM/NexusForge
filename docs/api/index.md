@@ -2,6 +2,7 @@
 
 - Backend MVP (endpoints existants): [`backend-mvp.md`](./backend-mvp.md)
 - Sync offline-first: [`sync-actions.md`](./sync-actions.md)
+- Stratégie de tests et CI : [`../testing.md`](../testing.md)
 - Deploiement + backup production: procedure privee hors depot
 
 ## Vocabulaire

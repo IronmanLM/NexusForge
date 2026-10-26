@@ -103,37 +103,87 @@ function buildState() {
   };
 }
 
+async function waitForChildExit(exitPromise, timeoutMs) {
+  let timeoutId;
+  const timeoutPromise = new Promise((resolve) => {
+    timeoutId = setTimeout(() => resolve(null), timeoutMs);
+  });
+  const outcome = await Promise.race([exitPromise, timeoutPromise]);
+  clearTimeout(timeoutId);
+  return outcome;
+}
+
 async function startBackend(t) {
   const dataDir = await mkdtemp(path.join(tmpdir(), 'nexusforge-validation-'));
   const dataFile = path.join(dataDir, 'state.json');
+  const dotenvFile = path.join(dataDir, '.env.test');
   await writeFile(dataFile, JSON.stringify(buildState(), null, 2));
+  await writeFile(dotenvFile, '');
 
   const port = await getFreePort();
   const child = spawn(process.execPath, ['src/server.js'], {
     cwd: path.resolve(import.meta.dirname, '..'),
     env: {
-      ...process.env,
       NODE_ENV: 'test',
       PORT: String(port),
+      DOTENV_CONFIG_PATH: dotenvFile,
       DATA_DIR: dataDir,
       DATA_FILE: dataFile,
+      DATA_HISTORY_DIR: path.join(dataDir, 'history'),
+      DATA_PERSIST_LOG_FILE: path.join(dataDir, 'persist-log.jsonl'),
+      RESOURCE_DIR: path.join(dataDir, 'resources'),
       JWT_SECRET,
       JWT_REFRESH_SECRET,
+      ROOT_ADMIN_EMAIL: 'root-validation-test@example.test',
       ROOT_ADMIN_PASSWORD: 'test-root-admin-password',
-      CORS_ORIGIN: 'http://127.0.0.1'
+      CORS_ORIGIN: 'http://127.0.0.1',
+      SMTP_HOST: '',
+      SMTP_USER: '',
+      SMTP_PASS: '',
+      SMTP_FROM: '',
+      DISCORD_BOT_SHARED_SECRET: '',
+      DISCORD_OAUTH_CLIENT_ID: '',
+      DISCORD_OAUTH_CLIENT_SECRET: '',
+      DISCORD_OAUTH_REDIRECT_URI: '',
+      BACKUP_TRIGGER_SECRET: ''
     },
     stdio: ['ignore', 'pipe', 'pipe']
   });
 
   let stderr = '';
+  let childOutcome = null;
+  const exitPromise = new Promise((resolve) => {
+    child.once('error', (error) => {
+      childOutcome = { error };
+      resolve(childOutcome);
+    });
+    child.once('exit', (code, signal) => {
+      childOutcome = { code, signal };
+      resolve(childOutcome);
+    });
+  });
   child.stderr.on('data', (chunk) => {
     stderr += chunk.toString();
   });
 
   t.after(async () => {
-    child.kill('SIGTERM');
-    await new Promise((resolve) => child.once('exit', resolve));
-    await rm(dataDir, { recursive: true, force: true });
+    try {
+      if (!childOutcome && child.exitCode === null && child.signalCode === null) {
+        child.kill('SIGTERM');
+      }
+      let outcome = childOutcome || await waitForChildExit(exitPromise, 2_000);
+      if (!outcome) {
+        if (child.exitCode === null && child.signalCode === null) {
+          child.kill('SIGKILL');
+        }
+        outcome = await waitForChildExit(exitPromise, 2_000);
+      }
+      if (!outcome) {
+        throw new Error('backend child did not exit after SIGKILL');
+      }
+    } finally {
+      await rm(dataDir, { recursive: true, force: true });
+    }
   });
 
   const baseUrl = `http://127.0.0.1:${port}`;
@@ -146,7 +196,10 @@ async function startBackend(t) {
     } catch {
       // retry until the server is ready
     }
-    if (child.exitCode !== null) {
+    if (childOutcome || child.exitCode !== null || child.signalCode !== null) {
+      if (childOutcome?.error) {
+        throw new Error(`backend failed to spawn: ${childOutcome.error.message}`);
+      }
       throw new Error(`backend exited before readiness: ${stderr}`);
     }
     await new Promise((resolve) => setTimeout(resolve, 100));
