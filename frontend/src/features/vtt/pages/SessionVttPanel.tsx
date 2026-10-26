@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Button from '../../../components/Button';
 import { resourceRepository } from '../../../data/repositories';
 import { ResourceItem } from '../../../types/resource';
@@ -6,7 +6,9 @@ import { Character } from '../../../types/character';
 import { Session } from '../../../types/session';
 import { VttFogShape, VttScene, VttState, VttToken, VttViewMode } from '../types';
 import { vttRepository } from '../data/vttRepository';
-import VttPixiStage, { VttMapTool } from '../components/VttPixiStage';
+import type { VttMapTool } from '../components/VttPixiStage';
+
+const VttPixiStage = lazy(() => import('../components/VttPixiStage'));
 
 interface SessionVttPanelProps {
   session: Session;
@@ -741,19 +743,21 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
         </div>
       ) : null}
 
-      <VttPixiStage
-        sessionId={session.id}
-        scene={activeScene}
-        viewMode={viewMode}
-        currentUserId={currentUserId}
-        selectedTokenId={selectedTokenId}
-        mapTool={mapTool}
-        onTokenSelect={setSelectedTokenId}
-        onTokenMove={(tokenId, x, y) => void handleTokenMove(tokenId, x, y)}
-        onMapPing={(x, y) => void handleMapPing(x, y)}
-        onFogShapePlace={(tool, x, y) => void handleFogShapePlace(tool, x, y)}
-        onFogRectangleDraw={(tool, startX, startY, endX, endY) => void handleFogRectangleDraw(tool, startX, startY, endX, endY)}
-      />
+      <Suspense fallback={<div className="vtt-stage-loading" role="status">Chargement du canvas VTT…</div>}>
+        <VttPixiStage
+          sessionId={session.id}
+          scene={activeScene}
+          viewMode={viewMode}
+          currentUserId={currentUserId}
+          selectedTokenId={selectedTokenId}
+          mapTool={mapTool}
+          onTokenSelect={setSelectedTokenId}
+          onTokenMove={(tokenId, x, y) => void handleTokenMove(tokenId, x, y)}
+          onMapPing={(x, y) => void handleMapPing(x, y)}
+          onFogShapePlace={(tool, x, y) => void handleFogShapePlace(tool, x, y)}
+          onFogRectangleDraw={(tool, startX, startY, endX, endY) => void handleFogRectangleDraw(tool, startX, startY, endX, endY)}
+        />
+      </Suspense>
       <p className="session-inline-note" style={{ marginBottom: 0 }}>
         Synchronisation VTT : sauvegarde immédiate + rafraîchissement rapide toutes les 0,8 seconde. La couche WebSocket dédiée reste prévue pour remplacer ce polling dans la suite du module.
       </p>
