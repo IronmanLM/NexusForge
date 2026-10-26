@@ -186,7 +186,7 @@ function buildSheetFieldsFromV2View(view: SystemStudioViewDefinitionV2, values: 
         id: node.key,
         label: node.label,
         type: 'tag',
-        value: Boolean(value) ? 'Oui' : 'Non',
+        value: value ? 'Oui' : 'Non',
         groupId
       };
     }

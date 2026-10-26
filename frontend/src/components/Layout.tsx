@@ -9,6 +9,7 @@ import { listPendingUsersService } from '../services/authService';
 import { sessionRepository } from '../data/repositories';
 import { listDirectConversationsService, loadSocialRelationsService } from '../services/socialService';
 import { applyTheme, getStoredTheme, THEME_CHANGED_EVENT, ThemeMode } from '../theme';
+import { startAdaptivePolling } from '../services/adaptivePolling';
 
 type LayoutProps = PropsWithChildren<{ wide?: boolean; hideNavigation?: boolean }>;
 
@@ -37,38 +38,8 @@ export default function Layout({ children, wide = false, hideNavigation = false 
   }, [currentUser?.displayName, currentUser?.nickname]);
 
   useEffect(() => {
-    if (!isAdmin) {
-      setPendingCount(0);
-      return;
-    }
-
-    let isMounted = true;
-    const loadPending = async () => {
-      try {
-        const items = await listPendingUsersService();
-        if (isMounted) {
-          setPendingCount(items.length);
-        }
-      } catch {
-        if (isMounted) {
-          setPendingCount(0);
-        }
-      }
-    };
-
-    void loadPending();
-    const interval = window.setInterval(() => {
-      void loadPending();
-    }, 30_000);
-
-    return () => {
-      isMounted = false;
-      window.clearInterval(interval);
-    };
-  }, [isAdmin]);
-
-  useEffect(() => {
     if (!currentUser) {
+      setPendingCount(0);
       setPendingInvitationCount(0);
       setUnreadMessageCount(0);
       setPendingFriendRequestCount(0);
@@ -76,9 +47,10 @@ export default function Layout({ children, wide = false, hideNavigation = false 
     }
 
     let isMounted = true;
-    const loadIndicators = async () => {
-      try {
-        const [sessions, conversations, relations] = await Promise.all([
+    const stopPolling = startAdaptivePolling({
+      task: async () => {
+        const [pendingUsers, sessions, conversations, relations] = await Promise.all([
+          isAdmin ? listPendingUsersService() : Promise.resolve([]),
           sessionRepository.list({ includeArchived: false }),
           listDirectConversationsService(),
           loadSocialRelationsService()
@@ -88,6 +60,7 @@ export default function Layout({ children, wide = false, hideNavigation = false 
           return;
         }
 
+        setPendingCount(pendingUsers.length);
         const invitationCount = sessions.flatMap((session) => session.invitations ?? []).filter(
           (invitation) => invitation.userId === currentUser.id && invitation.status === 'pending'
         ).length;
@@ -97,25 +70,16 @@ export default function Layout({ children, wide = false, hideNavigation = false 
         setPendingInvitationCount(invitationCount);
         setUnreadMessageCount(unreadCount);
         setPendingFriendRequestCount(friendRequestCount);
-      } catch {
-        if (isMounted) {
-          setPendingInvitationCount(0);
-          setUnreadMessageCount(0);
-          setPendingFriendRequestCount(0);
-        }
-      }
-    };
-
-    void loadIndicators();
-    const interval = window.setInterval(() => {
-      void loadIndicators();
-    }, 30_000);
+      },
+      baseIntervalMs: 30_000,
+      maxIntervalMs: 240_000
+    });
 
     return () => {
       isMounted = false;
-      window.clearInterval(interval);
+      stopPolling();
     };
-  }, [currentUser]);
+  }, [currentUser, isAdmin]);
 
   useEffect(() => {
     applyTheme(theme);
@@ -202,7 +166,7 @@ export default function Layout({ children, wide = false, hideNavigation = false 
           <button
             type="button"
             className={`top-nav__menu-toggle ${isMobileNavOpen ? 'is-open' : ''}`.trim()}
-            aria-label="Ouvrir le menu"
+            aria-label={t('nav.openMenu')}
             aria-expanded={isMobileNavOpen}
             aria-controls="top-nav-links"
             onClick={() => {
@@ -217,7 +181,7 @@ export default function Layout({ children, wide = false, hideNavigation = false 
           <nav
             id="top-nav-links"
             className={`top-nav__links ${isMobileNavOpen ? 'is-open' : ''} ${isNativeApp ? 'top-nav__links--native' : ''}`.trim()}
-            aria-label="Navigation principale"
+            aria-label={t('nav.mainNavigation')}
           >
             {currentUser ? (
               <>
@@ -249,21 +213,21 @@ export default function Layout({ children, wide = false, hideNavigation = false 
                 <div className="top-nav__mobile-user-links">
                   <Link to="/messages">
                     <span className="top-nav__link-label">
-                      Messagerie
+                      {t('nav.messages')}
                       {unreadMessageCount > 0 ? <span className="home-pill home-pill--accent">{unreadMessageCount}</span> : null}
                     </span>
                   </Link>
                   <Link to="/network">
                     <span className="top-nav__link-label">
-                      Mes contacts
+                      {t('nav.network')}
                       {pendingFriendRequestCount > 0 ? <span className="home-pill home-pill--success">{pendingFriendRequestCount}</span> : null}
                     </span>
                   </Link>
-                  <Link to="/profile">Profil</Link>
-                  <Link to="/settings">Paramètres</Link>
-                  <Link to="/announcements">Annonces</Link>
-                  {isAdmin ? <Link to="/admin/users/pending">Admin comptes</Link> : null}
-                  {isAdmin ? <Link to="/admin/content">Admin contenu</Link> : null}
+                  <Link to="/profile">{t('nav.profile')}</Link>
+                  <Link to="/settings">{t('nav.settings')}</Link>
+                  <Link to="/announcements">{t('nav.announcements')}</Link>
+                  {isAdmin ? <Link to="/admin/users/pending">{t('nav.admin.accounts')}</Link> : null}
+                  {isAdmin ? <Link to="/admin/content">{t('nav.admin.content')}</Link> : null}
                   <button type="button" className="top-nav__mobile-logout" onClick={() => logout()}>
                     {t('nav.logout')}
                   </button>
@@ -307,36 +271,36 @@ export default function Layout({ children, wide = false, hideNavigation = false 
                   <div className="top-nav__user-dropdown" role="menu">
                     <div className="top-nav__user-dropdown-header">
                       <strong>{currentUser.displayName}</strong>
-                      <small>{theme === 'dark' ? 'Dark' : 'Light'}</small>
+                      <small>{theme === 'dark' ? t('theme.dark') : t('theme.light')}</small>
                     </div>
                     <Link to="/settings" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                      Paramètres
+                      {t('nav.settings')}
                     </Link>
                     <Link to="/profile" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                      Profil
+                      {t('nav.profile')}
                     </Link>
                     <Link to="/messages" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
                       <span className="top-nav__menu-item-label">
-                        Messagerie
+                        {t('nav.messages')}
                         {unreadMessageCount > 0 ? <span className="home-pill home-pill--accent">{unreadMessageCount}</span> : null}
                       </span>
                     </Link>
                     <Link to="/network" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
                       <span className="top-nav__menu-item-label">
-                        Mes contacts
+                        {t('nav.network')}
                         {pendingFriendRequestCount > 0 ? <span className="home-pill home-pill--success">{pendingFriendRequestCount}</span> : null}
                       </span>
                     </Link>
                     <Link to="/announcements" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                      Annonces
+                      {t('nav.announcements')}
                     </Link>
                     {isAdmin ? (
                       <>
                         <Link to="/admin/users/pending" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                          Admin comptes
+                          {t('nav.admin.accounts')}
                         </Link>
                         <Link to="/admin/content" onClick={() => setIsUserMenuOpen(false)} role="menuitem">
-                          Admin contenu
+                          {t('nav.admin.content')}
                         </Link>
                       </>
                     ) : null}
@@ -358,13 +322,13 @@ export default function Layout({ children, wide = false, hideNavigation = false 
         </div>
         {!isNativeApp && isAdmin && pendingCount > 0 ? (
           <div className="admin-pending-banner">
-            <Link to="/admin/users/pending">{pendingCount} compte(s) en attente de validation admin</Link>
+            <Link to="/admin/users/pending">{pendingCount} {t('notification.pendingAccounts')}</Link>
           </div>
         ) : null}
         {!isNativeApp && currentUser && pendingInvitationCount > 0 ? (
           <div className="invitation-pending-banner">
             <Link to="/sessions">
-              {pendingInvitationCount} invitation(s) de partie en attente. Ouvre `Parties` pour accepter ou refuser.
+              {pendingInvitationCount} {t('notification.pendingInvitations')}
             </Link>
           </div>
         ) : null}

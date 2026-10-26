@@ -33,9 +33,19 @@ Le backend persiste son état en JSON (`DATA_FILE`, par défaut `backend/data/st
 - users, sessions, systems, characters, resources, notes, messages, screenTemplates, homeNews, announcements,
 - tokens de session/verification/reset/2FA.
 
+Ce stockage contient des données sensibles et reste strictement hors Git :
+
+- `.gitignore` exclut tout le dossier `backend/data/` ;
+- la règle de défense en profondeur `**/state.json` protège aussi les chemins personnalisés ;
+- le test `backend/test/persistence-git-safety.test.mjs` vérifie les règles d'exclusion et l'absence de base `state.json` déjà suivie.
+
+Changer `DATA_DIR` ou `DATA_FILE` ne remplace pas une sauvegarde. Tout chemin persistant personnalisé doit aussi être intégré aux scripts de sauvegarde et à la procédure de restauration avant utilisation en production.
+
 En production:
 
 - sauvegarder `DATA_FILE` avant chaque déploiement.
+- préserver l'ensemble de `backend/data/` lors des synchronisations de code ;
+- restaurer selon `docs/runbook-reinstallation-complete-prod.md`.
 
 ## Auth publique
 

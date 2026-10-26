@@ -1,4 +1,4 @@
-import { createContext, createElement, PropsWithChildren, useMemo, useState } from 'react';
+import { createContext, createElement, PropsWithChildren, useCallback, useMemo, useState } from 'react';
 import { DEFAULT_LOCALE, messages, SupportedLocale, SUPPORTED_LOCALES, TranslationKey } from './messages';
 
 const STORAGE_KEY = 'nexusforge.locale';
@@ -44,14 +44,14 @@ export function I18nProvider({ children }: PropsWithChildren) {
   const [locale, setLocaleState] = useState<SupportedLocale>(() => getStoredLocale());
   const [overrides, setOverrides] = useState<LocaleOverrides>(() => getStoredOverrides());
 
-  const setLocale = (next: SupportedLocale) => {
+  const setLocale = useCallback((next: SupportedLocale) => {
     setLocaleState(next);
     localStorage.setItem(STORAGE_KEY, next);
-  };
+  }, []);
 
-  const exportDictionary = () => JSON.stringify(overrides, null, 2);
+  const exportDictionary = useCallback(() => JSON.stringify(overrides, null, 2), [overrides]);
 
-  const importDictionary = (json: string) => {
+  const importDictionary = useCallback((json: string) => {
     const parsed = JSON.parse(json) as LocaleOverrides;
     const normalized: LocaleOverrides = {};
     for (const localeKey of SUPPORTED_LOCALES) {
@@ -69,12 +69,12 @@ export function I18nProvider({ children }: PropsWithChildren) {
     }
     setOverrides(normalized);
     localStorage.setItem(OVERRIDES_STORAGE_KEY, JSON.stringify(normalized));
-  };
+  }, []);
 
-  const resetDictionary = () => {
+  const resetDictionary = useCallback(() => {
     setOverrides({});
     localStorage.removeItem(OVERRIDES_STORAGE_KEY);
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -87,7 +87,7 @@ export function I18nProvider({ children }: PropsWithChildren) {
       importDictionary,
       resetDictionary
     }),
-    [locale, overrides]
+    [exportDictionary, importDictionary, locale, overrides, resetDictionary, setLocale]
   );
 
   return createElement(I18nContext.Provider, { value }, children);

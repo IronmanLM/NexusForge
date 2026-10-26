@@ -568,6 +568,15 @@ La sync doit etre lancee :
 - a l ouverture d une partie offline
 - manuellement par l utilisateur
 
+En fonctionnement automatique, Nexus Forge ne sollicite pas inutilement le serveur :
+
+- la synchronisation se met en pause quand l application ou l onglet est en arriere-plan
+- elle reprend immediatement quand l application redevient visible ou que le reseau revient
+- apres une erreur globale, les tentatives sont progressivement espacees
+- apres une reussite, la cadence normale reprend automatiquement
+
+Les indicateurs de navigation (invitations, messages, demandes de contact et validations admin) utilisent une seule actualisation groupee toutes les 30 secondes. Cette actualisation suit les memes regles de pause et de reprise.
+
 ## 4. Endpoint de sync
 
 L endpoint actuel est :

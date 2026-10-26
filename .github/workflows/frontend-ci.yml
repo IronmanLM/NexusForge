@@ -1,13 +1,15 @@
-name: Frontend CI
+name: CI
 
 on:
   push:
     paths:
       - 'frontend/**'
+      - 'backend/**'
       - '.github/workflows/frontend-ci.yml'
   pull_request:
     paths:
       - 'frontend/**'
+      - 'backend/**'
       - '.github/workflows/frontend-ci.yml'
 
 jobs:
@@ -16,26 +18,57 @@ jobs:
     defaults:
       run:
         working-directory: frontend
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-
       - name: Install dependencies
         run: npm ci
-
       - name: Typecheck
         run: npm run typecheck
-
       - name: Build
         run: npm run build
-
       - name: Test
         run: npm run test
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Syntax check
+        run: node --check src/server.js
+      - name: Smoke test
+        run: |
+          # Start server in background
+          npm start &
+          SERVER_PID=$!
+          # Wait for server to be ready (max 30 seconds)
+          for i in {1..30}; do
+            if curl -fsS http://localhost:4000/health > /dev/null; then
+              echo "Server is ready"
+              break
+            fi
+            sleep 1
+          done
+          # Check health endpoint
+          curl -fsS http://localhost:4000/health | jq -e '.ok == true'
+          # Stop server
+          kill $SERVER_PID
+          wait $SERVER_PID 2>/dev/null || true

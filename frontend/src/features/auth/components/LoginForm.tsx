@@ -90,7 +90,7 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
             inputMode="numeric"
             required
           />
-          <p style={{ margin: 0, color: '#475467' }}>Saisis le code de ton application d'authentification.</p>
+          <p style={{ margin: 0, color: '#475467' }}>Saisis le code de ton application d&apos;authentification.</p>
         </>
       ) : null}
 

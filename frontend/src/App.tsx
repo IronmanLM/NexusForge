@@ -12,6 +12,7 @@ import {
   StartupSyncPreference
 } from './services/startupSyncService';
 import { runSyncCycle } from './services/syncService';
+import { startAdaptivePolling } from './services/adaptivePolling';
 
 function AppShell() {
   const { currentUser, isLoading } = useAuth();
@@ -32,23 +33,13 @@ function AppShell() {
   }, []);
 
   useEffect(() => {
-    const triggerSync = () => {
-      if (!navigator.onLine) {
-        return;
-      }
-      void runSyncCycle();
-    };
-
-    triggerSync();
-    window.addEventListener('online', triggerSync);
-    const intervalId = window.setInterval(() => {
-      void runSyncCycle();
-    }, 15_000);
-
-    return () => {
-      window.removeEventListener('online', triggerSync);
-      window.clearInterval(intervalId);
-    };
+    return startAdaptivePolling({
+      task: async () => {
+        await runSyncCycle();
+      },
+      baseIntervalMs: 15_000,
+      maxIntervalMs: 120_000
+    });
   }, []);
 
   useEffect(() => {

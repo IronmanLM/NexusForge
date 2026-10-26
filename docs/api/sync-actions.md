@@ -101,6 +101,16 @@ Le frontend traite les réponses comme suit:
 - `conflict` -> action locale `conflict` + affichage UI de résolution champ-à-champ.
 - `rejected` -> action locale `failed` terminale (pas de retry automatique).
 
+### Cadence et économie de ressources
+
+- Une première passe est lancée immédiatement lorsque l'application est visible et en ligne.
+- La cadence normale de la file de synchronisation est de 15 secondes.
+- Le planificateur utilise des `setTimeout` successifs afin de ne jamais superposer deux passes.
+- Une erreur globale double progressivement le délai, jusqu'à 120 secondes, puis une passe réussie rétablit la cadence normale.
+- Un jitter de ±10 % évite que plusieurs clients sollicitent l'API exactement au même instant.
+- Le polling est suspendu lorsque l'onglet est masqué ou que l'appareil est hors ligne. Il reprend immédiatement au retour au premier plan ou au retour du réseau.
+- Les tentatives propres à chaque action conservent en plus leur backoff existant dans `syncService.ts`.
+
 ---
 
 ## Notes d'implémentation backend
