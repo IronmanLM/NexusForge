@@ -21,12 +21,37 @@ app.set('trust proxy', 1);
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = Number(process.env.PORT || 4000);
 const DEFAULT_CORS_ORIGIN = '*';
-const DEFAULT_JWT_SECRET = 'dev-access-secret';
-const DEFAULT_JWT_REFRESH_SECRET = 'dev-refresh-secret';
-const DEFAULT_ROOT_ADMIN_PASSWORD = 'ZOcDJyuTEjSIA8';
+const MIN_JWT_SECRET_LENGTH = 32;
+const MIN_ROOT_ADMIN_PASSWORD_LENGTH = 16;
+const UNSAFE_SECRET_PLACEHOLDERS = new Set([
+  'change-me-access-secret',
+  'change-me-refresh-secret',
+  'change-me-root-admin-password',
+  'dev-access-secret',
+  'dev-refresh-secret'
+]);
+
+function readRuntimeSecret(name, { ephemeralInDevelopment = false } = {}) {
+  const configured = String(process.env[name] || '').trim();
+  if (configured) {
+    return configured;
+  }
+
+  if (NODE_ENV !== 'development' || !ephemeralInDevelopment) {
+    return '';
+  }
+
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function isMissingOrUnsafeSecret(name, minimumLength) {
+  const configured = String(process.env[name] || '').trim();
+  return !configured || configured.length < minimumLength || UNSAFE_SECRET_PLACEHOLDERS.has(configured);
+}
+
 const CORS_ORIGIN = process.env.CORS_ORIGIN || DEFAULT_CORS_ORIGIN;
-const JWT_SECRET = process.env.JWT_SECRET || DEFAULT_JWT_SECRET;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || DEFAULT_JWT_REFRESH_SECRET;
+const JWT_SECRET = readRuntimeSecret('JWT_SECRET', { ephemeralInDevelopment: true });
+const JWT_REFRESH_SECRET = readRuntimeSecret('JWT_REFRESH_SECRET', { ephemeralInDevelopment: true });
 const ACCESS_TOKEN_EXPIRES_IN = process.env.ACCESS_TOKEN_EXPIRES_IN || '1h';
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '30d';
 const APP_BASE_URL = process.env.APP_BASE_URL || 'https://nexusforge.en-ligne.fr';
@@ -46,12 +71,7 @@ const ROOT_ADMIN_FIRST_NAME = process.env.ROOT_ADMIN_FIRST_NAME || 'Mikael';
 const ROOT_ADMIN_LAST_NAME = process.env.ROOT_ADMIN_LAST_NAME || 'Frémaux';
 const ROOT_ADMIN_NICKNAME = process.env.ROOT_ADMIN_NICKNAME || 'IronmanLM';
 const ROOT_ADMIN_EMAIL = (process.env.ROOT_ADMIN_EMAIL || 'ironmanlm@en-ligne.fr').toLowerCase();
-const ROOT_ADMIN_PASSWORD =
-  typeof process.env.ROOT_ADMIN_PASSWORD === 'string' && process.env.ROOT_ADMIN_PASSWORD.trim()
-    ? process.env.ROOT_ADMIN_PASSWORD
-    : NODE_ENV === 'production'
-    ? ''
-    : DEFAULT_ROOT_ADMIN_PASSWORD;
+const ROOT_ADMIN_PASSWORD = readRuntimeSecret('ROOT_ADMIN_PASSWORD');
 const ROOT_ADMIN_TOTP_SECRET = String(process.env.ROOT_ADMIN_TOTP_SECRET || '').trim().replace(/\s+/g, '').toUpperCase();
 
 const EMAIL_TOKEN_TTL_MS = Number(process.env.EMAIL_TOKEN_TTL_MS || 24 * 60 * 60 * 1000);
@@ -82,27 +102,37 @@ const GENERIC_SESSION_SETTINGS = {
 
 const authRateLimitStore = new Map();
 
-function assertProductionSecurityConfig() {
-  if (NODE_ENV !== 'production') {
+function assertRuntimeSecurityConfig() {
+  if (NODE_ENV === 'development') {
     return;
   }
 
   const missing = [];
-  if (!CORS_ORIGIN || CORS_ORIGIN === DEFAULT_CORS_ORIGIN) {
+  const corsOrigins = String(CORS_ORIGIN)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (corsOrigins.length === 0 || corsOrigins.includes(DEFAULT_CORS_ORIGIN)) {
     missing.push('CORS_ORIGIN');
   }
-  if (!JWT_SECRET || JWT_SECRET === DEFAULT_JWT_SECRET) {
+  if (isMissingOrUnsafeSecret('JWT_SECRET', MIN_JWT_SECRET_LENGTH)) {
     missing.push('JWT_SECRET');
   }
-  if (!JWT_REFRESH_SECRET || JWT_REFRESH_SECRET === DEFAULT_JWT_REFRESH_SECRET) {
+  if (isMissingOrUnsafeSecret('JWT_REFRESH_SECRET', MIN_JWT_SECRET_LENGTH)) {
     missing.push('JWT_REFRESH_SECRET');
   }
+  if (JWT_SECRET && JWT_REFRESH_SECRET && JWT_SECRET === JWT_REFRESH_SECRET) {
+    missing.push('JWT_SECRET/JWT_REFRESH_SECRET must differ');
+  }
+  if (isMissingOrUnsafeSecret('ROOT_ADMIN_PASSWORD', MIN_ROOT_ADMIN_PASSWORD_LENGTH)) {
+    missing.push('ROOT_ADMIN_PASSWORD');
+  }
   if (missing.length > 0) {
-    throw new Error(`[nexusforge-backend] production security configuration missing or unsafe: ${missing.join(', ')}`);
+    throw new Error(`[nexusforge-backend] runtime security configuration missing or unsafe: ${missing.join(', ')}`);
   }
 }
 
-assertProductionSecurityConfig();
+assertRuntimeSecurityConfig();
 
 function parseCorsOrigins(rawValue) {
   const configured = String(rawValue || '*')
@@ -9251,10 +9281,6 @@ app.listen(PORT, () => {
   console.log(
     `[nexusforge-backend] smtp=${canSendEmails() ? 'enabled' : 'disabled'} rootAdmin=${ROOT_ADMIN_EMAIL} dataFile=${DATA_FILE}`
   );
-  if (NODE_ENV === 'production' && !ROOT_ADMIN_PASSWORD) {
-    // eslint-disable-next-line no-console
-    console.warn('[nexusforge-backend] warning: ROOT_ADMIN_PASSWORD is not configured in production; persisted root admin hash is preserved as-is');
-  }
   void backfillMissingResourceDerivatives();
 });
   const validateScriptAction = (action, contextLabel) => {
