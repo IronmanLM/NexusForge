@@ -21,10 +21,14 @@ app.set('trust proxy', 1);
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const PORT = Number(process.env.PORT || 4000);
 const DEFAULT_CORS_ORIGIN = '*';
+const MIN_JWT_SECRET_LENGTH = 32;
+const MIN_ROOT_ADMIN_PASSWORD_LENGTH = 16;
 const UNSAFE_SECRET_PLACEHOLDERS = new Set([
   'change-me-access-secret',
   'change-me-refresh-secret',
-  'change-me-root-admin-password'
+  'change-me-root-admin-password',
+  'dev-access-secret',
+  'dev-refresh-secret'
 ]);
 
 function readRuntimeSecret(name, { ephemeralInDevelopment = false } = {}) {
@@ -33,16 +37,16 @@ function readRuntimeSecret(name, { ephemeralInDevelopment = false } = {}) {
     return configured;
   }
 
-  if (NODE_ENV === 'production' || !ephemeralInDevelopment) {
+  if (NODE_ENV !== 'development' || !ephemeralInDevelopment) {
     return '';
   }
 
   return crypto.randomBytes(32).toString('hex');
 }
 
-function isMissingOrUnsafeSecret(name) {
+function isMissingOrUnsafeSecret(name, minimumLength) {
   const configured = String(process.env[name] || '').trim();
-  return !configured || UNSAFE_SECRET_PLACEHOLDERS.has(configured);
+  return !configured || configured.length < minimumLength || UNSAFE_SECRET_PLACEHOLDERS.has(configured);
 }
 
 const CORS_ORIGIN = process.env.CORS_ORIGIN || DEFAULT_CORS_ORIGIN;
@@ -98,30 +102,37 @@ const GENERIC_SESSION_SETTINGS = {
 
 const authRateLimitStore = new Map();
 
-function assertProductionSecurityConfig() {
-  if (NODE_ENV !== 'production') {
+function assertRuntimeSecurityConfig() {
+  if (NODE_ENV === 'development') {
     return;
   }
 
   const missing = [];
-  if (!CORS_ORIGIN || CORS_ORIGIN === DEFAULT_CORS_ORIGIN) {
+  const corsOrigins = String(CORS_ORIGIN)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (corsOrigins.length === 0 || corsOrigins.includes(DEFAULT_CORS_ORIGIN)) {
     missing.push('CORS_ORIGIN');
   }
-  if (isMissingOrUnsafeSecret('JWT_SECRET')) {
+  if (isMissingOrUnsafeSecret('JWT_SECRET', MIN_JWT_SECRET_LENGTH)) {
     missing.push('JWT_SECRET');
   }
-  if (isMissingOrUnsafeSecret('JWT_REFRESH_SECRET')) {
+  if (isMissingOrUnsafeSecret('JWT_REFRESH_SECRET', MIN_JWT_SECRET_LENGTH)) {
     missing.push('JWT_REFRESH_SECRET');
   }
-  if (process.env.ROOT_ADMIN_PASSWORD && isMissingOrUnsafeSecret('ROOT_ADMIN_PASSWORD')) {
+  if (JWT_SECRET && JWT_REFRESH_SECRET && JWT_SECRET === JWT_REFRESH_SECRET) {
+    missing.push('JWT_SECRET/JWT_REFRESH_SECRET must differ');
+  }
+  if (isMissingOrUnsafeSecret('ROOT_ADMIN_PASSWORD', MIN_ROOT_ADMIN_PASSWORD_LENGTH)) {
     missing.push('ROOT_ADMIN_PASSWORD');
   }
   if (missing.length > 0) {
-    throw new Error(`[nexusforge-backend] production security configuration missing or unsafe: ${missing.join(', ')}`);
+    throw new Error(`[nexusforge-backend] runtime security configuration missing or unsafe: ${missing.join(', ')}`);
   }
 }
 
-assertProductionSecurityConfig();
+assertRuntimeSecurityConfig();
 
 function parseCorsOrigins(rawValue) {
   const configured = String(rawValue || '*')
@@ -9270,10 +9281,6 @@ app.listen(PORT, () => {
   console.log(
     `[nexusforge-backend] smtp=${canSendEmails() ? 'enabled' : 'disabled'} rootAdmin=${ROOT_ADMIN_EMAIL} dataFile=${DATA_FILE}`
   );
-  if (NODE_ENV === 'production' && !ROOT_ADMIN_PASSWORD) {
-    // eslint-disable-next-line no-console
-    console.warn('[nexusforge-backend] warning: ROOT_ADMIN_PASSWORD is not configured in production; persisted root admin hash is preserved as-is');
-  }
   void backfillMissingResourceDerivatives();
 });
   const validateScriptAction = (action, contextLabel) => {
