@@ -18,7 +18,8 @@
     "mobile:android:apk": "bash ./scripts/mobile-android-build-apk.sh debug",
     "mobile:android:apk:release": "bash ./scripts/mobile-android-build-apk.sh release",
     "mobile:android:aab:release": "bash ./scripts/mobile-android-build-apk.sh bundle",
-    "test": "npm run test:run",
+    "test": "npm run test:guard && npm run test:run",
+    "test:guard": "node scripts/assert-test-suite.mjs",
     "test:run": "vitest run",
     "preview": "vite preview"
   },
