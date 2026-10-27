@@ -182,6 +182,22 @@ Le fichier reel `key.properties` et les fichiers `.jks` / `.keystore` ne doivent
    - `frontend/android/app/build/outputs/bundle/release/app-release.aab`
 6. publier d abord en test interne ou ferme sur le Play Console
 
+### Distribution de l APK public
+
+L APK n est plus versionne dans `frontend/public/downloads/` : embarque dans `public/`, il etait
+copie dans le bundle web puis dans l application elle-meme, ajoutant environ 80 Mo de poids mort
+a chaque build.
+
+Le fichier signe est desormais depose directement dans le dossier `downloads/` de chaque
+environnement :
+
+- `~/preprod.nexusforge.en-ligne.fr/downloads/nexusforge-android.apk`
+- `~/nexusforge.en-ligne.fr/downloads/nexusforge-android.apk`
+
+Attention : un deploiement du frontend lance avec `--delete` supprimerait ce dossier, absent du
+bundle. Verifier ce point avant toute synchronisation destructive.
+
+
 ### Publication Play Console
 
 Avant publication, il faut prevoir :

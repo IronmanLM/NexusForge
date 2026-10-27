@@ -44,3 +44,6 @@ backend/data/
 .codex/
 .tmp/
 tmp/
+
+# APK de distribution (depose sur le serveur, jamais embarque dans le bundle web)
+frontend/public/downloads/*.apk
