@@ -6717,20 +6717,61 @@ function sanitizeVttState(rawVtt) {
   return { scenes, activeSceneId, updatedAt: typeof rawVtt.updatedAt === 'string' ? rawVtt.updatedAt : nowIso() };
 }
 
-function stripVttRealtimeFields(vtt) {
+function stripVttPlayerMutableFields(vtt) {
   return {
     ...vtt,
     updatedAt: null,
     scenes: (vtt.scenes || []).map((scene) => ({
       ...scene,
       updatedAt: null,
-      pings: []
+      pings: [],
+      tokens: (scene.tokens || []).map((token) => ({ ...token, x: null, y: null }))
     }))
   };
 }
 
-function isOnlyVttPingsChange(currentVtt, requestedVtt) {
-  return JSON.stringify(stripVttRealtimeFields(currentVtt)) === JSON.stringify(stripVttRealtimeFields(requestedVtt));
+function applyPlayerVttChanges(currentVtt, requestedVtt, userId) {
+  if (JSON.stringify(stripVttPlayerMutableFields(currentVtt)) !== JSON.stringify(stripVttPlayerMutableFields(requestedVtt))) {
+    return null;
+  }
+
+  const now = nowIso();
+  let rejected = false;
+  const scenes = currentVtt.scenes.map((scene, sceneIndex) => {
+    const requestedScene = requestedVtt.scenes[sceneIndex];
+    let tokensChanged = false;
+    const tokens = scene.tokens.map((token, tokenIndex) => {
+      const requestedToken = requestedScene.tokens[tokenIndex];
+      if (token.x === requestedToken.x && token.y === requestedToken.y) {
+        return token;
+      }
+      const allowed =
+        scene.id === currentVtt.activeSceneId &&
+        scene.permissions.playersCanMoveOwnTokens &&
+        token.ownerUserId === userId &&
+        token.visibleToPlayers &&
+        !token.locked;
+      if (!allowed) {
+        rejected = true;
+        return token;
+      }
+      tokensChanged = true;
+      return { ...token, x: requestedToken.x, y: requestedToken.y };
+    });
+    const pingsChanged = JSON.stringify(scene.pings) !== JSON.stringify(requestedScene.pings);
+    return {
+      ...scene,
+      tokens,
+      pings: requestedScene.pings,
+      updatedAt: tokensChanged || pingsChanged ? now : scene.updatedAt
+    };
+  });
+
+  if (rejected) {
+    return null;
+  }
+
+  return { ...currentVtt, scenes, updatedAt: now };
 }
 
 app.get('/api/sessions/:sessionId/vtt', requireAuth, (req, res) => {
@@ -6751,18 +6792,19 @@ app.put('/api/sessions/:sessionId/vtt', requireAuth, (req, res) => {
   }
   const requestedVtt = sanitizeVttState(req.body?.vtt);
   const canManageVtt = canManageSession(session, req.currentUser);
+  let nextVtt = requestedVtt;
   if (!canManageVtt) {
     if (!canViewSession(session, req.currentUser)) {
       return error(res, 403, 'SESSION_ACCESS_FORBIDDEN', 'You cannot access this session');
     }
-    const currentVtt = sanitizeVttState(session.vtt);
-    if (!isOnlyVttPingsChange(currentVtt, requestedVtt)) {
-      return error(res, 403, 'SESSION_VTT_FORBIDDEN', 'Only GM/admin can update VTT tokens, maps and fog');
+    nextVtt = applyPlayerVttChanges(sanitizeVttState(session.vtt), requestedVtt, req.currentUser.id);
+    if (!nextVtt) {
+      return error(res, 403, 'SESSION_VTT_FORBIDDEN', 'Players may only move their own visible, unlocked token when enabled by the GM, or update pings');
     }
   }
-  const next = { ...session, vtt: requestedVtt, updatedAt: nowIso() };
+  const next = { ...session, vtt: nextVtt, updatedAt: nowIso() };
   sessions.set(next.id, next);
-  schedulePersist(canManageVtt ? 'session-vtt-update' : 'session-vtt-ping');
+  schedulePersist(canManageVtt ? 'session-vtt-update' : 'session-vtt-player-update');
   return res.status(200).json({ vtt: next.vtt });
 });
 
