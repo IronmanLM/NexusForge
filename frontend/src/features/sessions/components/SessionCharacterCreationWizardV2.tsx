@@ -24,6 +24,7 @@ import {
   SystemStudioViewDefinitionV2
 } from '../../../types/system';
 import { User } from '../../../types/user';
+import { shouldShowCharacterCreationDebug } from './characterCreationDebug';
 
 type Props = {
   open: boolean;
@@ -846,7 +847,10 @@ export default function SessionCharacterCreationWizardV2({
   }, [effectiveSubjectUser.id, initialValues, open, session.id, system.id, view.id]);
 
   const currentStage = stages[stageIndex] ?? null;
-  const isAdminDebug = Array.isArray(currentUser.roles) && currentUser.roles.includes('admin');
+  const shouldShowAdminDebug = shouldShowCharacterCreationDebug({
+    isAdmin: Array.isArray(currentUser.roles) && currentUser.roles.includes('admin'),
+    isDevelopment: import.meta.env.DEV
+  });
 
   const stageRuntime = useMemo<StageExecutionResult>(() => {
     if (!currentStage) {
@@ -1791,7 +1795,7 @@ export default function SessionCharacterCreationWizardV2({
               <div>
                 <h3 style={{ marginTop: 0, marginBottom: '0.35rem' }}>{currentStage?.label || 'Étape'}</h3>
                 {currentStage?.description ? <p style={{ marginTop: 0, marginBottom: '0.35rem' }}>{currentStage.description}</p> : null}
-                {isAdminDebug && completionDebug ? (
+                {shouldShowAdminDebug && completionDebug ? (
                   <div className="card" style={{ marginTop: '0.75rem', padding: '0.75rem', display: 'grid', gap: '0.45rem' }}>
                     <strong>Debug admin · condition de passage</strong>
                     <small>
