@@ -154,13 +154,13 @@ V1 preproduction :
 - pions libres/manuels positionnes dans la scene ;
 - brouillard manuel : rectangle de revelation rapide et reserve technique pour polygones ;
 - bouton `Plein ecran VTT` route `/sessions/:sessionId/vtt/fullscreen` pour table/projection ;
-- edition reservee au MJ/admin dans cette tranche ; les joueurs consultent la vue joueur.
+- deplacements MJ/joueur partages entre widgets par polling, avec rafraichissement cible toutes les 800 ms ;
+- un joueur peut deplacer uniquement ses pions visibles et non verrouilles si le MJ active `Joueurs autorisés à déplacer leur pion` pour la scene active ;
+- les joueurs ne peuvent pas modifier les proprietes des pions, les cartes ou le brouillard ; ces changements restent reserves au MJ/admin.
 
 Evolutions prevues :
 
-- synchronisation temps reel des deplacements et du brouillard ;
 - upload direct depuis le panneau VTT en plus des ressources de partie ;
-- deplacements joueur conditionnes par `playersCanMoveOwnTokens` ;
 - outils de dessin de rectangles/polygones complets ;
 - rattachement optionnel aux personnages/PNJ et aux futures regles systeme.
 

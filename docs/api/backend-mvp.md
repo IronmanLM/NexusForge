@@ -1242,6 +1242,19 @@ Il fournit deja en revanche le contrat HTTP que le frontend pourra utiliser pour
 - ouvrir une resolution de conflit
 - marquer une action `failed`
 
+## VTT de partie
+
+`GET /api/sessions/:sessionId/vtt` retourne l'etat VTT d'une partie visible par l'utilisateur connecte.
+
+`PUT /api/sessions/:sessionId/vtt` accepte `{ "vtt": <VttState> }` avec les regles suivantes :
+
+- MJ/admin : peut modifier l'etat VTT complet ;
+- participant joueur : peut mettre a jour les pings ;
+- si `scenes[activeSceneId].permissions.playersCanMoveOwnTokens` vaut `true`, un joueur peut aussi modifier uniquement `x` et `y` d'un pion visible, non verrouille, dont `ownerUserId` est son propre identifiant ;
+- le joueur ne peut pas modifier un autre pion, les proprietes/attributions d'un pion, une scene inactive, la carte, la grille, le brouillard ou les permissions.
+
+Les deplacements autorises sont persistes dans l'etat partage de la partie. Les widgets relisent cet etat par polling (intervalle frontend actuel : 800 ms). Une tentative non autorisee retourne `403 SESSION_VTT_FORBIDDEN`.
+
 ## Codes d'erreur notables
 
 - `INVALID_REGISTRATION_PAYLOAD`

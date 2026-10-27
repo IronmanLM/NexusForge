@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Application, Container, Graphics, Sprite, Texture } from 'pixi.js';
 import { buildApiUrl, getAccessToken } from '../../../services/apiClient';
 import { VttScene, VttViewMode } from '../types';
+import { canDragVttToken, commitTokenDrag } from './tokenDrag';
 import './VttPixiStage.css';
 
 export type VttMapTool = 'pan' | 'ping' | 'fog_reveal_rect' | 'fog_reveal_poly' | 'fog_hide_rect' | 'fog_hide_poly';
@@ -214,24 +215,36 @@ export default function VttPixiStage({ sessionId, scene, viewMode, currentUserId
         if (token.id === selectedTokenId) tokenDisplay.addChild(new Graphics().circle(0, 0, radius + 5).stroke({ color: 0x22c55e, width: 4, alpha: 0.95 }));
         tokenDisplay.x = token.x;
         tokenDisplay.y = token.y;
+        const canDragToken = canDragVttToken({
+          viewMode,
+          currentUserId,
+          playersCanMoveOwnTokens: scene.permissions.playersCanMoveOwnTokens,
+          token
+        });
         tokenDisplay.eventMode = 'static';
-        tokenDisplay.cursor = token.locked ? 'not-allowed' : 'grab';
+        tokenDisplay.cursor = canDragToken ? 'grab' : 'not-allowed';
         let dragging = false;
         tokenDisplay.on('pointerdown', (event) => {
           event.stopPropagation();
           onTokenSelectRef.current?.(token.id);
-          if (token.locked || (viewMode !== 'gm' && token.ownerUserId !== currentUserId)) return;
+          if (!canDragToken) return;
           dragging = true;
           tokenDisplay.cursor = 'grabbing';
         });
-        tokenDisplay.on('pointerup', () => {
-          if (dragging) {
-            dragging = false;
-            tokenDisplay.cursor = token.locked ? 'not-allowed' : 'grab';
-            onTokenMoveRef.current?.(token.id, Math.round(tokenDisplay.x), Math.round(tokenDisplay.y));
-          }
-        });
-        tokenDisplay.on('pointerupoutside', () => { dragging = false; tokenDisplay.cursor = token.locked ? 'not-allowed' : 'grab'; });
+        const finishDrag = () => {
+          const committed = commitTokenDrag({
+            isDragging: dragging,
+            tokenId: token.id,
+            x: tokenDisplay.x,
+            y: tokenDisplay.y,
+            onMove: (tokenId, x, y) => onTokenMoveRef.current?.(tokenId, x, y)
+          });
+          if (!committed) return;
+          dragging = false;
+          tokenDisplay.cursor = token.locked ? 'not-allowed' : 'grab';
+        };
+        tokenDisplay.on('pointerup', finishDrag);
+        tokenDisplay.on('pointerupoutside', finishDrag);
         tokenDisplay.on('pointermove', (event) => {
           if (!dragging) return;
           const position = event.getLocalPosition(world);

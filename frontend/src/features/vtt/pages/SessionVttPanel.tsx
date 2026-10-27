@@ -128,6 +128,7 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
 
   const saveState = useCallback(
     async (nextState: VttState, message?: string) => {
+      const previousState = ensureVttState(vttState);
       setVttState(nextState);
       setIsSaving(true);
       setErrorMessage(null);
@@ -136,12 +137,13 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
         setVttState(ensureVttState(saved));
         setStatusMessage(message ?? 'VTT synchronisé.');
       } catch (error) {
+        setVttState(previousState);
         setErrorMessage(error instanceof Error ? error.message : 'Impossible de synchroniser le VTT.');
       } finally {
         setIsSaving(false);
       }
     },
-    [session.id]
+    [session.id, vttState]
   );
 
   const updateScene = useCallback(
@@ -381,7 +383,7 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
     if (!token) {
       return;
     }
-    const allowed = canManage || (activeScene.permissions.playersCanMoveOwnTokens && (token.ownerUserId ?? defaultGmUserId) === currentUserId);
+    const allowed = canManage || (activeScene.permissions.playersCanMoveOwnTokens && token.ownerUserId === currentUserId);
     if (!allowed) {
       return;
     }
@@ -567,6 +569,9 @@ export default function SessionVttPanel({ session, currentUserId, viewMode, canM
 
       {statusMessage ? <p className="home-alert home-alert--success">{statusMessage}</p> : null}
       {errorMessage ? <p className="home-alert home-alert--error">{errorMessage}</p> : null}
+      {viewMode === 'player' && !activeScene.permissions.playersCanMoveOwnTokens ? (
+        <p className="home-alert">Le MJ n’a pas autorisé le déplacement des pions joueurs pour cette carte.</p>
+      ) : null}
 
       {canManage ? (
         <div className="vtt-toolbar">
