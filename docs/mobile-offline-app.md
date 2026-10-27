@@ -136,9 +136,11 @@ La machine qui construit l APK doit fournir :
 Dans l environnement de travail actuel, ces prerequis sont maintenant fournis en local dans le home utilisateur :
 
 - JDK local :
-  - `~/.local/android/jdk-21.0.10+7`
+  - `~/.local/android/jdk-21.0.13+9`
+  - `~/.local/android/jdk-17.0.21+9` (JDK utilise par Gradle 8.2.1, qui ne demarre pas sous Java 21)
 - SDK Android local :
-  - `~/Android/Sdk`
+  - `~/Android/Sdk` (`platforms;android-35`, `build-tools;35.0.0`, `platform-tools`)
+- chemin du SDK declare dans `frontend/android/local.properties` (`sdk.dir`) ; ce fichier reste hors depot
 
 ### Emplacements de sortie
 
@@ -224,6 +226,16 @@ Le premier build Android debug a ete valide avec succes.
 APK disponible :
 
 - `frontend/android/app/build/outputs/apk/debug/app-debug.apk`
+
+Versions release :
+
+- `1.0.3` (`versionCode 4`) : build de mai 2026, dernier APK publie sur `/downloads/nexusforge-android.apk`.
+- `1.0.4` (`versionCode 5`) : bundle web du 27 octobre 2026 (table VTT, synchronisation des deplacements MJ/joueurs, correctif d affichage distant par overlays) et `touch-action: none` sur le canvas VTT pour que le drag des pions ne fasse plus defiler la page dans la WebView Android.
+
+### Pieges de build connus
+
+- `npx cap sync android` echoue avec `Cannot read properties of undefined (reading 'extract')` quand la dependance `tar` hissee est en version 7 alors que `@capacitor/cli` 6.2.2 attend `tar` 6. Correctif local : installer `tar@6.2.1` dans `node_modules/@capacitor/cli` (`npm install tar@6.2.1 --no-save --no-package-lock`) ; ne pas modifier le `package.json` du projet pour cela.
+- Gradle 8.2.1 ne demarre pas avec Java 21 : utiliser le JDK 17 pour `./gradlew`.
 
 ### Phase 2 - iOS
 

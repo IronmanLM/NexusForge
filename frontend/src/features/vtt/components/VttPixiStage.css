@@ -3,6 +3,8 @@
   height: min(74vh, 860px);
   width: 100%;
   overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: contain;
   border: 1px solid rgba(148, 163, 184, 0.35);
   border-radius: 18px;
   background: #0f172a;
