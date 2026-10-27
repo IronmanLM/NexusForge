@@ -1,41 +1,51 @@
+import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from 'react';
 import { Navigate, createBrowserRouter } from 'react-router-dom';
-import LoginPage from '../features/auth/pages/LoginPage';
-import RegisterPage from '../features/auth/pages/RegisterPage';
-import ForgotPasswordPage from '../features/auth/pages/ForgotPasswordPage';
-import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage';
-import VerifyEmailPage from '../features/auth/pages/VerifyEmailPage';
-import DiscordCallbackPage from '../features/auth/pages/DiscordCallbackPage';
-import AdminPendingUsersPage from '../features/auth/pages/AdminPendingUsersPage';
-import AdminPersistenceHealthPage from '../features/auth/pages/AdminPersistenceHealthPage';
-import SettingsPage from '../features/account/pages/SettingsPage';
-import ProfilePage from '../features/account/pages/ProfilePage';
-import HomePage from '../features/home/pages/HomePage';
-import PublicLandingPage from '../features/home/pages/PublicLandingPage';
-import PrivacyPolicyPage from '../features/home/pages/PrivacyPolicyPage';
-import AccountDeletionPage from '../features/home/pages/AccountDeletionPage';
-import AdminContentPage from '../features/home/pages/AdminContentPage';
-import MessagesPage from '../features/social/pages/MessagesPage';
-import AnnouncementsPage from '../features/social/pages/AnnouncementsPage';
-import SocialPage from '../features/social/pages/SocialPage';
-import SessionsListPage from '../features/sessions/pages/SessionsListPage';
-import SessionViewPage from '../features/sessions/pages/SessionViewPage';
-import SessionCharacterPage from '../features/sessions/pages/SessionCharacterPage';
-import SessionVttFullscreenPage from '../features/vtt/pages/SessionVttFullscreenPage';
-import RulesStudioPage from '../features/systems/pages/RulesStudioPage';
-import SystemStudioPage from '../features/systems/pages/SystemStudioPage';
-import TranslationDictionaryPage from '../features/i18n/pages/TranslationDictionaryPage';
-import ResourcesPage from '../features/resources/pages/ResourcesPage';
-import ScreenTemplatesPage from '../features/screens/pages/ScreenTemplatesPage';
-import ScreenStudioPage from '../features/screens/pages/ScreenStudioPage';
-import ToolsPage from '../features/tools/pages/ToolsPage';
 import { useAuth } from '../hooks/useAuth';
+
+const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'));
+const RegisterPage = lazy(() => import('../features/auth/pages/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('../features/auth/pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('../features/auth/pages/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('../features/auth/pages/VerifyEmailPage'));
+const DiscordCallbackPage = lazy(() => import('../features/auth/pages/DiscordCallbackPage'));
+const AdminPendingUsersPage = lazy(() => import('../features/auth/pages/AdminPendingUsersPage'));
+const AdminPersistenceHealthPage = lazy(() => import('../features/auth/pages/AdminPersistenceHealthPage'));
+const SettingsPage = lazy(() => import('../features/account/pages/SettingsPage'));
+const ProfilePage = lazy(() => import('../features/account/pages/ProfilePage'));
+const HomePage = lazy(() => import('../features/home/pages/HomePage'));
+const PublicLandingPage = lazy(() => import('../features/home/pages/PublicLandingPage'));
+const PrivacyPolicyPage = lazy(() => import('../features/home/pages/PrivacyPolicyPage'));
+const AccountDeletionPage = lazy(() => import('../features/home/pages/AccountDeletionPage'));
+const AdminContentPage = lazy(() => import('../features/home/pages/AdminContentPage'));
+const MessagesPage = lazy(() => import('../features/social/pages/MessagesPage'));
+const AnnouncementsPage = lazy(() => import('../features/social/pages/AnnouncementsPage'));
+const SocialPage = lazy(() => import('../features/social/pages/SocialPage'));
+const SessionsListPage = lazy(() => import('../features/sessions/pages/SessionsListPage'));
+const SessionViewPage = lazy(() => import('../features/sessions/pages/SessionViewPage'));
+const SessionCharacterPage = lazy(() => import('../features/sessions/pages/SessionCharacterPage'));
+const SessionVttFullscreenPage = lazy(() => import('../features/vtt/pages/SessionVttFullscreenPage'));
+const RulesStudioPage = lazy(() => import('../features/systems/pages/RulesStudioPage'));
+const SystemStudioPage = lazy(() => import('../features/systems/pages/SystemStudioPage'));
+const TranslationDictionaryPage = lazy(() => import('../features/i18n/pages/TranslationDictionaryPage'));
+const ResourcesPage = lazy(() => import('../features/resources/pages/ResourcesPage'));
+const ScreenTemplatesPage = lazy(() => import('../features/screens/pages/ScreenTemplatesPage'));
+const ScreenStudioPage = lazy(() => import('../features/screens/pages/ScreenStudioPage'));
+const ToolsPage = lazy(() => import('../features/tools/pages/ToolsPage'));
+
+function LazyPage({ component: Component }: { component: LazyExoticComponent<ComponentType> }) {
+  return (
+    <Suspense fallback={<div role="status" style={{ padding: '1rem' }}>Chargement...</div>}>
+      <Component />
+    </Suspense>
+  );
+}
 
 function RootRedirect() {
   const { currentUser, isLoading } = useAuth();
   if (isLoading) {
     return <div style={{ padding: '1rem' }}>Chargement...</div>;
   }
-  return currentUser ? <Navigate to="/home" replace /> : <PublicLandingPage />;
+  return currentUser ? <Navigate to="/home" replace /> : <LazyPage component={PublicLandingPage} />;
 }
 
 function RequireAuth({ children }: { children: JSX.Element }) {
@@ -80,19 +90,19 @@ function RequireAdmin({ children }: { children: JSX.Element }) {
 
 export const router = createBrowserRouter([
   { path: '/', element: <RootRedirect /> },
-  { path: '/privacy', element: <PrivacyPolicyPage /> },
-  { path: '/account-deletion', element: <AccountDeletionPage /> },
-  { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <RegisterPage /> },
-  { path: '/forgot-password', element: <ForgotPasswordPage /> },
-  { path: '/reset-password', element: <ResetPasswordPage /> },
-  { path: '/verify-email', element: <VerifyEmailPage /> },
-  { path: '/auth/discord/callback', element: <DiscordCallbackPage /> },
+  { path: '/privacy', element: <LazyPage component={PrivacyPolicyPage} /> },
+  { path: '/account-deletion', element: <LazyPage component={AccountDeletionPage} /> },
+  { path: '/login', element: <LazyPage component={LoginPage} /> },
+  { path: '/register', element: <LazyPage component={RegisterPage} /> },
+  { path: '/forgot-password', element: <LazyPage component={ForgotPasswordPage} /> },
+  { path: '/reset-password', element: <LazyPage component={ResetPasswordPage} /> },
+  { path: '/verify-email', element: <LazyPage component={VerifyEmailPage} /> },
+  { path: '/auth/discord/callback', element: <LazyPage component={DiscordCallbackPage} /> },
   {
     path: '/home',
     element: (
       <RequireAuth>
-        <HomePage />
+        <LazyPage component={HomePage} />
       </RequireAuth>
     )
   },
@@ -100,7 +110,7 @@ export const router = createBrowserRouter([
     path: '/settings',
     element: (
       <RequireAuth>
-        <SettingsPage />
+        <LazyPage component={SettingsPage} />
       </RequireAuth>
     )
   },
@@ -108,7 +118,7 @@ export const router = createBrowserRouter([
     path: '/profile',
     element: (
       <RequireAuth>
-        <ProfilePage />
+        <LazyPage component={ProfilePage} />
       </RequireAuth>
     )
   },
@@ -124,7 +134,7 @@ export const router = createBrowserRouter([
     path: '/messages',
     element: (
       <RequireAuth>
-        <MessagesPage />
+        <LazyPage component={MessagesPage} />
       </RequireAuth>
     )
   },
@@ -132,7 +142,7 @@ export const router = createBrowserRouter([
     path: '/announcements',
     element: (
       <RequireAuth>
-        <AnnouncementsPage />
+        <LazyPage component={AnnouncementsPage} />
       </RequireAuth>
     )
   },
@@ -140,7 +150,7 @@ export const router = createBrowserRouter([
     path: '/network',
     element: (
       <RequireAuth>
-        <SocialPage />
+        <LazyPage component={SocialPage} />
       </RequireAuth>
     )
   },
@@ -148,7 +158,7 @@ export const router = createBrowserRouter([
     path: '/admin/users/pending',
     element: (
       <RequireAuth>
-        <AdminPendingUsersPage />
+        <LazyPage component={AdminPendingUsersPage} />
       </RequireAuth>
     )
   },
@@ -156,7 +166,7 @@ export const router = createBrowserRouter([
     path: '/admin/content',
     element: (
       <RequireAuth>
-        <AdminContentPage />
+        <LazyPage component={AdminContentPage} />
       </RequireAuth>
     )
   },
@@ -164,7 +174,7 @@ export const router = createBrowserRouter([
     path: '/admin/persistence',
     element: (
       <RequireAdmin>
-        <AdminPersistenceHealthPage />
+        <LazyPage component={AdminPersistenceHealthPage} />
       </RequireAdmin>
     )
   },
@@ -172,7 +182,7 @@ export const router = createBrowserRouter([
     path: '/systems',
     element: (
       <RequireGmOrAdmin>
-        <RulesStudioPage />
+        <LazyPage component={RulesStudioPage} />
       </RequireGmOrAdmin>
     )
   },
@@ -180,7 +190,7 @@ export const router = createBrowserRouter([
     path: '/systems/:systemId/studio',
     element: (
       <RequireGmOrAdmin>
-        <SystemStudioPage />
+        <LazyPage component={SystemStudioPage} />
       </RequireGmOrAdmin>
     )
   },
@@ -188,7 +198,7 @@ export const router = createBrowserRouter([
     path: '/i18n-dictionary',
     element: (
       <RequireGmOrAdmin>
-        <TranslationDictionaryPage />
+        <LazyPage component={TranslationDictionaryPage} />
       </RequireGmOrAdmin>
     )
   },
@@ -196,7 +206,7 @@ export const router = createBrowserRouter([
     path: '/resources',
     element: (
       <RequireAuth>
-        <ResourcesPage />
+        <LazyPage component={ResourcesPage} />
       </RequireAuth>
     )
   },
@@ -204,7 +214,7 @@ export const router = createBrowserRouter([
     path: '/tools',
     element: (
       <RequireGmOrAdmin>
-        <ToolsPage />
+        <LazyPage component={ToolsPage} />
       </RequireGmOrAdmin>
     )
   },
@@ -212,7 +222,7 @@ export const router = createBrowserRouter([
     path: '/screen-templates',
     element: (
       <RequireAuth>
-        <ScreenTemplatesPage />
+        <LazyPage component={ScreenTemplatesPage} />
       </RequireAuth>
     )
   },
@@ -220,7 +230,7 @@ export const router = createBrowserRouter([
     path: '/screen-templates/:templateId/studio',
     element: (
       <RequireAuth>
-        <ScreenStudioPage />
+        <LazyPage component={ScreenStudioPage} />
       </RequireAuth>
     )
   },
@@ -228,7 +238,7 @@ export const router = createBrowserRouter([
     path: '/sessions',
     element: (
       <RequireAuth>
-        <SessionsListPage />
+        <LazyPage component={SessionsListPage} />
       </RequireAuth>
     )
   },
@@ -236,7 +246,7 @@ export const router = createBrowserRouter([
     path: '/sessions/:sessionId',
     element: (
       <RequireAuth>
-        <SessionViewPage />
+        <LazyPage component={SessionViewPage} />
       </RequireAuth>
     )
   },
@@ -244,7 +254,7 @@ export const router = createBrowserRouter([
     path: '/sessions/:sessionId/vtt/fullscreen',
     element: (
       <RequireAuth>
-        <SessionVttFullscreenPage />
+        <LazyPage component={SessionVttFullscreenPage} />
       </RequireAuth>
     )
   },
@@ -252,7 +262,7 @@ export const router = createBrowserRouter([
     path: '/sessions/:sessionId/characters/:characterId',
     element: (
       <RequireAuth>
-        <SessionCharacterPage />
+        <LazyPage component={SessionCharacterPage} />
       </RequireAuth>
     )
   }
